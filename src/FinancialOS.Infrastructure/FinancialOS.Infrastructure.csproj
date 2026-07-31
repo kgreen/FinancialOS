@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\FinancialOS.Core\FinancialOS.Core.csproj" />
+    <ProjectReference Include="..\FinancialOS.Data\FinancialOS.Data.csproj" />
+    <ProjectReference Include="..\FinancialOS.Shared\FinancialOS.Shared.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

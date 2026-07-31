@@ -1,8 +1,22 @@
-FinancialOS Architecture Specification
-Version 0.1
-Volume I — Purpose
-Chapter 2 — Guiding Principles
-Introduction
+Excellent. And I think we just made our first architectural decision:
+
+> **Volume I should never change often.**
+
+If we find ourselves editing the Vision every month, it means the product has lost focus. These first documents should be remarkably stable. Everything else will evolve around them.
+
+---
+
+# FinancialOS Architecture Specification
+
+## Version 0.1
+
+# Volume I — Purpose
+
+# Chapter 2 — Guiding Principles
+
+---
+
+# Introduction
 
 The Guiding Principles define the non-negotiable beliefs that govern every architectural, product, and implementation decision within FinancialOS.
 
@@ -12,7 +26,9 @@ When tradeoffs arise, these principles take precedence over convenience, speed, 
 
 Every new feature, architectural decision, or product enhancement should be evaluated against these principles before implementation begins.
 
-Principle 1 — Truth Before Convenience
+---
+
+# Principle 1 — Truth Before Convenience
 
 Financial truth is more valuable than user convenience.
 
@@ -22,25 +38,28 @@ Original evidence is preserved permanently.
 
 Corrections, classifications, annotations, and interpretations are layered on top of that evidence rather than replacing it.
 
-Design Implications
+**Design Implications**
 
-Original imported data is immutable.
-Every transformation is traceable.
-History is never destroyed.
-Every record has provenance.
-Principle 2 — Facts Are Immutable
+* Original imported data is immutable.
+* Every transformation is traceable.
+* History is never destroyed.
+* Every record has provenance.
+
+---
+
+# Principle 2 — Facts Are Immutable
 
 Facts represent observable reality.
 
 Facts include:
 
-Transaction amounts
-Statement balances
-Receipt totals
-Dates
-Original descriptions
-Imported documents
-Source files
+* Transaction amounts
+* Statement balances
+* Receipt totals
+* Dates
+* Original descriptions
+* Imported documents
+* Source files
 
 Facts do not change.
 
@@ -48,7 +67,9 @@ Only our understanding of those facts changes.
 
 The platform distinguishes between objective reality and subjective interpretation.
 
-Principle 3 — Knowledge Evolves
+---
+
+# Principle 3 — Knowledge Evolves
 
 Financial understanding improves over time.
 
@@ -64,23 +85,27 @@ Artificial Intelligence may provide additional context.
 
 The platform embraces continual refinement without rewriting history.
 
-Principle 4 — Explainability Is Required
+---
+
+# Principle 4 — Explainability Is Required
 
 Every conclusion must be explainable.
 
 Users should always understand:
 
-Why a transaction was categorized.
-Why a recommendation exists.
-Why an insight was generated.
-Which evidence supports a conclusion.
-Which rules or models participated.
+* Why a transaction was categorized.
+* Why a recommendation exists.
+* Why an insight was generated.
+* Which evidence supports a conclusion.
+* Which rules or models participated.
 
 Nothing should feel like a black box.
 
 Trust requires transparency.
 
-Principle 5 — Humans Remain the Authority
+---
+
+# Principle 5 — Humans Remain the Authority
 
 FinancialOS assists.
 
@@ -88,31 +113,35 @@ It does not control.
 
 Artificial Intelligence may:
 
-Recommend
-Detect
-Explain
-Predict
+* Recommend
+* Detect
+* Explain
+* Predict
 
 Artificial Intelligence may never silently modify financial truth.
 
 The user remains the final authority over every financial decision.
 
-Principle 6 — Preserve the Financial Story
+---
+
+# Principle 6 — Preserve the Financial Story
 
 Financial history is a narrative rather than a collection of isolated transactions.
 
 The platform should preserve:
 
-Context
-Relationships
-Decisions
-Outcomes
-Life events
-Historical progression
+* Context
+* Relationships
+* Decisions
+* Outcomes
+* Life events
+* Historical progression
 
 The objective is to understand how financial behavior changes throughout a person's life.
 
-Principle 7 — Stewardship Over Accounting
+---
+
+# Principle 7 — Stewardship Over Accounting
 
 Accounting measures activity.
 
@@ -128,7 +157,9 @@ Charts are tools.
 
 Stewardship is the objective.
 
-Principle 8 — Knowledge Before Intelligence
+---
+
+# Principle 8 — Knowledge Before Intelligence
 
 Artificial Intelligence should not replace sound engineering.
 
@@ -138,7 +169,9 @@ Artificial Intelligence should focus on problems involving uncertainty, interpre
 
 The platform should never depend upon AI for core correctness.
 
-Principle 9 — Compose Rather Than Replace
+---
+
+# Principle 9 — Compose Rather Than Replace
 
 Financial understanding grows through composition.
 
@@ -146,6 +179,7 @@ Each new layer adds meaning without destroying previous knowledge.
 
 Example:
 
+```text
 Receipt
 
 ↓
@@ -175,39 +209,46 @@ Observation
 ↓
 
 Insight
+```
 
 Every layer builds upon previous layers.
 
 Nothing is discarded.
 
-Principle 10 — Provenance Everywhere
+---
+
+# Principle 10 — Provenance Everywhere
 
 Every piece of information should answer:
 
-Where did this originate?
-When was it created?
-How was it imported?
-Which process modified it?
-Which version produced it?
-How confident are we?
+* Where did this originate?
+* When was it created?
+* How was it imported?
+* Which process modified it?
+* Which version produced it?
+* How confident are we?
 
 Complete provenance enables trust, debugging, auditing, synchronization, and AI explainability.
 
-Principle 11 — Design for Decades
+---
+
+# Principle 11 — Design for Decades
 
 Financial history accumulates over a lifetime.
 
 Every architectural decision should assume:
 
-Millions of financial records
-Decades of history
-Multiple financial institutions
-Evolving financial products
-Future technologies not yet imagined
+* Millions of financial records
+* Decades of history
+* Multiple financial institutions
+* Evolving financial products
+* Future technologies not yet imagined
 
 Short-term convenience must never compromise long-term sustainability.
 
-Principle 12 — The Platform Is Modular
+---
+
+# Principle 12 — The Platform Is Modular
 
 FinancialOS is an operating system, not a monolithic application.
 
@@ -217,7 +258,9 @@ No feature owns the truth.
 
 The Financial Core owns the truth.
 
-Principle 13 — Reduce Cognitive Load
+---
+
+# Principle 13 — Reduce Cognitive Load
 
 Financial software often overwhelms users with information.
 
@@ -225,15 +268,17 @@ FinancialOS should instead reduce mental effort.
 
 The platform should:
 
-surface meaningful information,
-hide unnecessary complexity,
-automate repetitive work,
-explain uncertainty,
-present clear recommendations.
+* surface meaningful information,
+* hide unnecessary complexity,
+* automate repetitive work,
+* explain uncertainty,
+* present clear recommendations.
 
 Technology should make financial decisions easier—not more confusing.
 
-Principle 14 — Respect User Autonomy
+---
+
+# Principle 14 — Respect User Autonomy
 
 FinancialOS should never manipulate users into specific behaviors.
 
@@ -241,14 +286,16 @@ Recommendations should educate rather than persuade.
 
 Users should always retain ownership of:
 
-their goals,
-their priorities,
-their values,
-their financial decisions.
+* their goals,
+* their priorities,
+* their values,
+* their financial decisions.
 
 The role of the platform is guidance, not control.
 
-Principle 15 — Measure Alignment, Not Comparison
+---
+
+# Principle 15 — Measure Alignment, Not Comparison
 
 Most financial applications encourage comparison against external benchmarks.
 
@@ -256,27 +303,31 @@ FinancialOS encourages alignment with the user's own stated priorities.
 
 Success is not determined by:
 
-income,
-net worth,
-investment returns,
-comparison with others.
+* income,
+* net worth,
+* investment returns,
+* comparison with others.
 
 Success is measured by increasing alignment between financial behavior and personal values.
 
-Principle 16 — Insights Must Lead to Action
+---
+
+# Principle 16 — Insights Must Lead to Action
 
 An insight without a possible action has limited value.
 
 Every significant insight should answer:
 
-Why does this matter?
-What evidence supports it?
-What action could improve the situation?
-What outcome might result?
+* Why does this matter?
+* What evidence supports it?
+* What action could improve the situation?
+* What outcome might result?
 
 FinancialOS exists to improve decisions rather than merely describe history.
 
-Principle 17 — Every Feature Must Earn Its Place
+---
+
+# Principle 17 — Every Feature Must Earn Its Place
 
 Features increase complexity.
 
@@ -284,15 +335,17 @@ Complexity increases cognitive load.
 
 Every proposed feature should clearly support one or more of the following:
 
-preserving truth,
-increasing understanding,
-reducing stress,
-improving stewardship,
-simplifying financial management.
+* preserving truth,
+* increasing understanding,
+* reducing stress,
+* improving stewardship,
+* simplifying financial management.
 
 If it does not, it should not be implemented.
 
-Principle 18 — Trust Is the Most Valuable Feature
+---
+
+# Principle 18 — Trust Is the Most Valuable Feature
 
 Users entrust FinancialOS with decades of financial history.
 
@@ -300,16 +353,18 @@ Every design decision should strengthen that trust.
 
 Trust is earned through:
 
-transparency,
-accuracy,
-consistency,
-explainability,
-reliability,
-respect for user ownership.
+* transparency,
+* accuracy,
+* consistency,
+* explainability,
+* reliability,
+* respect for user ownership.
 
 Without trust, every other feature loses value.
 
-Closing Statement
+---
+
+# Closing Statement
 
 These principles define the identity of FinancialOS.
 
@@ -321,23 +376,43 @@ Programming languages become obsolete.
 
 Artificial Intelligence will continue to improve.
 
-These principles should remain stable because they describe how FinancialOS thinks, not merely how it is implemented.
+These principles should remain stable because they describe **how FinancialOS thinks**, not merely **how it is implemented**.
 
 Whenever uncertainty exists, the correct decision is the one that best preserves these principles.
 
-Architect's Commentary
+---
+
+# Architect's Commentary
 
 This chapter gave me a realization that I think is worth carrying forward.
 
-Most software has "requirements." Mature software has "principles." But truly enduring platforms also have constraints—things they intentionally refuse to do because violating them would compromise their identity.
+Most software has "requirements." Mature software has "principles." But truly enduring platforms also have **constraints**—things they intentionally refuse to do because violating them would compromise their identity.
 
 For FinancialOS, I think we've already identified several such constraints:
 
-It will never rewrite evidence.
-It will never hide the reasoning behind a conclusion.
-It will never let AI silently change financial truth.
-It will never optimize convenience at the expense of trust.
+* It will never rewrite evidence.
+* It will never hide the reasoning behind a conclusion.
+* It will never let AI silently change financial truth.
+* It will never optimize convenience at the expense of trust.
 
 Those aren't implementation details; they're promises to the user. They define the boundaries of the platform just as much as its features do.
 
 I suspect those constraints will become one of the reasons FinancialOS feels fundamentally different from many existing personal finance applications. They give the platform a consistent character that can endure even as technology, interfaces, and capabilities evolve.
+
+---
+
+## My suggestion for Chapter 3
+
+I **don't** want to write "Core Philosophies" next.
+
+As we developed these first two chapters, I realized something is missing between *Vision* and *Domain*: **the people**.
+
+Before we define entities and aggregates, I think we should define:
+
+**Chapter 3 — The FinancialOS Manifesto**
+
+Not a marketing document, but a declaration of what we believe about money, stress, stewardship, human behavior, and the role software should play.
+
+If Chapter 1 answers **why we exist**, and Chapter 2 answers **how we make decisions**, then the Manifesto answers **what we believe about the problem itself**.
+
+I think that document will become the emotional and philosophical foundation of everything that follows, and it will make the later domain model even stronger.

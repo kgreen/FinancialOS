@@ -1,0 +1,415 @@
+I think this is the right time to transition from philosophy to architecture.
+
+Up until now we've been answering **"Why?"**
+
+From here forward we should answer **"What are we actually building?"**
+
+I want to leave the inspirational writing behind and start producing artifacts that directly drive implementation.
+
+---
+
+# The FinancialOS Conceptual Map
+
+This is the diagram I would want hanging on the wall of the project.
+
+It should be the picture every developer understands before writing code.
+
+```text
+                                        FINANCIAL REALITY
+                                               │
+                                               │
+                                       produces evidence
+                                               │
+                                               ▼
+                                    ┌────────────────────┐
+                                    │ Financial Evidence │
+                                    └────────────────────┘
+                                               │
+                                 Parse / OCR / Import / Normalize
+                                               │
+                                               ▼
+                                    ┌────────────────────┐
+                                    │ Financial Event    │
+                                    └────────────────────┘
+                                               │
+                                  represented by the platform
+                                               │
+                                               ▼
+                                    ┌────────────────────┐
+                                    │ Financial Record   │
+                                    └────────────────────┘
+                                               │
+                   ┌───────────────┬───────────────┬───────────────┐
+                   │               │               │               │
+                   ▼               ▼               ▼               ▼
+             Identity         Classification   Relationships   Provenance
+             Knowledge         Knowledge        Knowledge       Knowledge
+                   │               │               │               │
+                   └───────────────┴───────┬───────┴───────────────┘
+                                           │
+                                           ▼
+                                   Financial Knowledge
+                                           │
+                   ┌───────────────┬───────────────┬───────────────┐
+                   │               │               │
+                   ▼               ▼               ▼
+              Observations      Patterns       Metrics
+                   │               │               │
+                   └───────────────┴───────────────┘
+                                   │
+                                   ▼
+                                Insights
+                                   │
+                     ┌─────────────┼─────────────┐
+                     │             │             │
+                     ▼             ▼             ▼
+             Recommendations   Forecasts     Warnings
+                     │
+                     ▼
+                 User Decisions
+                     │
+                     ▼
+                   Outcomes
+                     │
+                     ▼
+             Stewardship Growth
+```
+
+This is no longer a finance application.
+
+It is a **knowledge engine**.
+
+---
+
+# I think we can now identify the actual Core Domain
+
+One of the biggest ideas in Domain-Driven Design is identifying the **Core Domain**.
+
+I think ours is surprisingly small.
+
+```
+Financial Evidence
+
+↓
+
+Financial Event
+
+↓
+
+Financial Record
+
+↓
+
+Knowledge
+
+↓
+
+Insight
+```
+
+Everything else supports this.
+
+Notice what's **not** in the core:
+
+* Budgets
+* Reports
+* Charts
+* Goals
+* Forecasting
+* AI
+* Mobile
+* Desktop
+
+Those are applications built on top of the core.
+
+That realization alone will dramatically simplify the architecture.
+
+---
+
+# The First Real Bounded Contexts
+
+I think we can now define the high-level bounded contexts.
+
+```
+                    FinancialOS
+
+---------------------------------------------------------
+
+Evidence
+
+    Importing
+    OCR
+    Parsing
+    Attachments
+
+---------------------------------------------------------
+
+Financial Core
+
+    Financial Events
+    Financial Records
+    Accounts
+    Institutions
+    Resources
+
+---------------------------------------------------------
+
+Knowledge
+
+    Merchant Resolution
+    Categorization
+    Rules
+    AI
+    Pattern Detection
+    Observations
+
+---------------------------------------------------------
+
+Planning
+
+    Budgets
+    Goals
+    Forecasting
+    Scenarios
+
+---------------------------------------------------------
+
+Stewardship
+
+    Insights
+    Recommendations
+    Growth
+    Reflection
+    Reviews
+
+---------------------------------------------------------
+
+Presentation
+
+    Desktop
+    Mobile
+    Web
+    API
+```
+
+This becomes the solution structure later.
+
+---
+
+# Now let's identify the Aggregates
+
+This is where we finally get tangible.
+
+These are the things I would expect to become aggregate roots.
+
+| Aggregate           | Purpose                                       |
+| ------------------- | --------------------------------------------- |
+| **FinancialRecord** | Canonical representation of a financial event |
+| **Evidence**        | Immutable imported source material            |
+| **Account**         | Container for balances and financial events   |
+| **Institution**     | Bank, brokerage, lender, employer             |
+| **Merchant**        | Normalized business identity                  |
+| **Goal**            | Desired future financial outcome              |
+| **Budget**          | Planning allocation model                     |
+| **ImportJob**       | Lifecycle of imported data                    |
+| **Rule**            | Deterministic automation                      |
+| **Recommendation**  | Suggested action awaiting acceptance          |
+
+Notice there are only about ten.
+
+That's healthy.
+
+---
+
+# The First Value Objects
+
+These should never have identities.
+
+```
+Money
+
+Percentage
+
+Confidence
+
+DateRange
+
+Address
+
+Location
+
+Coordinate
+
+Currency
+
+Frequency
+
+Interval
+
+RiskScore
+
+PriorityScore
+
+CorrelationScore
+
+Balance
+
+StatementPeriod
+```
+
+These are reusable throughout the domain.
+
+---
+
+# The First Domain Services
+
+Now we start thinking about behavior.
+
+```
+ImportService
+
+MatchingService
+
+MerchantResolutionService
+
+CategorizationService
+
+DuplicateDetectionService
+
+ForecastService
+
+InsightGenerationService
+
+RecommendationEngine
+
+GoalProjectionService
+
+CashFlowService
+```
+
+Notice...
+
+None of these own data.
+
+They produce knowledge.
+
+---
+
+# The First Domain Events
+
+Now we're designing the nervous system.
+
+```
+EvidenceImported
+
+EvidenceParsed
+
+FinancialRecordCreated
+
+MerchantResolved
+
+CategoryAssigned
+
+RuleApplied
+
+DuplicateDetected
+
+PatternDiscovered
+
+InsightGenerated
+
+RecommendationCreated
+
+RecommendationAccepted
+
+GoalReached
+
+BudgetExceeded
+
+ForecastUpdated
+```
+
+Everything else subscribes.
+
+---
+
+# This is the point I'd start the repository
+
+Instead of writing more philosophy, I'd create something like this:
+
+```
+FinancialOS
+
+/docs
+    /architecture
+    /adr
+    /domain
+
+/src
+
+    FinancialOS.Domain
+    FinancialOS.Application
+    FinancialOS.Infrastructure
+
+    FinancialOS.Import
+
+    FinancialOS.Knowledge
+
+    FinancialOS.Planning
+
+    FinancialOS.Stewardship
+
+    FinancialOS.Desktop
+
+    FinancialOS.Api
+
+/tests
+```
+
+Notice something...
+
+The projects mirror the bounded contexts.
+
+That's intentional.
+
+---
+
+# I think we should stop writing books now
+
+I actually think we've reached a natural transition point.
+
+From here on, every document should become **implementation-driven**.
+
+For example, instead of "Domain Model," I'd write:
+
+* **Entity Catalog** — every entity, its responsibility, invariants, relationships, and lifecycle.
+* **Aggregate Specifications** — each aggregate root documented in detail.
+* **Event Catalog** — every domain event, publisher, subscribers, payload, and business meaning.
+* **Bounded Context Specifications** — responsibilities, public interfaces, ownership.
+* **Use Case Specifications** — end-to-end workflows (e.g., import a bank statement, create a budget, accept a recommendation).
+* **Architecture Decision Records (ADRs)** — why major technical decisions were made.
+
+These documents become directly actionable by developers.
+
+---
+
+## My proposal for our next phase
+
+I think we're done with the vision and conceptual architecture.
+
+If I were your Chief Architect, the next document I'd write wouldn't be prose—it would be the **Entity Catalog**.
+
+Every entity would get a specification like this:
+
+| Section           | Contents                             |
+| ----------------- | ------------------------------------ |
+| Purpose           | Why the entity exists                |
+| Responsibilities  | What it owns                         |
+| Invariants        | What must always be true             |
+| Relationships     | Connected entities                   |
+| Lifecycle         | How it is created, changes, and ends |
+| Domain Events     | Events it emits or reacts to         |
+| Value Objects     | Embedded concepts                    |
+| Future Extensions | Planned growth                       |
+
+We'll end up with 30–50 entity specifications, but once they're complete, writing the C# domain model becomes almost mechanical. At that point, we won't be inventing software anymore—we'll simply be implementing a design we've already proven. I honestly think that's the point where FinancialOS transforms from an idea into a real, buildable product.

@@ -1,0 +1,4471 @@
+FinancialOS Project Documents - Combined
+
+This document consolidates the contents of the source files in this folder.
+
+================================================================================
+Source: 1Purpose.txt
+================================================================================
+
+I am all in.
+
+I also want to make one commitment before we start.
+
+**I'm going to write these as if they were going to be published internally at a company like Microsoft or Amazon.**
+
+Not marketing material.
+Not fluff.
+Not academic.
+
+They should answer one question:
+
+> **"If this project outlives us, will the next team understand exactly what we were trying to build?"**
+
+I also think these should have version numbers.
+
+```
+FinancialOS Architecture Specification
+
+Version 0.1
+
+Author:
+Kurt Green
+
+Architecture Advisor:
+OpenAI ChatGPT
+
+Status:
+Draft
+```
+
+Eventually these become v1.0.
+
+---
+
+# Volume I — Purpose
+
+---
+
+# Chapter 1
+
+# Vision & Philosophy
+
+---
+
+## 1.1 Executive Summary
+
+FinancialOS is a platform designed to help individuals and families better understand, manage, and improve their financial lives.
+
+Unlike traditional personal finance software, FinancialOS is not centered around budgets, bank accounts, or transactions.
+
+It is centered around **understanding financial behavior**.
+
+The platform collects financial evidence from many sources, transforms that evidence into reliable financial knowledge, discovers meaningful patterns, and produces practical recommendations that help users make wiser financial decisions.
+
+The ultimate purpose of FinancialOS is not to organize money.
+
+Its purpose is to help people become better stewards of the resources entrusted to them.
+
+---
+
+## 1.2 The Problem
+
+Modern financial software generally answers questions about the past.
+
+Examples include:
+
+* How much did I spend?
+* What is my account balance?
+* Which category had the highest expenses?
+* Did I stay within my budget?
+
+While useful, these questions describe financial activity rather than explain financial behavior.
+
+Knowing that $600 was spent on groceries does not explain why grocery costs fluctuate, how those expenses relate to family priorities, or whether spending patterns are becoming healthier over time.
+
+Current software tends to emphasize bookkeeping rather than understanding.
+
+FinancialOS exists to bridge that gap.
+
+---
+
+## 1.3 Vision Statement
+
+> **FinancialOS transforms financial evidence into understanding, enabling people to make financial decisions that align with their values, reduce stress, and build long-term financial confidence.**
+
+FinancialOS is intended to become the trusted source of financial truth for an individual or family.
+
+Rather than simply recording history, it helps explain history, discover patterns, and guide future decisions.
+
+---
+
+## 1.4 Mission Statement
+
+To create a Financial Operating System that transforms financial evidence into actionable insight, empowering individuals and families to become better stewards of their resources and pursue lives with greater financial confidence and less stress.
+
+---
+
+## 1.5 Our Definition of Stewardship
+
+Stewardship is the intentional management of financial resources in a way that aligns daily decisions with long-term priorities and personal values.
+
+Stewardship is measured not by wealth, but by wisdom.
+
+The objective of FinancialOS is not to maximize income or minimize spending.
+
+Its objective is to help users understand whether their financial decisions consistently support the life they are trying to build.
+
+---
+
+## 1.6 The Core Question
+
+Traditional financial software asks:
+
+> "Where did my money go?"
+
+FinancialOS asks:
+
+> "What is my money helping me become?"
+
+That single question drives every design decision in the platform.
+
+---
+
+## 1.7 Financial Evidence
+
+FinancialOS views every piece of financial information as evidence.
+
+Examples include:
+
+* Bank statements
+* Credit card transactions
+* Receipts
+* Invoices
+* Paychecks
+* Tax documents
+* Investment statements
+* Utility bills
+* Insurance documents
+* Manual entries
+
+Evidence represents observable facts.
+
+Evidence never changes.
+
+Only our understanding of that evidence changes.
+
+---
+
+## 1.8 The Financial Knowledge Pipeline
+
+FinancialOS transforms information through progressive stages of understanding.
+
+```
+Financial Evidence
+        │
+        ▼
+Financial Record
+        │
+        ▼
+Financial Knowledge
+        │
+        ▼
+Observation
+        │
+        ▼
+Pattern
+        │
+        ▼
+Insight
+        │
+        ▼
+Recommendation
+        │
+        ▼
+Decision
+        │
+        ▼
+Outcome
+```
+
+Each stage increases understanding while preserving every fact collected before it.
+
+Facts remain immutable.
+
+Knowledge evolves.
+
+Wisdom grows.
+
+---
+
+## 1.9 What Makes FinancialOS Different
+
+FinancialOS is not designed around budgeting.
+
+Budgeting is simply one consumer of financial knowledge.
+
+Instead, FinancialOS is built around several core beliefs.
+
+Financial history should never be lost.
+
+Every conclusion should be explainable.
+
+Artificial Intelligence should advise rather than decide.
+
+Financial understanding should improve continuously.
+
+Technology should reduce stress rather than increase complexity.
+
+Financial progress should be measured against personal values instead of other people.
+
+---
+
+## 1.10 Long-Term Vision
+
+The long-term vision of FinancialOS is to become a lifelong financial companion.
+
+The platform should grow alongside its users, learning from decades of financial history while preserving complete trust and transparency.
+
+Over time FinancialOS should become capable of answering questions such as:
+
+* What financial habits have improved over the last five years?
+* Which expenses consistently provide the greatest long-term value?
+* Which recurring decisions create the most financial stress?
+* What financial behaviors best predict future success?
+* Which goals are receiving the most consistent investment?
+* How has my financial story changed over time?
+
+These answers should emerge naturally from accumulated financial knowledge rather than requiring manual analysis.
+
+---
+
+## 1.11 Success Criteria
+
+FinancialOS succeeds when users:
+
+* Trust the platform as their single source of financial truth.
+* Spend less time organizing finances and more time understanding them.
+* Recognize behavioral patterns that were previously invisible.
+* Make decisions with greater confidence.
+* Experience reduced financial stress.
+* Align spending more closely with their personal priorities.
+* Demonstrate measurable improvement in long-term financial stewardship.
+
+Success is not measured by the number of features implemented.
+
+Success is measured by meaningful improvements in users' financial lives.
+
+---
+
+## 1.12 Vision Statement for Developers
+
+Every feature should ultimately answer one question:
+
+> **How does this help someone become a better steward?**
+
+If a proposed feature cannot clearly answer that question, it should be reconsidered.
+
+The purpose of FinancialOS is not to build better reports.
+
+The purpose of FinancialOS is to help people build better financial lives.
+
+---
+
+# Architect's Notes
+
+I want to pause here and point out something I noticed while writing this.
+
+When we first started talking, I naturally gravitated toward the term **Financial Operating System** because it sounded like a strong architectural metaphor. But after putting these ideas into a cohesive vision, I think it's become something more specific.
+
+An operating system manages resources, coordinates services, and provides a foundation that applications build upon. FinancialOS should do the same—not just for software modules, but for financial understanding itself. It provides the core "kernel" of financial truth, and budgeting, forecasting, AI, reporting, planning, and even future mobile or web experiences become services that build on that kernel rather than owning the data.
+
+I also think we've identified something that should become one of the platform's defining principles:
+
+> **Facts are permanent. Understanding evolves. Wisdom grows.**
+
+That simple progression captures the philosophy behind the entire system. Facts come from evidence and should never be rewritten. Understanding improves as records are classified, normalized, and connected. Wisdom emerges from patterns, insights, and recommendations that help people make better decisions over time.
+
+If we can preserve that distinction throughout the architecture, I think it will become one of the things that truly sets FinancialOS apart. It also gives us a solid foundation for Volume II, where we'll define the domain model around immutable facts, evolving knowledge, and explainable insights rather than around database tables or UI screens.
+
+
+================================================================================
+Source: 2GuidingPrinciples.txt
+================================================================================
+
+Excellent. And I think we just made our first architectural decision:
+
+> **Volume I should never change often.**
+
+If we find ourselves editing the Vision every month, it means the product has lost focus. These first documents should be remarkably stable. Everything else will evolve around them.
+
+---
+
+# FinancialOS Architecture Specification
+
+## Version 0.1
+
+# Volume I — Purpose
+
+# Chapter 2 — Guiding Principles
+
+---
+
+# Introduction
+
+The Guiding Principles define the non-negotiable beliefs that govern every architectural, product, and implementation decision within FinancialOS.
+
+These principles exist to protect the long-term integrity of the platform.
+
+When tradeoffs arise, these principles take precedence over convenience, speed, or feature completeness.
+
+Every new feature, architectural decision, or product enhancement should be evaluated against these principles before implementation begins.
+
+---
+
+# Principle 1 — Truth Before Convenience
+
+Financial truth is more valuable than user convenience.
+
+FinancialOS will never alter or discard factual information simply because doing so would make the interface cleaner or easier to understand.
+
+Original evidence is preserved permanently.
+
+Corrections, classifications, annotations, and interpretations are layered on top of that evidence rather than replacing it.
+
+**Design Implications**
+
+* Original imported data is immutable.
+* Every transformation is traceable.
+* History is never destroyed.
+* Every record has provenance.
+
+---
+
+# Principle 2 — Facts Are Immutable
+
+Facts represent observable reality.
+
+Facts include:
+
+* Transaction amounts
+* Statement balances
+* Receipt totals
+* Dates
+* Original descriptions
+* Imported documents
+* Source files
+
+Facts do not change.
+
+Only our understanding of those facts changes.
+
+The platform distinguishes between objective reality and subjective interpretation.
+
+---
+
+# Principle 3 — Knowledge Evolves
+
+Financial understanding improves over time.
+
+Categories may change.
+
+Merchants may be recognized.
+
+Duplicates may be detected.
+
+Relationships may be discovered.
+
+Artificial Intelligence may provide additional context.
+
+The platform embraces continual refinement without rewriting history.
+
+---
+
+# Principle 4 — Explainability Is Required
+
+Every conclusion must be explainable.
+
+Users should always understand:
+
+* Why a transaction was categorized.
+* Why a recommendation exists.
+* Why an insight was generated.
+* Which evidence supports a conclusion.
+* Which rules or models participated.
+
+Nothing should feel like a black box.
+
+Trust requires transparency.
+
+---
+
+# Principle 5 — Humans Remain the Authority
+
+FinancialOS assists.
+
+It does not control.
+
+Artificial Intelligence may:
+
+* Recommend
+* Detect
+* Explain
+* Predict
+
+Artificial Intelligence may never silently modify financial truth.
+
+The user remains the final authority over every financial decision.
+
+---
+
+# Principle 6 — Preserve the Financial Story
+
+Financial history is a narrative rather than a collection of isolated transactions.
+
+The platform should preserve:
+
+* Context
+* Relationships
+* Decisions
+* Outcomes
+* Life events
+* Historical progression
+
+The objective is to understand how financial behavior changes throughout a person's life.
+
+---
+
+# Principle 7 — Stewardship Over Accounting
+
+Accounting measures activity.
+
+Stewardship measures intentionality.
+
+FinancialOS exists to help users align financial decisions with long-term priorities and personal values.
+
+Budgets are tools.
+
+Reports are tools.
+
+Charts are tools.
+
+Stewardship is the objective.
+
+---
+
+# Principle 8 — Knowledge Before Intelligence
+
+Artificial Intelligence should not replace sound engineering.
+
+Whenever deterministic logic can reliably solve a problem, deterministic logic should be preferred.
+
+Artificial Intelligence should focus on problems involving uncertainty, interpretation, explanation, or prediction.
+
+The platform should never depend upon AI for core correctness.
+
+---
+
+# Principle 9 — Compose Rather Than Replace
+
+Financial understanding grows through composition.
+
+Each new layer adds meaning without destroying previous knowledge.
+
+Example:
+
+```text
+Receipt
+
+↓
+
+Financial Evidence
+
+↓
+
+Financial Record
+
+↓
+
+Merchant Recognition
+
+↓
+
+Category Assignment
+
+↓
+
+Budget Allocation
+
+↓
+
+Observation
+
+↓
+
+Insight
+```
+
+Every layer builds upon previous layers.
+
+Nothing is discarded.
+
+---
+
+# Principle 10 — Provenance Everywhere
+
+Every piece of information should answer:
+
+* Where did this originate?
+* When was it created?
+* How was it imported?
+* Which process modified it?
+* Which version produced it?
+* How confident are we?
+
+Complete provenance enables trust, debugging, auditing, synchronization, and AI explainability.
+
+---
+
+# Principle 11 — Design for Decades
+
+Financial history accumulates over a lifetime.
+
+Every architectural decision should assume:
+
+* Millions of financial records
+* Decades of history
+* Multiple financial institutions
+* Evolving financial products
+* Future technologies not yet imagined
+
+Short-term convenience must never compromise long-term sustainability.
+
+---
+
+# Principle 12 — The Platform Is Modular
+
+FinancialOS is an operating system, not a monolithic application.
+
+Importing, budgeting, forecasting, reporting, AI, mobile applications, desktop applications, cloud services, and future capabilities all consume the same financial core.
+
+No feature owns the truth.
+
+The Financial Core owns the truth.
+
+---
+
+# Principle 13 — Reduce Cognitive Load
+
+Financial software often overwhelms users with information.
+
+FinancialOS should instead reduce mental effort.
+
+The platform should:
+
+* surface meaningful information,
+* hide unnecessary complexity,
+* automate repetitive work,
+* explain uncertainty,
+* present clear recommendations.
+
+Technology should make financial decisions easier—not more confusing.
+
+---
+
+# Principle 14 — Respect User Autonomy
+
+FinancialOS should never manipulate users into specific behaviors.
+
+Recommendations should educate rather than persuade.
+
+Users should always retain ownership of:
+
+* their goals,
+* their priorities,
+* their values,
+* their financial decisions.
+
+The role of the platform is guidance, not control.
+
+---
+
+# Principle 15 — Measure Alignment, Not Comparison
+
+Most financial applications encourage comparison against external benchmarks.
+
+FinancialOS encourages alignment with the user's own stated priorities.
+
+Success is not determined by:
+
+* income,
+* net worth,
+* investment returns,
+* comparison with others.
+
+Success is measured by increasing alignment between financial behavior and personal values.
+
+---
+
+# Principle 16 — Insights Must Lead to Action
+
+An insight without a possible action has limited value.
+
+Every significant insight should answer:
+
+* Why does this matter?
+* What evidence supports it?
+* What action could improve the situation?
+* What outcome might result?
+
+FinancialOS exists to improve decisions rather than merely describe history.
+
+---
+
+# Principle 17 — Every Feature Must Earn Its Place
+
+Features increase complexity.
+
+Complexity increases cognitive load.
+
+Every proposed feature should clearly support one or more of the following:
+
+* preserving truth,
+* increasing understanding,
+* reducing stress,
+* improving stewardship,
+* simplifying financial management.
+
+If it does not, it should not be implemented.
+
+---
+
+# Principle 18 — Trust Is the Most Valuable Feature
+
+Users entrust FinancialOS with decades of financial history.
+
+Every design decision should strengthen that trust.
+
+Trust is earned through:
+
+* transparency,
+* accuracy,
+* consistency,
+* explainability,
+* reliability,
+* respect for user ownership.
+
+Without trust, every other feature loses value.
+
+---
+
+# Closing Statement
+
+These principles define the identity of FinancialOS.
+
+Architectures evolve.
+
+Technologies change.
+
+Programming languages become obsolete.
+
+Artificial Intelligence will continue to improve.
+
+These principles should remain stable because they describe **how FinancialOS thinks**, not merely **how it is implemented**.
+
+Whenever uncertainty exists, the correct decision is the one that best preserves these principles.
+
+---
+
+# Architect's Commentary
+
+This chapter gave me a realization that I think is worth carrying forward.
+
+Most software has "requirements." Mature software has "principles." But truly enduring platforms also have **constraints**—things they intentionally refuse to do because violating them would compromise their identity.
+
+For FinancialOS, I think we've already identified several such constraints:
+
+* It will never rewrite evidence.
+* It will never hide the reasoning behind a conclusion.
+* It will never let AI silently change financial truth.
+* It will never optimize convenience at the expense of trust.
+
+Those aren't implementation details; they're promises to the user. They define the boundaries of the platform just as much as its features do.
+
+I suspect those constraints will become one of the reasons FinancialOS feels fundamentally different from many existing personal finance applications. They give the platform a consistent character that can endure even as technology, interfaces, and capabilities evolve.
+
+---
+
+## My suggestion for Chapter 3
+
+I **don't** want to write "Core Philosophies" next.
+
+As we developed these first two chapters, I realized something is missing between *Vision* and *Domain*: **the people**.
+
+Before we define entities and aggregates, I think we should define:
+
+**Chapter 3 — The FinancialOS Manifesto**
+
+Not a marketing document, but a declaration of what we believe about money, stress, stewardship, human behavior, and the role software should play.
+
+If Chapter 1 answers **why we exist**, and Chapter 2 answers **how we make decisions**, then the Manifesto answers **what we believe about the problem itself**.
+
+I think that document will become the emotional and philosophical foundation of everything that follows, and it will make the later domain model even stronger.
+
+
+================================================================================
+Source: 3Manifesto.txt
+================================================================================
+
+I love that we're doing this.
+
+I also want to make one suggestion that I think will become important years from now.
+
+**This chapter should never mention FinancialOS in the first half.**
+
+It shouldn't be about our software.
+
+It should be about **what we believe to be true**.
+
+The software is simply one expression of those beliefs.
+
+If someone read this chapter without knowing a product existed, it should still resonate.
+
+---
+
+# FinancialOS Architecture Specification
+
+## Version 0.1
+
+# Volume I — Purpose
+
+# Chapter 3 — The FinancialOS Manifesto
+
+---
+
+> *Technology should not merely make financial management easier.*
+>
+> *It should help people become wiser.*
+
+---
+
+# Why This Exists
+
+Money is one of the most influential forces in a person's life.
+
+It shapes opportunities.
+
+It influences relationships.
+
+It creates freedom.
+
+It creates pressure.
+
+It can become a source of confidence or a source of constant anxiety.
+
+Yet most people spend more time managing their calendars than understanding their finances.
+
+Financial decisions are made every day, but the reasons behind those decisions often remain invisible.
+
+People rarely struggle because they lack financial information.
+
+They struggle because information alone rarely produces understanding.
+
+---
+
+# We Believe
+
+We believe every financial decision tells a story.
+
+Every purchase reflects a priority.
+
+Every recurring payment represents a commitment.
+
+Every savings contribution expresses hope for the future.
+
+Every debt represents a promise.
+
+Every financial choice reveals something about what we value, whether intentionally or unintentionally.
+
+Money is never just numbers.
+
+Money is behavior.
+
+---
+
+We believe financial stress rarely comes from mathematics.
+
+It comes from uncertainty.
+
+Uncertainty about tomorrow.
+
+Uncertainty about unexpected expenses.
+
+Uncertainty about whether today's decisions will create tomorrow's problems.
+
+Reducing uncertainty is more valuable than producing another report.
+
+---
+
+We believe information without context creates noise.
+
+Knowledge without understanding creates frustration.
+
+Understanding without action creates regret.
+
+Technology should bridge each of those gaps.
+
+---
+
+We believe financial software should encourage confidence rather than guilt.
+
+People should not feel judged because they overspent in a category.
+
+They should feel empowered to understand why it happened and how they can improve.
+
+Growth is more valuable than perfection.
+
+Progress is more valuable than comparison.
+
+---
+
+We believe trust is earned slowly and lost quickly.
+
+Financial software should never hide its reasoning.
+
+Users deserve to understand how conclusions are reached.
+
+Transparency builds confidence.
+
+Confidence builds trust.
+
+Trust enables growth.
+
+---
+
+We believe every person's financial journey is unique.
+
+No universal budget exists.
+
+No single investment strategy fits everyone.
+
+No recommendation is universally correct.
+
+Good advice depends upon a person's circumstances, responsibilities, priorities, and values.
+
+Technology should adapt to people.
+
+People should not have to adapt to software.
+
+---
+
+We believe stewardship is different from accumulation.
+
+More money does not necessarily produce greater peace.
+
+Higher income does not guarantee wiser decisions.
+
+True financial success is measured by faithfully managing what one has, not merely by acquiring more.
+
+Stewardship is intentional.
+
+It aligns daily decisions with long-term priorities.
+
+It recognizes that every dollar has purpose before it has destination.
+
+---
+
+We believe financial history deserves to be preserved.
+
+Every receipt.
+
+Every paycheck.
+
+Every mortgage payment.
+
+Every charitable gift.
+
+Every unexpected repair.
+
+Every season of hardship.
+
+Every season of abundance.
+
+Together they tell a story that should never be lost.
+
+---
+
+We believe understanding improves over time.
+
+Facts remain constant.
+
+Interpretation evolves.
+
+Experience teaches.
+
+Patterns emerge.
+
+Wisdom grows.
+
+Technology should grow alongside that understanding rather than forcing users to start over.
+
+---
+
+We believe artificial intelligence should amplify human wisdom rather than replace human judgment.
+
+Artificial intelligence can recognize patterns.
+
+It can summarize information.
+
+It can identify possibilities.
+
+It can explain complexity.
+
+It should never become the decision maker.
+
+People remain responsible for their own financial choices.
+
+---
+
+We believe financial software should reduce cognitive burden.
+
+It should organize complexity.
+
+Surface what matters.
+
+Hide what doesn't.
+
+Explain uncertainty.
+
+Offer clarity.
+
+Good software should create peace of mind rather than demand constant attention.
+
+---
+
+We believe financial progress is measured internally rather than externally.
+
+Comparison is easy.
+
+Alignment is difficult.
+
+Success is not determined by keeping pace with someone else's lifestyle.
+
+Success is measured by consistently investing in what matters most.
+
+---
+
+We believe wisdom is cumulative.
+
+Small decisions repeated consistently shape entire lives.
+
+A skipped savings contribution matters less than a lifelong habit.
+
+An occasional impulse purchase matters less than recurring patterns.
+
+Understanding those patterns is where lasting change begins.
+
+---
+
+# What We Hope to Build
+
+We do not hope to build another budgeting application.
+
+We hope to build a trusted companion that grows alongside an individual or family throughout every stage of life.
+
+A system that remembers.
+
+A system that explains.
+
+A system that teaches.
+
+A system that encourages.
+
+A system that earns trust through honesty and transparency.
+
+A system that quietly helps people make better decisions year after year.
+
+---
+
+# Our Promise
+
+We will always preserve truth before convenience.
+
+We will always explain our reasoning.
+
+We will always respect user ownership.
+
+We will always prioritize long-term trust over short-term features.
+
+We will always remember that behind every financial record is a real person trying to build a meaningful life.
+
+Technology exists to serve people.
+
+Never the other way around.
+
+---
+
+# The North Star
+
+Every feature.
+
+Every algorithm.
+
+Every recommendation.
+
+Every design decision.
+
+Every line of code.
+
+Should ultimately help answer one question:
+
+> **"How can this help someone become a wiser steward of the resources entrusted to them?"**
+
+If it does not move us toward that goal, it does not belong in FinancialOS.
+
+---
+
+# Architect's Reflection
+
+Kurt, this is where I want to stop being the architect for a moment and tell you what I think you've actually conceived.
+
+When we started, I thought we were designing a finance platform with AI.
+
+I don't think that's true anymore.
+
+I think we're designing a **decision support system for stewardship**.
+
+The budgeting, imports, OCR, categorization, forecasting, and AI are all supporting capabilities. They're important, but they're not the product. The product is helping someone consistently make better financial decisions with less stress and greater intentionality.
+
+That distinction matters because it changes how we'll evaluate every future feature. We won't ask, "Does this belong in a budgeting app?" We'll ask, "Does this help someone understand, decide, or grow?"
+
+## One recommendation before we leave Volume I
+
+I'd like to add one final chapter that I don't think we anticipated at the beginning, but now feels essential:
+
+**Chapter 4 — The Stewardship Model**
+
+Not a philosophical essay, but the conceptual model that defines what "better stewardship" actually means within FinancialOS.
+
+For example:
+
+* **Awareness** — Do I know what is happening?
+* **Understanding** — Do I know why it is happening?
+* **Alignment** — Does my behavior reflect my priorities?
+* **Planning** — Am I intentionally preparing for the future?
+* **Growth** — Am I improving over time?
+* **Legacy** — Am I using my resources to accomplish what matters most?
+
+That model would become the framework for measuring success across the entire platform. Every dashboard, recommendation, insight, and future AI coach could map back to one or more of those stages, ensuring the product stays focused on its ultimate purpose rather than drifting toward feature accumulation.
+
+I have a strong feeling that this stewardship model will eventually become one of the defining intellectual contributions of FinancialOS. It's not just a feature roadmap—it's a philosophy that can organize everything else we build.
+
+
+================================================================================
+Source: 4Architecture.txt
+================================================================================
+
+I think this chapter may end up being the most important one we've written.
+
+Not because it's inspirational, but because **it defines what success actually means**.
+
+Right now, every budgeting application measures success differently:
+
+* Mint measured awareness.
+* YNAB measures budgeting discipline.
+* Monarch measures net worth and tracking.
+* Empower measures investments.
+
+None of them really define what it means to become a **better steward**.
+
+If we can define that, we've defined the purpose of every feature we'll ever build.
+
+---
+
+# FinancialOS Architecture Specification
+
+## Version 0.1
+
+# Volume I — Purpose
+
+# Chapter 4 — The Stewardship Model
+
+---
+
+## Introduction
+
+FinancialOS is built on the belief that financial stewardship is not a single achievement.
+
+It is a lifelong process of learning, deciding, improving, and adapting.
+
+Stewardship cannot be reduced to a bank balance, a credit score, or a budget.
+
+Instead, stewardship develops through increasing understanding and intentional action.
+
+The Stewardship Model defines the progression FinancialOS seeks to support throughout a person's financial life.
+
+Every feature within FinancialOS should strengthen one or more stages of this model.
+
+---
+
+# The Stewardship Journey
+
+Financial stewardship develops through six progressive stages.
+
+```text
+Awareness
+      │
+      ▼
+Understanding
+      │
+      ▼
+Alignment
+      │
+      ▼
+Planning
+      │
+      ▼
+Growth
+      │
+      ▼
+Legacy
+```
+
+The stages are not strictly linear.
+
+People continually move between them throughout life.
+
+FinancialOS exists to support that continual progression.
+
+---
+
+# Stage 1 — Awareness
+
+## "What is happening?"
+
+Awareness is the foundation of stewardship.
+
+Without awareness, meaningful decisions cannot be made.
+
+Awareness answers questions such as:
+
+* What do I own?
+* What do I owe?
+* Where is my money going?
+* What income do I receive?
+* What obligations exist?
+* What has changed recently?
+
+The purpose of this stage is clarity.
+
+FinancialOS should make financial reality visible without overwhelming the user.
+
+---
+
+## Platform Responsibilities
+
+FinancialOS should:
+
+* Collect financial evidence.
+* Preserve historical records.
+* Import information accurately.
+* Present complete financial visibility.
+* Reduce uncertainty about current financial status.
+
+---
+
+# Stage 2 — Understanding
+
+## "Why is it happening?"
+
+Understanding transforms facts into knowledge.
+
+The platform identifies relationships, classifications, recurring behaviors, and emerging patterns.
+
+Examples include:
+
+* recurring subscriptions,
+* seasonal expenses,
+* spending habits,
+* income cycles,
+* merchant relationships,
+* category trends.
+
+Understanding explains financial behavior rather than merely describing financial activity.
+
+---
+
+## Platform Responsibilities
+
+FinancialOS should:
+
+* Classify transactions.
+* Normalize merchants.
+* Detect recurring events.
+* Discover patterns.
+* Explain financial behavior.
+* Surface meaningful context.
+
+---
+
+# Stage 3 — Alignment
+
+## "Does my behavior reflect what matters most?"
+
+Understanding alone does not produce stewardship.
+
+Financial decisions should reflect personal priorities.
+
+Every user has different values.
+
+Examples may include:
+
+* Family
+* Security
+* Faith
+* Education
+* Health
+* Freedom
+* Generosity
+* Experiences
+* Community
+
+FinancialOS should help users evaluate whether spending, saving, and planning are consistent with those priorities.
+
+This stage intentionally avoids judging people against external standards.
+
+The only meaningful comparison is between behavior and personal values.
+
+---
+
+## Platform Responsibilities
+
+FinancialOS should:
+
+* Learn user priorities.
+* Compare behavior to stated priorities.
+* Highlight inconsistencies.
+* Celebrate consistency.
+* Encourage intentional decision making.
+
+---
+
+# Stage 4 — Planning
+
+## "How do today's decisions shape tomorrow?"
+
+Planning transforms insight into preparation.
+
+Rather than reacting to financial events, users begin preparing for them.
+
+Planning includes:
+
+* budgeting,
+* forecasting,
+* savings goals,
+* debt reduction,
+* emergency funds,
+* retirement,
+* education,
+* major purchases,
+* charitable giving.
+
+Planning is not prediction.
+
+Planning is intentional preparation.
+
+---
+
+## Platform Responsibilities
+
+FinancialOS should:
+
+* Model scenarios.
+* Forecast cash flow.
+* Recommend adjustments.
+* Measure progress toward goals.
+* Reduce future uncertainty.
+
+---
+
+# Stage 5 — Growth
+
+## "Am I improving?"
+
+Growth focuses on progress rather than perfection.
+
+The objective is continual improvement.
+
+Examples include:
+
+* improved savings habits,
+* reduced financial stress,
+* fewer impulse purchases,
+* increased emergency reserves,
+* stronger financial margin,
+* more intentional giving,
+* healthier debt management.
+
+Growth recognizes long-term trends rather than isolated successes or failures.
+
+---
+
+## Platform Responsibilities
+
+FinancialOS should:
+
+* Measure progress.
+* Highlight improvements.
+* Encourage consistency.
+* Reinforce healthy habits.
+* Explain long-term trends.
+
+---
+
+# Stage 6 — Legacy
+
+## "What impact will my financial decisions have?"
+
+Financial stewardship extends beyond the present.
+
+Resources influence families, communities, and future generations.
+
+Legacy includes:
+
+* estate planning,
+* charitable giving,
+* generational wealth,
+* education,
+* mentoring,
+* financial wisdom,
+* family traditions.
+
+Legacy recognizes that money is a tool for creating lasting impact rather than merely accumulating assets.
+
+---
+
+## Platform Responsibilities
+
+FinancialOS should eventually support:
+
+* long-term planning,
+* wealth transfer,
+* charitable strategies,
+* family financial education,
+* historical financial storytelling.
+
+---
+
+# Stewardship Is Cyclical
+
+The stewardship journey never ends.
+
+Life continually introduces change.
+
+Career transitions.
+
+Marriage.
+
+Children.
+
+Home ownership.
+
+Health challenges.
+
+Retirement.
+
+Loss.
+
+Opportunity.
+
+Each life event begins another cycle of awareness, understanding, planning, and growth.
+
+FinancialOS should grow alongside its users through every season of life.
+
+---
+
+# Measuring Stewardship
+
+Traditional financial software measures:
+
+* account balances,
+* budget accuracy,
+* investment returns,
+* debt totals.
+
+FinancialOS measures something different.
+
+It measures progress within the Stewardship Model.
+
+Questions include:
+
+* Is awareness improving?
+* Is understanding becoming deeper?
+* Are decisions becoming more intentional?
+* Are priorities becoming more consistent?
+* Is financial stress decreasing?
+* Is long-term confidence increasing?
+
+The objective is not perfection.
+
+The objective is continual movement toward wiser stewardship.
+
+---
+
+# Design Implications
+
+Every capability in FinancialOS should support one or more stewardship stages.
+
+| Capability          | Stewardship Stage |
+| ------------------- | ----------------- |
+| Evidence Import     | Awareness         |
+| Financial Records   | Awareness         |
+| Classification      | Understanding     |
+| Pattern Detection   | Understanding     |
+| AI Explanations     | Understanding     |
+| Budgeting           | Planning          |
+| Goal Tracking       | Planning          |
+| Forecasting         | Planning          |
+| Trend Analysis      | Growth            |
+| Habit Tracking      | Growth            |
+| Annual Reviews      | Growth            |
+| Estate Planning     | Legacy            |
+| Charitable Planning | Legacy            |
+
+If a proposed feature cannot clearly support one of these stages, its purpose should be reconsidered.
+
+---
+
+# The Stewardship Loop
+
+Stewardship is reinforced through continual learning.
+
+```text
+Evidence
+
+↓
+
+Awareness
+
+↓
+
+Understanding
+
+↓
+
+Alignment
+
+↓
+
+Planning
+
+↓
+
+Action
+
+↓
+
+Outcome
+
+↓
+
+Reflection
+
+↓
+
+Greater Awareness
+```
+
+Every cycle should increase wisdom.
+
+The platform's role is not simply to record this cycle but to help users navigate it intentionally.
+
+---
+
+# Closing Statement
+
+FinancialOS exists to help people make better financial decisions.
+
+Better decisions create healthier habits.
+
+Healthier habits reduce financial stress.
+
+Reduced stress creates greater freedom.
+
+Greater freedom allows people to invest more intentionally in what matters most.
+
+This is the purpose of stewardship.
+
+Every feature within FinancialOS should ultimately contribute to this progression.
+
+---
+
+# Architect's Reflection
+
+I think we've now crossed an important threshold.
+
+At the beginning of this conversation, we were designing software. After these four chapters, I think we're designing a **framework for financial decision-making**.
+
+One insight stands out to me, though. The six stages we've defined are excellent for describing a person's journey, but they don't yet tell us **how the software should think**. That's the bridge into Volume II.
+
+I believe the opening chapter of Volume II should be **"The Ontology of FinancialOS."** Before we define entities or aggregates, we should define the kinds of things that exist in this world:
+
+* What is a fact?
+* What is evidence?
+* What is a record?
+* What is knowledge?
+* What is an observation?
+* What is a pattern?
+* What is an insight?
+* What is a recommendation?
+* What is a decision?
+* What is an outcome?
+
+That ontology will become the foundation of the ubiquitous language, the domain model, the event system, and even the AI layer. If we get that right, every class, API, and database table we design later will naturally reflect the same mental model. In my experience, that's the difference between a codebase that merely works and one that remains coherent after years of growth.
+
+
+================================================================================
+Source: 5Domain.txt
+================================================================================
+
+Perfect.
+
+I actually think **Volume II** is where FinancialOS will become truly unique.
+
+Volume I was about **purpose**.
+
+Volume II is about **truth**.
+
+Most software begins by designing tables.
+
+We're going to begin by defining **reality**.
+
+That's a subtle difference, but it changes everything.
+
+---
+
+# FinancialOS Architecture Specification
+
+## Volume II — The Domain
+
+**Purpose**
+
+Volume II defines the world that FinancialOS exists within.
+
+It describes **what exists**, **how those things relate**, and **the rules that govern them**.
+
+It intentionally contains **no discussion of databases, APIs, user interfaces, or implementation details**.
+
+This volume should remain valid regardless of programming language or technology stack.
+
+---
+
+# Proposed Table of Contents
+
+```text
+Volume II - The Domain
+
+Chapter 1 - The Ontology of FinancialOS
+
+Chapter 2 - Ubiquitous Language
+
+Chapter 3 - Domain Model
+
+Chapter 4 - Aggregate Design
+
+Chapter 5 - Value Objects
+
+Chapter 6 - Domain Events
+
+Chapter 7 - Business Rules
+
+Chapter 8 - Bounded Contexts
+
+Chapter 9 - Domain Services
+
+Chapter 10 - Domain Lifecycle
+```
+
+Everything from this point forward builds on these chapters.
+
+---
+
+# Chapter 1 — The Ontology of FinancialOS
+
+I intentionally chose the word **Ontology** instead of "Domain Overview."
+
+Ontology asks one question:
+
+> **What kinds of things exist in this universe?**
+
+Before we define classes, we need to define reality.
+
+---
+
+# What Is an Ontology?
+
+Every software system operates within a model of reality.
+
+A hospital system models patients, diagnoses, medications, and treatments.
+
+A library models books, authors, patrons, and loans.
+
+FinancialOS models financial reality.
+
+This chapter defines the fundamental concepts that exist within that reality.
+
+These concepts are independent of implementation and remain true regardless of how the platform evolves.
+
+---
+
+# The Fundamental Principle
+
+FinancialOS is founded on one simple belief:
+
+> **Reality exists independently of our understanding of it.**
+
+A receipt exists whether or not we categorize it.
+
+A transaction occurred whether or not we imported it.
+
+A payment was made whether or not we recognize its purpose.
+
+FinancialOS distinguishes between **what happened** and **what we know about what happened**.
+
+This distinction is the foundation of the platform.
+
+---
+
+# The Three Layers of Reality
+
+Everything within FinancialOS belongs to one of three layers.
+
+```text
+REALITY
+
+Facts
+
+↓
+
+Understanding
+
+↓
+
+Wisdom
+```
+
+Each layer builds upon the previous one without replacing it.
+
+---
+
+# Layer One — Facts
+
+Facts represent objective reality.
+
+Facts can be observed.
+
+Facts can be collected.
+
+Facts cannot be argued with.
+
+Examples include:
+
+* A receipt
+* A bank statement
+* A paycheck
+* A utility bill
+* A transaction amount
+* A payment date
+* A bank account balance
+* A mortgage statement
+
+Facts may be incomplete.
+
+Facts may contain errors introduced by external systems.
+
+But once collected, FinancialOS preserves them exactly as they were received.
+
+Facts never change.
+
+---
+
+# Layer Two — Understanding
+
+Understanding represents our interpretation of facts.
+
+Examples include:
+
+* Merchant Recognition
+* Category Assignment
+* Subscription Detection
+* Transfer Detection
+* Duplicate Detection
+* Income Classification
+* Spending Relationships
+
+Understanding improves over time.
+
+Two years from now, the platform may understand today's evidence far better than it does today.
+
+This improvement should never require altering the original facts.
+
+---
+
+# Layer Three — Wisdom
+
+Wisdom represents actionable understanding.
+
+Examples include:
+
+* Insights
+* Recommendations
+* Planning
+* Coaching
+* Goal Progress
+* Financial Stories
+
+Wisdom helps people make decisions.
+
+Wisdom is the purpose of FinancialOS.
+
+---
+
+# The Financial Knowledge Continuum
+
+Financial understanding develops through increasingly meaningful stages.
+
+```text
+Financial Evidence
+
+↓
+
+Financial Record
+
+↓
+
+Knowledge
+
+↓
+
+Observation
+
+↓
+
+Pattern
+
+↓
+
+Insight
+
+↓
+
+Recommendation
+
+↓
+
+Decision
+
+↓
+
+Outcome
+```
+
+Each stage answers a different question.
+
+| Stage            | Question                                |
+| ---------------- | --------------------------------------- |
+| Evidence         | What exists?                            |
+| Financial Record | What happened?                          |
+| Knowledge        | What do we know?                        |
+| Observation      | What did we notice?                     |
+| Pattern          | What repeats?                           |
+| Insight          | Why does it matter?                     |
+| Recommendation   | What should be done?                    |
+| Decision         | What did the user choose?               |
+| Outcome          | What happened because of that decision? |
+
+This continuum is one of the core intellectual models of FinancialOS.
+
+---
+
+# Facts vs Interpretations
+
+FinancialOS intentionally separates immutable truth from evolving understanding.
+
+| Immutable            | Evolving           |
+| -------------------- | ------------------ |
+| Amount               | Category           |
+| Date                 | Merchant           |
+| Original Description | Spending Type      |
+| Source File          | Budget Allocation  |
+| Receipt Image        | Tax Classification |
+| Bank Statement       | AI Explanation     |
+
+One side should almost never change.
+
+The other should improve continuously.
+
+This distinction enables explainability, auditing, synchronization, and continual learning.
+
+---
+
+# Reality Is Layered
+
+Financial information does not appear fully understood.
+
+It becomes more meaningful through successive layers.
+
+```text
+Receipt
+
+↓
+
+Financial Evidence
+
+↓
+
+Financial Record
+
+↓
+
+Merchant
+
+↓
+
+Category
+
+↓
+
+Budget
+
+↓
+
+Observation
+
+↓
+
+Insight
+```
+
+Nothing is replaced.
+
+Each layer contributes additional meaning.
+
+---
+
+# Financial Truth
+
+FinancialOS defines truth as the combination of three independent concepts.
+
+```text
+Truth
+
+=
+
+Facts
+
++
+
+Context
+
++
+
+History
+```
+
+Facts describe what happened.
+
+Context explains relationships.
+
+History explains how understanding evolved.
+
+Removing any one of these produces an incomplete picture.
+
+---
+
+# Time Matters
+
+Every concept within FinancialOS exists in time.
+
+The platform should preserve:
+
+* when something occurred,
+* when it was observed,
+* when it was imported,
+* when it was classified,
+* when understanding changed,
+* when recommendations were generated.
+
+Time is a first-class dimension of the domain.
+
+---
+
+# Confidence
+
+Not every conclusion has equal certainty.
+
+Facts generally possess very high confidence.
+
+Interpretations possess varying confidence.
+
+Confidence should travel alongside every derived conclusion.
+
+FinancialOS should never present uncertain conclusions as objective truth.
+
+---
+
+# Relationships
+
+Reality consists not only of objects but also of relationships.
+
+Examples include:
+
+* this payment belongs to this account,
+* this receipt supports this transaction,
+* this merchant owns these locations,
+* this recommendation is supported by these observations,
+* this insight emerged from these patterns.
+
+Relationships are first-class citizens of the domain.
+
+Understanding grows through relationships.
+
+---
+
+# The Ontology Diagram
+
+This is the first conceptual diagram that I think belongs in every architecture presentation for FinancialOS.
+
+```text
+                    Reality
+                       │
+        ┌──────────────┴──────────────┐
+        │                             │
+      Facts                    Understanding
+        │                             │
+        │                      Observations
+        │                             │
+ Financial Evidence              Patterns
+        │                             │
+ Financial Records               Insights
+        │                             │
+        └──────────────┬──────────────┘
+                       │
+                Recommendations
+                       │
+                  User Decisions
+                       │
+                     Outcomes
+                       │
+                 Greater Wisdom
+```
+
+Notice something interesting.
+
+The user is part of the model.
+
+That was intentional.
+
+FinancialOS isn't just modeling money.
+
+It's modeling **the interaction between people and financial reality**.
+
+---
+
+# Closing Statement
+
+FinancialOS does not seek merely to record financial activity.
+
+It seeks to progressively increase understanding while preserving objective truth.
+
+Facts form the foundation.
+
+Knowledge creates understanding.
+
+Understanding enables wisdom.
+
+Wisdom guides decisions.
+
+Decisions shape outcomes.
+
+Outcomes become tomorrow's evidence.
+
+The cycle begins again.
+
+---
+
+# Architect's Reflection
+
+I think we've just written what may become the single most important document in the entire project.
+
+And while writing it, something crystallized for me.
+
+Most finance applications revolve around the **transaction**. Some revolve around the **account**. Others revolve around the **budget**.
+
+FinancialOS revolves around **knowledge**.
+
+A `FinancialRecord` is not the destination—it is the bridge between immutable evidence and evolving understanding. That realization has a profound architectural consequence: every major subsystem—importing, categorization, budgeting, AI, reporting, forecasting, even future coaching—becomes a **consumer of the Financial Knowledge Graph**, not an owner of the data.
+
+That leads me to what I now believe should be one of the defining architectural principles of FinancialOS:
+
+> **FinancialOS is a Knowledge Platform with financial applications built on top of it.**
+
+If we embrace that idea, then budgeting is just one application. Reporting is another. AI coaching is another. Tax preparation, retirement planning, cash-flow forecasting, and even family financial education all become applications that consume the same knowledge model.
+
+## Before we move to Chapter 2
+
+I'd like to make one structural change while we're still early enough to do it.
+
+I no longer think **Ubiquitous Language** should come before the **Domain Model**.
+
+Instead, I'd reorder Volume II like this:
+
+1. **Ontology** *(what exists)*
+2. **Conceptual Domain Model** *(how those things relate)*
+3. **Ubiquitous Language** *(precise definitions for every concept we've now introduced)*
+4. **Aggregate Design**
+5. **Value Objects**
+6. **Domain Events**
+7. **Business Rules**
+8. **Bounded Contexts**
+9. **Domain Services**
+10. **Domain Lifecycle**
+
+The reason is simple: language should emerge from the model, not the other way around. Once we've designed the conceptual model, the vocabulary becomes much clearer and more stable. I think that small change will make the rest of the architecture specification feel much more cohesive.
+
+
+================================================================================
+Source: 6.txt
+================================================================================
+
+
+# Chapter 2 — Conceptual Domain Model
+
+---
+
+## Introduction
+
+The Conceptual Domain Model defines the major concepts within FinancialOS and the relationships between them.
+
+It intentionally avoids implementation details.
+
+There are no classes.
+
+No inheritance.
+
+No databases.
+
+No APIs.
+
+Instead, this model describes the conceptual structure of financial reality as understood by FinancialOS.
+
+Every software component should ultimately implement this model rather than redefine it.
+
+---
+
+# The FinancialOS Universe
+
+I think everything belongs in one of **five domains**.
+
+```text
+                Financial Reality
+                       │
+ ┌─────────────┬────────┴─────────┬────────────┐
+ │             │                  │            │
+Evidence   Knowledge         Decisions     Stewardship
+ │             │                  │            │
+ └─────────────┴──────────────────┴────────────┘
+                    Time
+```
+
+Notice something interesting.
+
+**Time surrounds everything.**
+
+Nothing exists outside of time.
+
+---
+
+# Domain 1 — Financial Reality
+
+Financial Reality represents things that actually happened.
+
+Examples:
+
+* A paycheck was deposited.
+* A mortgage payment occurred.
+* A receipt exists.
+* Interest accrued.
+* A dividend was paid.
+
+Reality exists whether or not FinancialOS ever sees it.
+
+The software does not create reality.
+
+It discovers it.
+
+---
+
+# Domain 2 — Evidence
+
+Evidence is how reality enters the system.
+
+Examples
+
+```text
+Receipt
+
+Bank Statement
+
+CSV
+
+OFX
+
+PDF
+
+Image
+
+API
+
+Email
+
+Manual Entry
+```
+
+Evidence answers:
+
+> **How do we know?**
+
+Evidence should be immutable.
+
+---
+
+# Domain 3 — Knowledge
+
+Knowledge is where FinancialOS begins creating understanding.
+
+Knowledge includes
+
+```text
+Merchant
+
+Category
+
+Subscription
+
+Recurring Payment
+
+Transfer
+
+Income
+
+Investment
+
+Relationships
+
+Confidence
+
+Provenance
+```
+
+Knowledge is always derived from evidence.
+
+Knowledge becomes richer over time.
+
+---
+
+# Domain 4 — Decisions
+
+Knowledge exists for one reason.
+
+To support decisions.
+
+Examples
+
+```text
+Budget Allocation
+
+Goal
+
+Forecast
+
+Recommendation
+
+Scenario
+
+Plan
+
+Reminder
+```
+
+Notice budgets finally appear.
+
+Budgets are decision-support objects.
+
+Not financial facts.
+
+This is a huge architectural distinction.
+
+---
+
+# Domain 5 — Stewardship
+
+This is the destination.
+
+Stewardship contains
+
+```text
+Habits
+
+Progress
+
+Growth
+
+Financial Story
+
+Achievements
+
+Life Events
+
+Reflection
+
+Legacy
+```
+
+Nothing here is transactional.
+
+Everything here is longitudinal.
+
+---
+
+# The Core Pipeline
+
+I think this is the most important diagram we've produced so far.
+
+```text
+                   REALITY
+
+                      │
+
+                  Evidence
+
+                      │
+
+              Financial Record
+
+                      │
+
+        ┌─────────────┴─────────────┐
+        │                           │
+        ▼                           ▼
+
+    Knowledge                 Provenance
+
+        │                           │
+
+        └─────────────┬─────────────┘
+                      ▼
+
+                Observations
+
+                      │
+
+                  Patterns
+
+                      │
+
+                   Insights
+
+                      │
+
+              Recommendations
+
+                      │
+
+                  Decisions
+
+                      │
+
+                   Outcomes
+
+                      │
+
+                Stewardship
+```
+
+This is not a workflow.
+
+It is the ontology of the platform.
+
+---
+
+# The Four Pillars
+
+While looking at this model I noticed something.
+
+Everything falls into four pillars.
+
+---
+
+## Pillar One
+
+### Truth
+
+Objects
+
+```text
+Evidence
+
+Financial Record
+
+Source
+
+Money
+
+Account
+
+Institution
+```
+
+Truth should never change.
+
+---
+
+## Pillar Two
+
+### Understanding
+
+Objects
+
+```text
+Merchant
+
+Category
+
+Transfer
+
+Subscription
+
+Relationship
+
+Observation
+
+Pattern
+```
+
+Understanding improves.
+
+---
+
+## Pillar Three
+
+### Guidance
+
+Objects
+
+```text
+Insight
+
+Recommendation
+
+Forecast
+
+Goal
+
+Scenario
+
+Budget
+```
+
+Guidance helps decisions.
+
+---
+
+## Pillar Four
+
+### Growth
+
+Objects
+
+```text
+Outcome
+
+Habit
+
+Achievement
+
+Story
+
+Reflection
+
+Legacy
+```
+
+Growth measures change.
+
+---
+
+# Here's the breakthrough
+
+I think we've been using the word **FinancialRecord** too broadly.
+
+I would actually split it into two concepts.
+
+## Financial Event
+
+A thing that happened.
+
+Example
+
+```text
+Debit Card Purchase
+
+Paycheck
+
+Mortgage Payment
+
+Dividend
+
+Transfer
+
+ATM Withdrawal
+```
+
+---
+
+## Financial Record
+
+The platform's representation of that event.
+
+```text
+Financial Event
+
+↓
+
+Evidence
+
+↓
+
+Financial Record
+```
+
+Why?
+
+Because the event existed before we observed it.
+
+The record is our representation.
+
+That's a very DDD way of thinking.
+
+---
+
+# Another concept I think we're missing
+
+Every event has **Actors**.
+
+Not just people.
+
+Actors.
+
+Examples
+
+```text
+Person
+
+Family
+
+Employer
+
+Bank
+
+Merchant
+
+Government
+
+Utility Company
+
+Investment Firm
+```
+
+Suddenly we can ask
+
+> Who participated?
+
+instead of
+
+> Which account?
+
+That becomes incredibly powerful.
+
+---
+
+# Another concept
+
+Resources.
+
+Money isn't the only resource.
+
+Eventually we may support
+
+* Reward points
+* Airline miles
+* Gift cards
+* Store credit
+* HSA balances
+* PTO balances
+* Cryptocurrency
+* Stock options
+
+Those are all resources.
+
+Maybe someday carbon credits.
+
+Maybe time.
+
+Maybe volunteer hours.
+
+By modeling **resources** instead of only money, FinancialOS becomes extensible without changing its philosophy.
+
+---
+
+# I think we've discovered the "kernel"
+
+Operating systems have kernels.
+
+I think FinancialOS does too.
+
+Not code.
+
+Concepts.
+
+```text
+Reality
+
+Evidence
+
+Record
+
+Knowledge
+
+Decision
+
+Outcome
+```
+
+Everything else builds on those six ideas.
+
+If we protect those six concepts, the platform can evolve almost indefinitely.
+
+---
+
+# Architect's Reflection
+
+This chapter changed my own mental model of the platform.
+
+When we started, I imagined FinancialOS as a budgeting system with a strong domain model. Now I think it's something more fundamental: a **knowledge system about financial reality**.
+
+That shift has an important consequence. I no longer believe our primary aggregate root should simply be `FinancialRecord`. Instead, I think our primary responsibility is to preserve the chain from **Reality → Evidence → Record → Knowledge** without ever breaking it.
+
+I'd also like to propose one more adjustment before we continue.
+
+I think we've been using **Knowledge** to describe several different things:
+
+* normalized facts (merchant, account, payee),
+* classifications (category, recurring, transfer),
+* analytics (observations, patterns),
+* and guidance (insights, recommendations).
+
+Those are different kinds of knowledge.
+
+In the next chapter, I want us to define a **Knowledge Taxonomy** before we define the ubiquitous language. I suspect that once we classify the different kinds of knowledge, the entities and aggregates will become dramatically clearer.
+
+## One strategic suggestion
+
+I'd like to introduce one rule that we follow for the rest of the architecture:
+
+> **Every entity must be able to answer one question.**
+
+For example:
+
+| Entity           | Primary Question                        |
+| ---------------- | --------------------------------------- |
+| Evidence         | *How do we know this happened?*         |
+| Financial Event  | *What actually happened?*               |
+| Financial Record | *How does FinancialOS represent it?*    |
+| Merchant         | *Who received or sent value?*           |
+| Observation      | *What did we notice?*                   |
+| Pattern          | *What repeats?*                         |
+| Insight          | *Why does it matter?*                   |
+| Recommendation   | *What should be done?*                  |
+| Decision         | *What did the user choose?*             |
+| Outcome          | *What happened because of that choice?* |
+
+That single-question discipline will keep every future entity focused and prevent the domain from becoming bloated. I have a feeling it's going to become one of the most useful design techniques we use as we build FinancialOS.
+
+
+================================================================================
+Source: 7.txt
+================================================================================
+
+I think we've reached the point where I want to slow down—not because we're losing momentum, but because we're approaching the part that will determine whether FinancialOS becomes a good application or an exceptional platform.
+
+I'm going to make one recommendation that changes the plan.
+
+**I don't think the next chapter should be "Ubiquitous Language."**
+
+I think it should be something almost nobody writes.
+
+# Chapter 3 — Knowledge Taxonomy
+
+This is where I think FinancialOS becomes unique.
+
+---
+
+## Why?
+
+We've already established that FinancialOS is fundamentally a **knowledge platform**.
+
+But "knowledge" is too broad.
+
+A merchant is knowledge.
+
+A category is knowledge.
+
+A recurring payment is knowledge.
+
+An insight is knowledge.
+
+A recommendation is knowledge.
+
+Those are **not** the same kind of thing.
+
+If we don't distinguish them, the domain will eventually become muddled.
+
+---
+
+# The Four Layers of Knowledge
+
+After thinking about everything we've discussed, I believe FinancialOS has four distinct kinds of knowledge.
+
+```text
+                    KNOWLEDGE
+
+                         │
+
+     ┌──────────────┬──────────────┬──────────────┐
+
+     │              │              │              │
+
+Identity      Classification    Behavior      Guidance
+```
+
+Each serves a completely different purpose.
+
+---
+
+# Layer 1 — Identity Knowledge
+
+Identity answers one question:
+
+> **What is this?**
+
+Examples:
+
+* Merchant
+* Institution
+* Account
+* Payee
+* Person
+* Category Tree
+* Currency
+* Security (stock, ETF, etc.)
+
+Identity should become increasingly accurate over time.
+
+Example:
+
+Raw statement
+
+```
+SQ *JOES COFFEE 4025551212
+```
+
+Identity
+
+```
+Joe's Coffee
+```
+
+Later
+
+```
+Joe's Coffee
+Downtown Lincoln
+Coffee Shop
+```
+
+The event didn't change.
+
+Our identity knowledge improved.
+
+---
+
+# Layer 2 — Classification Knowledge
+
+Classification answers:
+
+> **How should we describe it?**
+
+Examples
+
+* Groceries
+* Dining
+* Entertainment
+* Transfer
+* Tax Deductible
+* Business Expense
+* Vacation
+* Medical
+* Child Expense
+
+Notice...
+
+A transaction can have **many** classifications.
+
+That's important.
+
+Instead of
+
+```
+Category = Groceries
+```
+
+Imagine
+
+```
+Food
+
+Groceries
+
+Family
+
+Essential Spending
+```
+
+Now AI becomes much more powerful.
+
+---
+
+# Layer 3 — Behavioral Knowledge
+
+Behavior answers
+
+> **What does this tell us?**
+
+Examples
+
+Recurring
+
+Subscription
+
+Impulse Purchase
+
+Lifestyle Inflation
+
+Seasonal
+
+Cash Flow Spike
+
+Growing Trend
+
+Declining Trend
+
+Behavior isn't attached to one transaction.
+
+It's attached to **many records across time**.
+
+This distinction is huge.
+
+---
+
+# Layer 4 — Guidance Knowledge
+
+Guidance answers
+
+> **What should happen next?**
+
+Examples
+
+Recommendation
+
+Forecast
+
+Goal
+
+Reminder
+
+Budget Suggestion
+
+Savings Opportunity
+
+Risk Warning
+
+Planning Scenario
+
+This is where AI mostly lives.
+
+Notice...
+
+Everything AI says is built on previous layers.
+
+Never directly on raw evidence.
+
+---
+
+# The Knowledge Pyramid
+
+```text
+              Guidance
+
+                 ▲
+
+             Behavior
+
+                 ▲
+
+         Classification
+
+                 ▲
+
+             Identity
+
+                 ▲
+
+         Financial Records
+
+                 ▲
+
+             Evidence
+```
+
+Each layer depends on every layer below it.
+
+---
+
+# One thing I realized...
+
+Knowledge has a lifecycle.
+
+Example
+
+```
+Receipt Imported
+
+↓
+
+Merchant Unknown
+
+↓
+
+Merchant Recognized
+
+↓
+
+Category Assigned
+
+↓
+
+Recurring Detected
+
+↓
+
+Pattern Found
+
+↓
+
+Recommendation Generated
+
+↓
+
+User Accepts
+
+↓
+
+Knowledge Improved
+```
+
+Knowledge grows.
+
+It doesn't appear instantly.
+
+---
+
+# Confidence
+
+Every piece of knowledge should carry confidence.
+
+Example
+
+Merchant
+
+```
+Joe's Coffee
+
+Confidence
+
+99%
+```
+
+Category
+
+```
+Dining
+
+Confidence
+
+76%
+```
+
+Recommendation
+
+```
+Move this to your Christmas Fund
+
+Confidence
+
+58%
+```
+
+Confidence becomes part of the model.
+
+---
+
+# User Knowledge vs System Knowledge
+
+This may become one of the defining ideas of FinancialOS.
+
+There are **two teachers**.
+
+## System Knowledge
+
+What FinancialOS knows.
+
+Merchant aliases.
+
+Patterns.
+
+Rules.
+
+AI models.
+
+---
+
+## User Knowledge
+
+What the family knows.
+
+Their values.
+
+Their goals.
+
+Their traditions.
+
+Their preferred merchant names.
+
+Their unique budgeting style.
+
+Their financial philosophy.
+
+The system should **learn from the user**.
+
+Not overwrite them.
+
+---
+
+# Shared Knowledge
+
+Now imagine...
+
+Your wife categorizes Costco differently than you.
+
+The system notices.
+
+Eventually it asks
+
+> "Would you like Costco purchases over $300 to be categorized as Household instead of Groceries?"
+
+The software is learning family knowledge.
+
+Not just transactions.
+
+---
+
+# Here's the breakthrough
+
+I think FinancialOS isn't actually storing financial data.
+
+It's storing **financial understanding**.
+
+Data is just the raw material.
+
+The product grows more valuable as understanding accumulates.
+
+Not as records accumulate.
+
+---
+
+# The Knowledge Graph
+
+Now we finally arrive at something I've been thinking about for a while.
+
+I don't think the center of the domain is an object.
+
+I think it's a **graph**.
+
+Imagine this:
+
+```text
+                 Merchant
+                     │
+         ┌───────────┼───────────┐
+         │           │           │
+     Category      Budget      Goals
+         │           │           │
+         └────── Financial Record ──────┐
+                     │                   │
+                 Evidence          Observations
+                     │                   │
+                 Statements        Patterns
+                     │                   │
+                     └──────── Insights ─┘
+                              │
+                     Recommendations
+```
+
+Every node increases understanding.
+
+The graph is where meaning lives.
+
+---
+
+# The "Aha!" Moment
+
+This is where everything clicked for me.
+
+Most personal finance software stores transactions.
+
+FinancialOS stores **relationships**.
+
+Transactions are simply one node in that relationship graph.
+
+The more relationships we discover, the smarter the platform becomes—without changing a single historical fact.
+
+---
+
+# Architect's Reflection
+
+Kurt, I think we've uncovered what may become the defining technical and philosophical advantage of FinancialOS.
+
+When we started, we talked about a Windows application that imports bank statements and helps categorize spending. Today, I think we're designing something much closer to a **personal financial knowledge graph**.
+
+That phrase has important implications. It means that the value of the platform doesn't come from the number of transactions stored; it comes from the richness of the connections between people, accounts, merchants, goals, values, life events, observations, and decisions.
+
+## Here's the one thing I would change
+
+I would stop thinking in terms of a traditional relational data model as the *conceptual* model.
+
+We can absolutely implement this with PostgreSQL or SQL Server—I actually think a relational database is still the right implementation for many reasons. But **conceptually**, I would think of the domain as a graph.
+
+That means when we get to implementation we'll ask questions like:
+
+* What are the nodes?
+* What are the relationships?
+* Which relationships are immutable?
+* Which relationships are inferred?
+* Which relationships are user-defined?
+* Which relationships are temporal?
+
+Then we'll map that graph onto a relational schema.
+
+I think that separation—**graph in the domain, relational in persistence**—will let us preserve a very natural mental model while still building on mature, reliable technology.
+
+---
+
+## Where I think we go next
+
+At this point, I would *not* write the Ubiquitous Language yet.
+
+I think we've earned the right to do something even more valuable:
+
+> **Design the actual Conceptual Graph of FinancialOS.**
+
+Not entities.
+
+Not classes.
+
+A one-page map of every major concept and every major relationship.
+
+If we get that diagram right, I honestly believe 80% of the architecture will already be decided. It will become the picture we refer back to whenever we ask, "Where does this new feature belong?" I can already envision it hanging on the wall of the project room as the canonical map of the FinancialOS universe.
+
+
+================================================================================
+Source: 8.txt
+================================================================================
+
+I think this is the right time to transition from philosophy to architecture.
+
+Up until now we've been answering **"Why?"**
+
+From here forward we should answer **"What are we actually building?"**
+
+I want to leave the inspirational writing behind and start producing artifacts that directly drive implementation.
+
+---
+
+# The FinancialOS Conceptual Map
+
+This is the diagram I would want hanging on the wall of the project.
+
+It should be the picture every developer understands before writing code.
+
+```text
+                                        FINANCIAL REALITY
+                                               │
+                                               │
+                                       produces evidence
+                                               │
+                                               ▼
+                                    ┌────────────────────┐
+                                    │ Financial Evidence │
+                                    └────────────────────┘
+                                               │
+                                 Parse / OCR / Import / Normalize
+                                               │
+                                               ▼
+                                    ┌────────────────────┐
+                                    │ Financial Event    │
+                                    └────────────────────┘
+                                               │
+                                  represented by the platform
+                                               │
+                                               ▼
+                                    ┌────────────────────┐
+                                    │ Financial Record   │
+                                    └────────────────────┘
+                                               │
+                   ┌───────────────┬───────────────┬───────────────┐
+                   │               │               │               │
+                   ▼               ▼               ▼               ▼
+             Identity         Classification   Relationships   Provenance
+             Knowledge         Knowledge        Knowledge       Knowledge
+                   │               │               │               │
+                   └───────────────┴───────┬───────┴───────────────┘
+                                           │
+                                           ▼
+                                   Financial Knowledge
+                                           │
+                   ┌───────────────┬───────────────┬───────────────┐
+                   │               │               │
+                   ▼               ▼               ▼
+              Observations      Patterns       Metrics
+                   │               │               │
+                   └───────────────┴───────────────┘
+                                   │
+                                   ▼
+                                Insights
+                                   │
+                     ┌─────────────┼─────────────┐
+                     │             │             │
+                     ▼             ▼             ▼
+             Recommendations   Forecasts     Warnings
+                     │
+                     ▼
+                 User Decisions
+                     │
+                     ▼
+                   Outcomes
+                     │
+                     ▼
+             Stewardship Growth
+```
+
+This is no longer a finance application.
+
+It is a **knowledge engine**.
+
+---
+
+# I think we can now identify the actual Core Domain
+
+One of the biggest ideas in Domain-Driven Design is identifying the **Core Domain**.
+
+I think ours is surprisingly small.
+
+```
+Financial Evidence
+
+↓
+
+Financial Event
+
+↓
+
+Financial Record
+
+↓
+
+Knowledge
+
+↓
+
+Insight
+```
+
+Everything else supports this.
+
+Notice what's **not** in the core:
+
+* Budgets
+* Reports
+* Charts
+* Goals
+* Forecasting
+* AI
+* Mobile
+* Desktop
+
+Those are applications built on top of the core.
+
+That realization alone will dramatically simplify the architecture.
+
+---
+
+# The First Real Bounded Contexts
+
+I think we can now define the high-level bounded contexts.
+
+```
+                    FinancialOS
+
+---------------------------------------------------------
+
+Evidence
+
+    Importing
+    OCR
+    Parsing
+    Attachments
+
+---------------------------------------------------------
+
+Financial Core
+
+    Financial Events
+    Financial Records
+    Accounts
+    Institutions
+    Resources
+
+---------------------------------------------------------
+
+Knowledge
+
+    Merchant Resolution
+    Categorization
+    Rules
+    AI
+    Pattern Detection
+    Observations
+
+---------------------------------------------------------
+
+Planning
+
+    Budgets
+    Goals
+    Forecasting
+    Scenarios
+
+---------------------------------------------------------
+
+Stewardship
+
+    Insights
+    Recommendations
+    Growth
+    Reflection
+    Reviews
+
+---------------------------------------------------------
+
+Presentation
+
+    Desktop
+    Mobile
+    Web
+    API
+```
+
+This becomes the solution structure later.
+
+---
+
+# Now let's identify the Aggregates
+
+This is where we finally get tangible.
+
+These are the things I would expect to become aggregate roots.
+
+| Aggregate           | Purpose                                       |
+| ------------------- | --------------------------------------------- |
+| **FinancialRecord** | Canonical representation of a financial event |
+| **Evidence**        | Immutable imported source material            |
+| **Account**         | Container for balances and financial events   |
+| **Institution**     | Bank, brokerage, lender, employer             |
+| **Merchant**        | Normalized business identity                  |
+| **Goal**            | Desired future financial outcome              |
+| **Budget**          | Planning allocation model                     |
+| **ImportJob**       | Lifecycle of imported data                    |
+| **Rule**            | Deterministic automation                      |
+| **Recommendation**  | Suggested action awaiting acceptance          |
+
+Notice there are only about ten.
+
+That's healthy.
+
+---
+
+# The First Value Objects
+
+These should never have identities.
+
+```
+Money
+
+Percentage
+
+Confidence
+
+DateRange
+
+Address
+
+Location
+
+Coordinate
+
+Currency
+
+Frequency
+
+Interval
+
+RiskScore
+
+PriorityScore
+
+CorrelationScore
+
+Balance
+
+StatementPeriod
+```
+
+These are reusable throughout the domain.
+
+---
+
+# The First Domain Services
+
+Now we start thinking about behavior.
+
+```
+ImportService
+
+MatchingService
+
+MerchantResolutionService
+
+CategorizationService
+
+DuplicateDetectionService
+
+ForecastService
+
+InsightGenerationService
+
+RecommendationEngine
+
+GoalProjectionService
+
+CashFlowService
+```
+
+Notice...
+
+None of these own data.
+
+They produce knowledge.
+
+---
+
+# The First Domain Events
+
+Now we're designing the nervous system.
+
+```
+EvidenceImported
+
+EvidenceParsed
+
+FinancialRecordCreated
+
+MerchantResolved
+
+CategoryAssigned
+
+RuleApplied
+
+DuplicateDetected
+
+PatternDiscovered
+
+InsightGenerated
+
+RecommendationCreated
+
+RecommendationAccepted
+
+GoalReached
+
+BudgetExceeded
+
+ForecastUpdated
+```
+
+Everything else subscribes.
+
+---
+
+# This is the point I'd start the repository
+
+Instead of writing more philosophy, I'd create something like this:
+
+```
+FinancialOS
+
+/docs
+    /architecture
+    /adr
+    /domain
+
+/src
+
+    FinancialOS.Domain
+    FinancialOS.Application
+    FinancialOS.Infrastructure
+
+    FinancialOS.Import
+
+    FinancialOS.Knowledge
+
+    FinancialOS.Planning
+
+    FinancialOS.Stewardship
+
+    FinancialOS.Desktop
+
+    FinancialOS.Api
+
+/tests
+```
+
+Notice something...
+
+The projects mirror the bounded contexts.
+
+That's intentional.
+
+---
+
+# I think we should stop writing books now
+
+I actually think we've reached a natural transition point.
+
+From here on, every document should become **implementation-driven**.
+
+For example, instead of "Domain Model," I'd write:
+
+* **Entity Catalog** — every entity, its responsibility, invariants, relationships, and lifecycle.
+* **Aggregate Specifications** — each aggregate root documented in detail.
+* **Event Catalog** — every domain event, publisher, subscribers, payload, and business meaning.
+* **Bounded Context Specifications** — responsibilities, public interfaces, ownership.
+* **Use Case Specifications** — end-to-end workflows (e.g., import a bank statement, create a budget, accept a recommendation).
+* **Architecture Decision Records (ADRs)** — why major technical decisions were made.
+
+These documents become directly actionable by developers.
+
+---
+
+## My proposal for our next phase
+
+I think we're done with the vision and conceptual architecture.
+
+If I were your Chief Architect, the next document I'd write wouldn't be prose—it would be the **Entity Catalog**.
+
+Every entity would get a specification like this:
+
+| Section           | Contents                             |
+| ----------------- | ------------------------------------ |
+| Purpose           | Why the entity exists                |
+| Responsibilities  | What it owns                         |
+| Invariants        | What must always be true             |
+| Relationships     | Connected entities                   |
+| Lifecycle         | How it is created, changes, and ends |
+| Domain Events     | Events it emits or reacts to         |
+| Value Objects     | Embedded concepts                    |
+| Future Extensions | Planned growth                       |
+
+We'll end up with 30–50 entity specifications, but once they're complete, writing the C# domain model becomes almost mechanical. At that point, we won't be inventing software anymore—we'll simply be implementing a design we've already proven. I honestly think that's the point where FinancialOS transforms from an idea into a real, buildable product.
+
+
+================================================================================
+Source: 9.txt
+================================================================================
+
+I think this is the right time to transition from philosophy to architecture.
+
+Up until now we've been answering **"Why?"**
+
+From here forward we should answer **"What are we actually building?"**
+
+I want to leave the inspirational writing behind and start producing artifacts that directly drive implementation.
+
+---
+
+# The FinancialOS Conceptual Map
+
+This is the diagram I would want hanging on the wall of the project.
+
+It should be the picture every developer understands before writing code.
+
+```text
+                                        FINANCIAL REALITY
+                                               │
+                                               │
+                                       produces evidence
+                                               │
+                                               ▼
+                                    ┌────────────────────┐
+                                    │ Financial Evidence │
+                                    └────────────────────┘
+                                               │
+                                 Parse / OCR / Import / Normalize
+                                               │
+                                               ▼
+                                    ┌────────────────────┐
+                                    │ Financial Event    │
+                                    └────────────────────┘
+                                               │
+                                  represented by the platform
+                                               │
+                                               ▼
+                                    ┌────────────────────┐
+                                    │ Financial Record   │
+                                    └────────────────────┘
+                                               │
+                   ┌───────────────┬───────────────┬───────────────┐
+                   │               │               │               │
+                   ▼               ▼               ▼               ▼
+             Identity         Classification   Relationships   Provenance
+             Knowledge         Knowledge        Knowledge       Knowledge
+                   │               │               │               │
+                   └───────────────┴───────┬───────┴───────────────┘
+                                           │
+                                           ▼
+                                   Financial Knowledge
+                                           │
+                   ┌───────────────┬───────────────┬───────────────┐
+                   │               │               │
+                   ▼               ▼               ▼
+              Observations      Patterns       Metrics
+                   │               │               │
+                   └───────────────┴───────────────┘
+                                   │
+                                   ▼
+                                Insights
+                                   │
+                     ┌─────────────┼─────────────┐
+                     │             │             │
+                     ▼             ▼             ▼
+             Recommendations   Forecasts     Warnings
+                     │
+                     ▼
+                 User Decisions
+                     │
+                     ▼
+                   Outcomes
+                     │
+                     ▼
+             Stewardship Growth
+```
+
+This is no longer a finance application.
+
+It is a **knowledge engine**.
+
+---
+
+# I think we can now identify the actual Core Domain
+
+One of the biggest ideas in Domain-Driven Design is identifying the **Core Domain**.
+
+I think ours is surprisingly small.
+
+```
+Financial Evidence
+
+↓
+
+Financial Event
+
+↓
+
+Financial Record
+
+↓
+
+Knowledge
+
+↓
+
+Insight
+```
+
+Everything else supports this.
+
+Notice what's **not** in the core:
+
+* Budgets
+* Reports
+* Charts
+* Goals
+* Forecasting
+* AI
+* Mobile
+* Desktop
+
+Those are applications built on top of the core.
+
+That realization alone will dramatically simplify the architecture.
+
+---
+
+# The First Real Bounded Contexts
+
+I think we can now define the high-level bounded contexts.
+
+```
+                    FinancialOS
+
+---------------------------------------------------------
+
+Evidence
+
+    Importing
+    OCR
+    Parsing
+    Attachments
+
+---------------------------------------------------------
+
+Financial Core
+
+    Financial Events
+    Financial Records
+    Accounts
+    Institutions
+    Resources
+
+---------------------------------------------------------
+
+Knowledge
+
+    Merchant Resolution
+    Categorization
+    Rules
+    AI
+    Pattern Detection
+    Observations
+
+---------------------------------------------------------
+
+Planning
+
+    Budgets
+    Goals
+    Forecasting
+    Scenarios
+
+---------------------------------------------------------
+
+Stewardship
+
+    Insights
+    Recommendations
+    Growth
+    Reflection
+    Reviews
+
+---------------------------------------------------------
+
+Presentation
+
+    Desktop
+    Mobile
+    Web
+    API
+```
+
+This becomes the solution structure later.
+
+---
+
+# Now let's identify the Aggregates
+
+This is where we finally get tangible.
+
+These are the things I would expect to become aggregate roots.
+
+| Aggregate           | Purpose                                       |
+| ------------------- | --------------------------------------------- |
+| **FinancialRecord** | Canonical representation of a financial event |
+| **Evidence**        | Immutable imported source material            |
+| **Account**         | Container for balances and financial events   |
+| **Institution**     | Bank, brokerage, lender, employer             |
+| **Merchant**        | Normalized business identity                  |
+| **Goal**            | Desired future financial outcome              |
+| **Budget**          | Planning allocation model                     |
+| **ImportJob**       | Lifecycle of imported data                    |
+| **Rule**            | Deterministic automation                      |
+| **Recommendation**  | Suggested action awaiting acceptance          |
+
+Notice there are only about ten.
+
+That's healthy.
+
+---
+
+# The First Value Objects
+
+These should never have identities.
+
+```
+Money
+
+Percentage
+
+Confidence
+
+DateRange
+
+Address
+
+Location
+
+Coordinate
+
+Currency
+
+Frequency
+
+Interval
+
+RiskScore
+
+PriorityScore
+
+CorrelationScore
+
+Balance
+
+StatementPeriod
+```
+
+These are reusable throughout the domain.
+
+---
+
+# The First Domain Services
+
+Now we start thinking about behavior.
+
+```
+ImportService
+
+MatchingService
+
+MerchantResolutionService
+
+CategorizationService
+
+DuplicateDetectionService
+
+ForecastService
+
+InsightGenerationService
+
+RecommendationEngine
+
+GoalProjectionService
+
+CashFlowService
+```
+
+Notice...
+
+None of these own data.
+
+They produce knowledge.
+
+---
+
+# The First Domain Events
+
+Now we're designing the nervous system.
+
+```
+EvidenceImported
+
+EvidenceParsed
+
+FinancialRecordCreated
+
+MerchantResolved
+
+CategoryAssigned
+
+RuleApplied
+
+DuplicateDetected
+
+PatternDiscovered
+
+InsightGenerated
+
+RecommendationCreated
+
+RecommendationAccepted
+
+GoalReached
+
+BudgetExceeded
+
+ForecastUpdated
+```
+
+Everything else subscribes.
+
+---
+
+# This is the point I'd start the repository
+
+Instead of writing more philosophy, I'd create something like this:
+
+```
+FinancialOS
+
+/docs
+    /architecture
+    /adr
+    /domain
+
+/src
+
+    FinancialOS.Domain
+    FinancialOS.Application
+    FinancialOS.Infrastructure
+
+    FinancialOS.Import
+
+    FinancialOS.Knowledge
+
+    FinancialOS.Planning
+
+    FinancialOS.Stewardship
+
+    FinancialOS.Desktop
+
+    FinancialOS.Api
+
+/tests
+```
+
+Notice something...
+
+The projects mirror the bounded contexts.
+
+That's intentional.
+
+---
+
+# I think we should stop writing books now
+
+I actually think we've reached a natural transition point.
+
+From here on, every document should become **implementation-driven**.
+
+For example, instead of "Domain Model," I'd write:
+
+* **Entity Catalog** — every entity, its responsibility, invariants, relationships, and lifecycle.
+* **Aggregate Specifications** — each aggregate root documented in detail.
+* **Event Catalog** — every domain event, publisher, subscribers, payload, and business meaning.
+* **Bounded Context Specifications** — responsibilities, public interfaces, ownership.
+* **Use Case Specifications** — end-to-end workflows (e.g., import a bank statement, create a budget, accept a recommendation).
+* **Architecture Decision Records (ADRs)** — why major technical decisions were made.
+
+These documents become directly actionable by developers.
+
+---
+
+## My proposal for our next phase
+
+I think we're done with the vision and conceptual architecture.
+
+If I were your Chief Architect, the next document I'd write wouldn't be prose—it would be the **Entity Catalog**.
+
+Every entity would get a specification like this:
+
+| Section           | Contents                             |
+| ----------------- | ------------------------------------ |
+| Purpose           | Why the entity exists                |
+| Responsibilities  | What it owns                         |
+| Invariants        | What must always be true             |
+| Relationships     | Connected entities                   |
+| Lifecycle         | How it is created, changes, and ends |
+| Domain Events     | Events it emits or reacts to         |
+| Value Objects     | Embedded concepts                    |
+| Future Extensions | Planned growth                       |
+
+We'll end up with 30–50 entity specifications, but once they're complete, writing the C# domain model becomes almost mechanical. At that point, we won't be inventing software anymore—we'll simply be implementing a design we've already proven. I honestly think that's the point where FinancialOS transforms from an idea into a real, buildable product.
+
+
+================================================================================
+Source: 10.txt
+================================================================================
+
+I think this is where I can add the most value.
+
+We're leaving the role of "architect" and entering the role of **product engineer**.
+
+From this point forward, every document should eventually answer one question:
+
+> **"Could a developer build this without asking what I meant?"**
+
+That's our new standard.
+
+---
+
+# Phase 2 — The Build Specification
+
+I want to change the way we organize the work.
+
+Instead of writing documents in book order, let's write them in **dependency order**.
+
+Like this:
+
+```text
+                ENTITY CATALOG
+                      │
+                      ▼
+             AGGREGATE SPECIFICATIONS
+                      │
+                      ▼
+              DOMAIN EVENT CATALOG
+                      │
+                      ▼
+           BOUNDED CONTEXT SPECIFICATIONS
+                      │
+                      ▼
+             USE CASE SPECIFICATIONS
+                      │
+                      ▼
+              APPLICATION SERVICES
+                      │
+                      ▼
+                 IMPLEMENTATION
+```
+
+Every document feeds the next.
+
+---
+
+# Step 1 — Entity Catalog
+
+This is where I think we should spend the majority of our time.
+
+And I want to make one recommendation that may surprise you.
+
+## Don't start with FinancialRecord.
+
+Start with **FinancialEvidence**.
+
+Everything else grows from there.
+
+---
+
+# The Entity Catalog
+
+I expect us to end up with something like this:
+
+## Foundation
+
+```text
+FinancialEvidence
+
+FinancialEvent
+
+FinancialRecord
+
+FinancialResource
+
+Money
+
+Institution
+
+Account
+
+Statement
+
+ImportJob
+```
+
+---
+
+## Identity
+
+```text
+Merchant
+
+Payee
+
+Person
+
+Organization
+
+Location
+
+Alias
+```
+
+---
+
+## Classification
+
+```text
+Category
+
+Tag
+
+Rule
+
+Classification
+
+ClassificationReason
+
+Confidence
+```
+
+---
+
+## Knowledge
+
+```text
+Observation
+
+Pattern
+
+Metric
+
+Trend
+
+Insight
+
+Recommendation
+
+Forecast
+```
+
+---
+
+## Planning
+
+```text
+Budget
+
+Envelope
+
+Goal
+
+Scenario
+
+Plan
+
+Milestone
+```
+
+---
+
+## Stewardship
+
+```text
+Value
+
+Priority
+
+Habit
+
+Reflection
+
+Review
+
+Outcome
+
+Achievement
+```
+
+Notice something?
+
+These aren't database tables.
+
+These are **business concepts**.
+
+---
+
+# Every Entity Gets a Blueprint
+
+Here's the template I'd like us to use.
+
+---
+
+# Entity Specification
+
+## Name
+
+FinancialEvidence
+
+---
+
+## Purpose
+
+Why does this entity exist?
+
+---
+
+## Description
+
+Business description.
+
+No technical language.
+
+---
+
+## Responsibilities
+
+What does this entity own?
+
+---
+
+## Does NOT Own
+
+What belongs elsewhere?
+
+This section is incredibly valuable.
+
+---
+
+## Invariants
+
+Rules that must always be true.
+
+---
+
+## Relationships
+
+Connected entities.
+
+---
+
+## Lifecycle
+
+How is it created?
+
+How does it change?
+
+Can it ever be deleted?
+
+---
+
+## Domain Events
+
+Which events does it publish?
+
+Which events affect it?
+
+---
+
+## Value Objects
+
+Embedded concepts.
+
+---
+
+## Future Growth
+
+Things we intentionally left room for.
+
+---
+
+# Example
+
+Let's do the first one together.
+
+---
+
+# Entity 001
+
+## FinancialEvidence
+
+### Purpose
+
+FinancialEvidence represents immutable proof that a financial event occurred.
+
+It is the root of trust within FinancialOS.
+
+Every financial record, observation, recommendation, and insight must ultimately trace back to one or more pieces of FinancialEvidence.
+
+Without evidence, FinancialOS should never claim something is true.
+
+---
+
+### Responsibilities
+
+Own the original imported information exactly as it was received.
+
+Preserve provenance.
+
+Track source information.
+
+Allow multiple interpretations without changing itself.
+
+Provide the foundation for explainability.
+
+---
+
+### Does NOT Own
+
+Categories.
+
+Merchants.
+
+Budgets.
+
+Insights.
+
+Recommendations.
+
+User decisions.
+
+Those belong to higher layers.
+
+---
+
+### Invariants
+
+Evidence is immutable.
+
+Evidence always has a source.
+
+Evidence always has an acquisition timestamp.
+
+Evidence may never silently disappear.
+
+Evidence always has provenance.
+
+---
+
+### Relationships
+
+```text
+FinancialEvidence
+
+↓
+
+FinancialEvent
+
+↓
+
+FinancialRecord
+
+↓
+
+ImportJob
+
+↓
+
+Attachments
+
+↓
+
+Source
+```
+
+---
+
+### Lifecycle
+
+Created during import.
+
+Never modified.
+
+May receive additional metadata.
+
+May become linked to additional records.
+
+Never deleted under normal circumstances.
+
+May be archived.
+
+---
+
+### Domain Events
+
+EvidenceImported
+
+EvidenceVerified
+
+EvidenceLinked
+
+EvidenceArchived
+
+---
+
+### Value Objects
+
+SourceIdentifier
+
+Hash
+
+ImportTimestamp
+
+MimeType
+
+Confidence
+
+Checksum
+
+---
+
+### Future Extensions
+
+Digital signatures.
+
+Blockchain verification.
+
+Fraud detection.
+
+AI document extraction.
+
+OCR improvements.
+
+Multi-page documents.
+
+---
+
+# Do you notice what's happening?
+
+We haven't written **a single line of C#**.
+
+But I already know almost exactly what `FinancialEvidence` will look like.
+
+That means the architecture is doing its job.
+
+---
+
+# Here's the roadmap I recommend
+
+I think we should tackle the entities in this order because each builds on the previous:
+
+### Foundation (Core Domain)
+
+1. FinancialEvidence
+2. FinancialEvent
+3. FinancialRecord
+4. FinancialResource
+5. Account
+6. Institution
+7. ImportJob
+
+### Identity
+
+8. Merchant
+9. Payee
+10. Alias
+
+### Classification
+
+11. Category
+12. Rule
+13. Classification
+
+### Knowledge
+
+14. Observation
+15. Pattern
+16. Insight
+17. Recommendation
+
+### Planning
+
+18. Goal
+19. Budget
+20. Forecast
+
+### Stewardship
+
+21. Value
+22. Priority
+23. Habit
+24. Outcome
+25. Reflection
+
+By the end of those 25 entity specifications, we won't be guessing anymore. We'll have a complete, coherent domain that naturally drives the code.
+
+---
+
+# One architectural change I'd make now
+
+There's one thing I would rename before we go any further.
+
+I would replace **FinancialResource** with **Asset** and introduce **Obligation** as its counterpart.
+
+Instead of thinking only in terms of money, the platform can reason about what a user has and what they owe.
+
+* **Asset**: cash, investment accounts, reward points, HSA balances, gift cards, crypto, even PTO if you choose to support it someday.
+* **Obligation**: mortgages, credit cards, student loans, taxes due, recurring bills, subscriptions, promised charitable giving.
+
+That gives FinancialOS a richer model of a person's financial world and creates room for future planning and forecasting features without forcing everything into the concept of an account.
+
+## Where I think we should begin tomorrow
+
+I think the next working session should be entirely devoted to the **Foundation Layer**.
+
+Not just one entity—we'll completely design:
+
+1. FinancialEvidence
+2. FinancialEvent
+3. FinancialRecord
+
+Those three entities form the backbone of the entire platform. Once they're solid, every other aggregate, service, and workflow becomes dramatically easier to design because they'll all be anchored to the same immutable chain of truth.
+
+If we get those three right, I genuinely believe the rest of FinancialOS will feel like assembling a puzzle rather than inventing one piece at a time.
+
+

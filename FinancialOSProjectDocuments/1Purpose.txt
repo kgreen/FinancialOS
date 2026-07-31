@@ -1,13 +1,55 @@
-Volume I — Purpose
-Chapter 1
-Vision & Philosophy
-1.1 Executive Summary
+I am all in.
+
+I also want to make one commitment before we start.
+
+**I'm going to write these as if they were going to be published internally at a company like Microsoft or Amazon.**
+
+Not marketing material.
+Not fluff.
+Not academic.
+
+They should answer one question:
+
+> **"If this project outlives us, will the next team understand exactly what we were trying to build?"**
+
+I also think these should have version numbers.
+
+```
+FinancialOS Architecture Specification
+
+Version 0.1
+
+Author:
+Kurt Green
+
+Architecture Advisor:
+OpenAI ChatGPT
+
+Status:
+Draft
+```
+
+Eventually these become v1.0.
+
+---
+
+# Volume I — Purpose
+
+---
+
+# Chapter 1
+
+# Vision & Philosophy
+
+---
+
+## 1.1 Executive Summary
 
 FinancialOS is a platform designed to help individuals and families better understand, manage, and improve their financial lives.
 
 Unlike traditional personal finance software, FinancialOS is not centered around budgets, bank accounts, or transactions.
 
-It is centered around understanding financial behavior.
+It is centered around **understanding financial behavior**.
 
 The platform collects financial evidence from many sources, transforms that evidence into reliable financial knowledge, discovers meaningful patterns, and produces practical recommendations that help users make wiser financial decisions.
 
@@ -15,16 +57,18 @@ The ultimate purpose of FinancialOS is not to organize money.
 
 Its purpose is to help people become better stewards of the resources entrusted to them.
 
-1.2 The Problem
+---
+
+## 1.2 The Problem
 
 Modern financial software generally answers questions about the past.
 
 Examples include:
 
-How much did I spend?
-What is my account balance?
-Which category had the highest expenses?
-Did I stay within my budget?
+* How much did I spend?
+* What is my account balance?
+* Which category had the highest expenses?
+* Did I stay within my budget?
 
 While useful, these questions describe financial activity rather than explain financial behavior.
 
@@ -34,19 +78,25 @@ Current software tends to emphasize bookkeeping rather than understanding.
 
 FinancialOS exists to bridge that gap.
 
-1.3 Vision Statement
+---
 
-FinancialOS transforms financial evidence into understanding, enabling people to make financial decisions that align with their values, reduce stress, and build long-term financial confidence.
+## 1.3 Vision Statement
+
+> **FinancialOS transforms financial evidence into understanding, enabling people to make financial decisions that align with their values, reduce stress, and build long-term financial confidence.**
 
 FinancialOS is intended to become the trusted source of financial truth for an individual or family.
 
 Rather than simply recording history, it helps explain history, discover patterns, and guide future decisions.
 
-1.4 Mission Statement
+---
+
+## 1.4 Mission Statement
 
 To create a Financial Operating System that transforms financial evidence into actionable insight, empowering individuals and families to become better stewards of their resources and pursue lives with greater financial confidence and less stress.
 
-1.5 Our Definition of Stewardship
+---
+
+## 1.5 Our Definition of Stewardship
 
 Stewardship is the intentional management of financial resources in a way that aligns daily decisions with long-term priorities and personal values.
 
@@ -56,34 +106,38 @@ The objective of FinancialOS is not to maximize income or minimize spending.
 
 Its objective is to help users understand whether their financial decisions consistently support the life they are trying to build.
 
-1.6 The Core Question
+---
+
+## 1.6 The Core Question
 
 Traditional financial software asks:
 
-"Where did my money go?"
+> "Where did my money go?"
 
 FinancialOS asks:
 
-"What is my money helping me become?"
+> "What is my money helping me become?"
 
 That single question drives every design decision in the platform.
 
-1.7 Financial Evidence
+---
+
+## 1.7 Financial Evidence
 
 FinancialOS views every piece of financial information as evidence.
 
 Examples include:
 
-Bank statements
-Credit card transactions
-Receipts
-Invoices
-Paychecks
-Tax documents
-Investment statements
-Utility bills
-Insurance documents
-Manual entries
+* Bank statements
+* Credit card transactions
+* Receipts
+* Invoices
+* Paychecks
+* Tax documents
+* Investment statements
+* Utility bills
+* Insurance documents
+* Manual entries
 
 Evidence represents observable facts.
 
@@ -91,10 +145,13 @@ Evidence never changes.
 
 Only our understanding of that evidence changes.
 
-1.8 The Financial Knowledge Pipeline
+---
+
+## 1.8 The Financial Knowledge Pipeline
 
 FinancialOS transforms information through progressive stages of understanding.
 
+```
 Financial Evidence
         │
         ▼
@@ -120,6 +177,7 @@ Decision
         │
         ▼
 Outcome
+```
 
 Each stage increases understanding while preserving every fact collected before it.
 
@@ -129,7 +187,9 @@ Knowledge evolves.
 
 Wisdom grows.
 
-1.9 What Makes FinancialOS Different
+---
+
+## 1.9 What Makes FinancialOS Different
 
 FinancialOS is not designed around budgeting.
 
@@ -149,7 +209,9 @@ Technology should reduce stress rather than increase complexity.
 
 Financial progress should be measured against personal values instead of other people.
 
-1.10 Long-Term Vision
+---
+
+## 1.10 Long-Term Vision
 
 The long-term vision of FinancialOS is to become a lifelong financial companion.
 
@@ -157,36 +219,40 @@ The platform should grow alongside its users, learning from decades of financial
 
 Over time FinancialOS should become capable of answering questions such as:
 
-What financial habits have improved over the last five years?
-Which expenses consistently provide the greatest long-term value?
-Which recurring decisions create the most financial stress?
-What financial behaviors best predict future success?
-Which goals are receiving the most consistent investment?
-How has my financial story changed over time?
+* What financial habits have improved over the last five years?
+* Which expenses consistently provide the greatest long-term value?
+* Which recurring decisions create the most financial stress?
+* What financial behaviors best predict future success?
+* Which goals are receiving the most consistent investment?
+* How has my financial story changed over time?
 
 These answers should emerge naturally from accumulated financial knowledge rather than requiring manual analysis.
 
-1.11 Success Criteria
+---
+
+## 1.11 Success Criteria
 
 FinancialOS succeeds when users:
 
-Trust the platform as their single source of financial truth.
-Spend less time organizing finances and more time understanding them.
-Recognize behavioral patterns that were previously invisible.
-Make decisions with greater confidence.
-Experience reduced financial stress.
-Align spending more closely with their personal priorities.
-Demonstrate measurable improvement in long-term financial stewardship.
+* Trust the platform as their single source of financial truth.
+* Spend less time organizing finances and more time understanding them.
+* Recognize behavioral patterns that were previously invisible.
+* Make decisions with greater confidence.
+* Experience reduced financial stress.
+* Align spending more closely with their personal priorities.
+* Demonstrate measurable improvement in long-term financial stewardship.
 
 Success is not measured by the number of features implemented.
 
 Success is measured by meaningful improvements in users' financial lives.
 
-1.12 Vision Statement for Developers
+---
+
+## 1.12 Vision Statement for Developers
 
 Every feature should ultimately answer one question:
 
-How does this help someone become a better steward?
+> **How does this help someone become a better steward?**
 
 If a proposed feature cannot clearly answer that question, it should be reconsidered.
 
@@ -194,17 +260,19 @@ The purpose of FinancialOS is not to build better reports.
 
 The purpose of FinancialOS is to help people build better financial lives.
 
-Architect's Notes
+---
+
+# Architect's Notes
 
 I want to pause here and point out something I noticed while writing this.
 
-When we first started talking, I naturally gravitated toward the term Financial Operating System because it sounded like a strong architectural metaphor. But after putting these ideas into a cohesive vision, I think it's become something more specific.
+When we first started talking, I naturally gravitated toward the term **Financial Operating System** because it sounded like a strong architectural metaphor. But after putting these ideas into a cohesive vision, I think it's become something more specific.
 
 An operating system manages resources, coordinates services, and provides a foundation that applications build upon. FinancialOS should do the same—not just for software modules, but for financial understanding itself. It provides the core "kernel" of financial truth, and budgeting, forecasting, AI, reporting, planning, and even future mobile or web experiences become services that build on that kernel rather than owning the data.
 
 I also think we've identified something that should become one of the platform's defining principles:
 
-Facts are permanent. Understanding evolves. Wisdom grows.
+> **Facts are permanent. Understanding evolves. Wisdom grows.**
 
 That simple progression captures the philosophy behind the entire system. Facts come from evidence and should never be rewritten. Understanding improves as records are classified, normalized, and connected. Wisdom emerges from patterns, insights, and recommendations that help people make better decisions over time.
 

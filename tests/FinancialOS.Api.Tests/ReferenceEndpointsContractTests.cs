@@ -117,7 +117,12 @@ public sealed class ReferenceEndpointsContractTests : IClassFixture<WebApplicati
         using (var scope = _factory.Services.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<FinancialOsDbContext>();
-            var rule = new Rule { Id = Guid.NewGuid(), Name = "Merchant Match", MatchExpression = "merchant contains.*" };
+            var rule = new Rule
+            {
+                Id = Guid.NewGuid(),
+                Name = $"Merchant Match {Guid.NewGuid():N}",
+                MatchExpression = "merchant contains.*"
+            };
             dbContext.Rules.Add(rule);
             await dbContext.SaveChangesAsync();
         }

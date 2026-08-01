@@ -104,7 +104,7 @@ public static class DatabaseConfiguration
                 });
             }
 
-            if (!await context.Categories.AnyAsync(item => item.Id == seededCategoryId))
+            if (!await context.Categories.AnyAsync(item => item.Name == "Housing"))
             {
                 context.Categories.Add(new FinancialOS.Core.Models.Category
                 {
@@ -122,7 +122,7 @@ public static class DatabaseConfiguration
                 }
             }
 
-            if (!await context.Merchants.AnyAsync(item => item.Id == seededMerchantId))
+            if (!await context.Merchants.AnyAsync(item => item.Name == "Contoso Market"))
             {
                 context.Merchants.Add(new FinancialOS.Core.Models.Merchant
                 {
@@ -131,13 +131,59 @@ public static class DatabaseConfiguration
                 });
             }
 
-            if (!await context.Rules.AnyAsync(item => item.Id == seededRuleId))
+            if (!await context.Rules.AnyAsync(item => item.Name == "Default Merchant Rule"))
             {
                 context.Rules.Add(new FinancialOS.Core.Models.Rule
                 {
                     Id = seededRuleId,
                     Name = "Default Merchant Rule",
                     MatchExpression = "merchant contains market"
+                });
+            }
+
+            var seededCanonicalMerchantId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+            var seededAliasId = Guid.Parse("66666666-6666-6666-6666-666666666666");
+            var seededClassificationRuleId = Guid.Parse("77777777-7777-7777-7777-777777777777");
+
+            if (!await context.CanonicalMerchants.AnyAsync(item => item.NormalizedKey == "contoso-market"))
+            {
+                context.CanonicalMerchants.Add(new FinancialOS.Core.Models.CanonicalMerchant
+                {
+                    Id = seededCanonicalMerchantId,
+                    DisplayName = "Contoso Market",
+                    NormalizedKey = "contoso-market",
+                    DefaultCategoryId = seededCategoryId,
+                    IsActive = true
+                });
+            }
+
+            if (!await context.MerchantAliases.AnyAsync(item => item.CanonicalMerchantId == seededCanonicalMerchantId && item.AliasNormalizedText == "contoso market"))
+            {
+                context.MerchantAliases.Add(new FinancialOS.Core.Models.MerchantAliasMap
+                {
+                    Id = seededAliasId,
+                    CanonicalMerchantId = seededCanonicalMerchantId,
+                    AliasRawText = "Contoso Market",
+                    AliasNormalizedText = "contoso market",
+                    MatchStrategy = FinancialOS.Core.Models.AliasMatchStrategy.Contains,
+                    ConfidenceWeight = 0.95m,
+                    IsActive = true
+                });
+            }
+
+            if (!await context.ClassificationRules.AnyAsync(item => item.Name == "Contoso Market Rule"))
+            {
+                context.ClassificationRules.Add(new FinancialOS.Core.Models.ClassificationRule
+                {
+                    Id = seededClassificationRuleId,
+                    Name = "Contoso Market Rule",
+                    Status = FinancialOS.Core.Models.RuleStatus.Active,
+                    Priority = 100,
+                    Scope = FinancialOS.Core.Models.RuleScope.Global,
+                    ConditionJson = "{\"merchantContains\":\"contoso\"}",
+                    TargetMerchantId = seededCanonicalMerchantId,
+                    TargetCategoryId = seededCategoryId,
+                    EffectiveFromUtc = DateTimeOffset.UtcNow
                 });
             }
             

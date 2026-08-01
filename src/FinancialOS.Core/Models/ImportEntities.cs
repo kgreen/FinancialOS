@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace FinancialOS.Core.Models;
 
 public enum AmountLayout

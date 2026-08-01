@@ -389,10 +389,14 @@ public sealed class FinancialOsDbContext : DbContext
     {
         foreach (var entity in modelBuilder.Model.GetEntityTypes())
         {
-            var deleteStrategy = DeleteBehavior.Cascade;
             foreach (var relationship in entity.GetForeignKeys())
             {
-                relationship.DeleteBehavior = deleteStrategy;
+                // Required FKs cascade (e.g. FinancialRecord → Evidence).
+                // Optional FKs restrict to prevent accidental deletion of audit/provenance data;
+                // normal soft-delete patterns handle removal at the application layer.
+                relationship.DeleteBehavior = relationship.IsRequired
+                    ? DeleteBehavior.Cascade
+                    : DeleteBehavior.Restrict;
             }
         }
     }

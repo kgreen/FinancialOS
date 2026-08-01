@@ -1,6 +1,4 @@
 // Import DTOs — populated in Phase 2
-using System.Text.Json.Serialization;
-
 namespace FinancialOS.Shared.Contracts;
 
 public sealed record CreateInstitutionProfileRequest(

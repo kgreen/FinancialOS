@@ -39,12 +39,14 @@ public sealed class ImportOrchestrationService : IImportOrchestrationService
         {
             ".ofx" or ".qfx" => EvidenceSourceType.Ofx,
             ".csv" => EvidenceSourceType.Csv,
-            _ => throw new OfxFormatException($"File format '{ext}' is not supported. Supported formats: .csv, .ofx, .qfx")
+            _ => throw new EvidenceImportValidationException(
+                $"File format '{ext}' is not supported. Supported formats: .csv, .ofx, .qfx", 422)
         };
 
         // 2. Reject unsupported extensions
         var parser = _parsers.FirstOrDefault(p => p.CanParse(fileName, sourceType))
-            ?? throw new OfxFormatException($"File format '{ext}' is not supported. Supported formats: .csv, .ofx, .qfx");
+            ?? throw new EvidenceImportValidationException(
+                $"File format '{ext}' is not supported. Supported formats: .csv, .ofx, .qfx", 422);
 
         // 3. File-level validation, storage, and SHA256 deduplication
         var evidenceImport = await _evidenceImportService.ImportAsync(fileName, fileStream, cancellationToken);

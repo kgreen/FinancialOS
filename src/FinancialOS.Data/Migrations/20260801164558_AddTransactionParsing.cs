@@ -92,7 +92,7 @@ namespace FinancialOS.Data.Migrations
                         column: x => x.InstitutionProfileId,
                         principalTable: "InstitutionProfiles",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(

@@ -92,12 +92,10 @@ public sealed class EvidenceImportService
         {
             File.Delete(destinationPath);
             var existingJob = await _repository.GetImportJobByEvidenceIdAsync(existingEvidence.Id, cancellationToken);
-            if (existingJob is not null)
-            {
-                return new EvidenceImportResult(existingEvidence, existingEvidence.StoragePath, totalBytes, true, existingJob);
-            }
-
-            return new EvidenceImportResult(existingEvidence, existingEvidence.StoragePath, totalBytes, false, null);
+            // Always mark as duplicate when evidence already exists — regardless of whether a prior job
+            // was found. The orchestrator will short-circuit if a job exists, or create a new job against
+            // the already-stored evidence if none exists (e.g. a previous import failed before job creation).
+            return new EvidenceImportResult(existingEvidence, existingEvidence.StoragePath, totalBytes, true, existingJob);
         }
 
         var evidence = new FinancialEvidence

@@ -21,9 +21,14 @@ public sealed record Money(decimal Amount, string Currency)
     public static Money Zero(string currency = "USD") => new(0m, currency);
 }
 
-public sealed record Confidence(decimal Score)
+public sealed record Confidence
 {
-    public decimal Score { get; init; } = Math.Clamp(Score, 0m, 1m);
+    public decimal Score { get; init; }
+
+    public Confidence(decimal score)
+    {
+        Score = Math.Clamp(score, 0m, 1m);
+    }
 }
 
 public sealed record Provenance(string Source, string RuleName, string? AlgorithmVersion = null);

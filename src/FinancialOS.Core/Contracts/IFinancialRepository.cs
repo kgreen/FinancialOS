@@ -17,4 +17,8 @@ public interface IFinancialRepository
     Task<IReadOnlyList<Category>> ListCategoriesAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Merchant>> ListMerchantsAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Rule>> ListRulesAsync(CancellationToken cancellationToken = default);
+
+    Task<PlanningScenario> AddPlanningScenarioAsync(PlanningScenario scenario, CancellationToken cancellationToken = default);
+    Task<PlanningScenario?> GetPlanningScenarioAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<PlanningScenario>> ListPlanningScenariosAsync(CancellationToken cancellationToken = default);
 }

@@ -11,7 +11,7 @@ public sealed class EvidenceImportService
         ArgumentNullException.ThrowIfNull(inputStream);
 
         var evidenceId = Guid.NewGuid();
-        var uploadsDirectory = Path.Combine(AppContext.BaseDirectory, "uploads");
+        var uploadsDirectory = Path.Combine(Path.GetTempPath(), "financialos", "uploads");
         Directory.CreateDirectory(uploadsDirectory);
         var destinationPath = Path.Combine(uploadsDirectory, $"{evidenceId:N}{Path.GetExtension(fileName)}");
 

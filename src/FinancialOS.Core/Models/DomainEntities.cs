@@ -79,3 +79,14 @@ public sealed class Rule
     public string Name { get; set; } = string.Empty;
     public string MatchExpression { get; set; } = string.Empty;
 }
+
+public sealed class PlanningScenario
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public decimal? TargetAmount { get; set; }
+    public string Currency { get; set; } = "USD";
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public List<Guid> RelatedRecordIds { get; set; } = new();
+}

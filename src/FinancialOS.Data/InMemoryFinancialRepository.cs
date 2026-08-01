@@ -11,6 +11,7 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
     private readonly List<Category> _categories = new();
     private readonly List<Merchant> _merchants = new();
     private readonly List<Rule> _rules = new();
+    private readonly Dictionary<Guid, PlanningScenario> _planningScenarios = new();
 
     public InMemoryFinancialRepository()
     {
@@ -81,5 +82,24 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
     public Task<IReadOnlyList<Rule>> ListRulesAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<Rule>>(_rules.ToList());
+    }
+
+    public Task<PlanningScenario> AddPlanningScenarioAsync(PlanningScenario scenario, CancellationToken cancellationToken = default)
+    {
+        scenario.Id = scenario.Id == Guid.Empty ? Guid.NewGuid() : scenario.Id;
+        scenario.CreatedAt = scenario.CreatedAt == default ? DateTimeOffset.UtcNow : scenario.CreatedAt;
+        _planningScenarios[scenario.Id] = scenario;
+        return Task.FromResult(scenario);
+    }
+
+    public Task<PlanningScenario?> GetPlanningScenarioAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        _planningScenarios.TryGetValue(id, out var scenario);
+        return Task.FromResult(scenario);
+    }
+
+    public Task<IReadOnlyList<PlanningScenario>> ListPlanningScenariosAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<PlanningScenario>>(_planningScenarios.Values.OrderByDescending(item => item.CreatedAt).ToList());
     }
 }

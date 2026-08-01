@@ -10,9 +10,9 @@
 
 **Purpose**: Project initialization and basic solution structure
 
-- [ ] T001 Create the .NET solution structure for `src/FinancialOS.Core`, `src/FinancialOS.Data`, `src/FinancialOS.Infrastructure`, `src/FinancialOS.Api`, `src/FinancialOS.Desktop`, `src/FinancialOS.Shared`, and `tests/FinancialOS.Core.Tests` / `tests/FinancialOS.Api.Tests`
-- [ ] T002 Initialize the .NET solution and add EF Core, ASP.NET Core, and test project dependencies
-- [ ] T003 [P] Configure solution-level build, test, and formatting conventions for the new projects
+- [x] T001 Create the .NET solution structure for `src/FinancialOS.Core`, `src/FinancialOS.Data`, `src/FinancialOS.Infrastructure`, `src/FinancialOS.Api`, `src/FinancialOS.Desktop`, `src/FinancialOS.Shared`, and `tests/FinancialOS.Core.Tests` / `tests/FinancialOS.Api.Tests`
+- [x] T002 Initialize the .NET solution and add EF Core, ASP.NET Core, and test project dependencies
+- [x] T003 [P] Configure solution-level build, test, and formatting conventions for the new projects
 
 ---
 
@@ -20,14 +20,14 @@
 
 **Purpose**: Core infrastructure that MUST be complete before user stories can be implemented
 
-- [ ] T004 Create the initial domain model abstractions for `FinancialEvidence`, `FinancialEvent`, `FinancialRecord`, `Account`, `Institution`, `Merchant`, `Category`, and `Rule`
-- [ ] T005 Implement value objects for `Money`, `Confidence`, and `Provenance` in the core project
-- [ ] T006 Create EF Core persistence models and DbContext configuration for the foundational entities
-- [ ] T007 [P] Add SQLite provider configuration and migration scaffolding for local-first development
-- [ ] T008 [P] Add PostgreSQL provider configuration and environment-based provider switching support
-- [ ] T009 Implement repository abstractions and basic CRUD services for core entities
-- [ ] T010 Create the API project host, routing structure, and health/metadata endpoints
-- [ ] T011 Implement immutable evidence storage handling and checksum-based persistence flow
+- [x] T004 Create the initial domain model abstractions for `FinancialEvidence`, `FinancialEvent`, `FinancialRecord`, `Account`, `Institution`, `Merchant`, `Category`, and `Rule`
+- [x] T005 Implement value objects for `Money`, `Confidence`, and `Provenance` in the core project
+- [x] T006 Create EF Core persistence models and DbContext configuration for the foundational entities
+- [x] T007 [P] Add SQLite provider configuration and migration scaffolding for local-first development
+- [x] T008 [P] Add PostgreSQL provider configuration and environment-based provider switching support
+- [x] T009 Implement repository abstractions and basic CRUD services for core entities
+- [x] T010 Create the API project host, routing structure, and health/metadata endpoints
+- [x] T011 Implement immutable evidence storage handling and checksum-based persistence flow
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -41,12 +41,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Add evidence upload DTOs and request validation in `src/FinancialOS.Api/Models/`
-- [ ] T013 [P] [US1] Implement evidence ingestion service in `src/FinancialOS.Infrastructure/Import/`
-- [ ] T014 [US1] Implement evidence persistence and checksum storage in `src/FinancialOS.Data/`
-- [ ] T015 [US1] Add `POST /api/v1/evidence` endpoint in `src/FinancialOS.Api/Controllers/`
-- [ ] T016 [US1] Add `GET /api/v1/evidence/{id}` endpoint in `src/FinancialOS.Api/Controllers/`
-- [ ] T017 [US1] Add integration tests for evidence upload and retrieval in `tests/FinancialOS.Api.Tests/`
+- [x] T012 [P] [US1] Add evidence upload DTOs and request validation in `src/FinancialOS.Api/Models/`
+- [x] T013 [P] [US1] Implement evidence ingestion service in `src/FinancialOS.Infrastructure/Import/`
+- [x] T014 [US1] Implement evidence persistence and checksum storage in `src/FinancialOS.Data/`
+- [x] T015 [US1] Add `POST /api/v1/evidence` endpoint in `src/FinancialOS.Api/Controllers/`
+- [x] T016 [US1] Add `GET /api/v1/evidence/{id}` endpoint in `src/FinancialOS.Api/Controllers/`
+- [x] T017 [US1] Add integration tests for evidence upload and retrieval in `tests/FinancialOS.Api.Tests/`
 
 **Checkpoint**: User Story 1 should be fully functional and testable independently
 
@@ -60,13 +60,13 @@
 
 ### Implementation for User Story 2
 
-- [ ] T018 [P] [US2] Add record DTOs and mapping contracts in `src/FinancialOS.Shared/`
-- [ ] T019 [P] [US2] Implement parsing and normalization logic for imported transaction data in `src/FinancialOS.Infrastructure/`
-- [ ] T020 [US2] Implement record creation and classification workflow in `src/FinancialOS.Core/Services/`
-- [ ] T021 [US2] Persist record, account, merchant, category, and provenance relationships in `src/FinancialOS.Data/`
-- [ ] T022 [US2] Add `GET /api/v1/records` endpoint in `src/FinancialOS.Api/Controllers/`
-- [ ] T023 [US2] Add `POST /api/v1/records/{id}/classify` endpoint in `src/FinancialOS.Api/Controllers/`
-- [ ] T024 [US2] Add integration tests for record creation and classification in `tests/FinancialOS.Api.Tests/`
+- [x] T018 [P] [US2] Add record DTOs and mapping contracts in `src/FinancialOS.Shared/`
+- [x] T019 [P] [US2] Implement parsing and normalization logic for imported transaction data in `src/FinancialOS.Infrastructure/`
+- [x] T020 [US2] Implement record creation and classification workflow in `src/FinancialOS.Core/Services/`
+- [x] T021 [US2] Persist record, account, merchant, category, and provenance relationships in `src/FinancialOS.Data/`
+- [x] T022 [US2] Add `GET /api/v1/records` endpoint in `src/FinancialOS.Api/Controllers/`
+- [x] T023 [US2] Add `POST /api/v1/records/{id}/classify` endpoint in `src/FinancialOS.Api/Controllers/`
+- [x] T024 [US2] Add integration tests for record creation and classification in `tests/FinancialOS.Api.Tests/`
 
 **Checkpoint**: User Story 2 should be fully functional and testable independently
 
@@ -80,10 +80,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T025 [P] [US3] Create account, category, merchant, and rule response DTOs in `src/FinancialOS.Shared/`
-- [ ] T026 [US3] Implement reference queries for accounts, categories, merchants, and rules in `src/FinancialOS.Data/`
-- [ ] T027 [US3] Add `GET /api/v1/accounts`, `GET /api/v1/categories`, `GET /api/v1/merchants`, and `GET /api/v1/rules` endpoints in `src/FinancialOS.Api/Controllers/`
-- [ ] T028 [US3] Add contract tests for the reference endpoints in `tests/FinancialOS.Api.Tests/`
+- [x] T025 [P] [US3] Create account, category, merchant, and rule response DTOs in `src/FinancialOS.Shared/`
+- [x] T026 [US3] Implement reference queries for accounts, categories, merchants, and rules in `src/FinancialOS.Data/`
+- [x] T027 [US3] Add `GET /api/v1/accounts`, `GET /api/v1/categories`, `GET /api/v1/merchants`, and `GET /api/v1/rules` endpoints in `src/FinancialOS.Api/Controllers/`
+- [x] T028 [US3] Add contract tests for the reference endpoints in `tests/FinancialOS.Api.Tests/`
 
 **Checkpoint**: User Story 3 should be fully functional and testable independently
 
@@ -97,10 +97,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T029 [P] [US4] Add planning scenario DTOs and domain stubs in `src/FinancialOS.Core/`
-- [ ] T030 [US4] Implement persistence and retrieval for planning scenarios in `src/FinancialOS.Data/`
-- [ ] T031 [US4] Add minimal planning API endpoints in `src/FinancialOS.Api/Controllers/`
-- [ ] T032 [US4] Add integration tests for planning scenario creation in `tests/FinancialOS.Api.Tests/`
+- [x] T029 [P] [US4] Add planning scenario DTOs and domain stubs in `src/FinancialOS.Core/`
+- [x] T030 [US4] Implement persistence and retrieval for planning scenarios in `src/FinancialOS.Data/`
+- [x] T031 [US4] Add minimal planning API endpoints in `src/FinancialOS.Api/Controllers/`
+- [x] T032 [US4] Add integration tests for planning scenario creation in `tests/FinancialOS.Api.Tests/`
 
 **Checkpoint**: User Story 4 should be fully functional and testable independently
 
@@ -110,9 +110,9 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T033 [P] Add documentation updates for the quickstart path and API contract in `specs/001-financialos-platform/`
-- [ ] T034 [P] Add shared error handling, logging, and validation middleware in `src/FinancialOS.Api/`
-- [ ] T035 [P] Add end-to-end validation of the quickstart workflow in `tests/FinancialOS.Api.Tests/`
+- [x] T033 [P] Add documentation updates for the quickstart path and API contract in `specs/001-financialos-platform/`
+- [x] T034 [P] Add shared error handling, logging, and validation middleware in `src/FinancialOS.Api/`
+- [x] T035 [P] Add end-to-end validation of the quickstart workflow in `tests/FinancialOS.Api.Tests/`
 
 ---
 

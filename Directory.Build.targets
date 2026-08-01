@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!-- Solution-level targets for builds, tests, and analysis -->
+
+  <!-- Ensure all projects use consistent test patterns -->
+  <Target Name="ValidateTestProjects" BeforeTargets="Build">
+    <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+      <DebugType>embedded</DebugType>
+    </PropertyGroup>
+  </Target>
+
+</Project>

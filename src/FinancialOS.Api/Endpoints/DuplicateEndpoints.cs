@@ -22,6 +22,11 @@ public static class DuplicateEndpoints
             }
 
             var candidate = await reviewService.EvaluateAsync(record, cancellationToken);
+            if (candidate is null)
+            {
+                return Results.NoContent();
+            }
+
             return Results.Ok(ToResponse(candidate));
         });
 
@@ -52,12 +57,7 @@ public static class DuplicateEndpoints
             IDuplicateReviewService reviewService,
             CancellationToken cancellationToken) =>
         {
-            var actorId = httpContext.Items[ActorIdentityEndpointFilter.ActorContextKey]?.ToString();
-            if (string.IsNullOrWhiteSpace(actorId))
-            {
-                return Results.BadRequest(new { error = "actor-id-required" });
-            }
-
+            var actorId = httpContext.Items[ActorIdentityEndpointFilter.ActorContextKey]?.ToString() ?? string.Empty;
             var reviewed = await reviewService.ReviewAsync(
                 id,
                 DuplicateCandidateStatus.ConfirmedDuplicate,
@@ -73,12 +73,7 @@ public static class DuplicateEndpoints
             IDuplicateReviewService reviewService,
             CancellationToken cancellationToken) =>
         {
-            var actorId = httpContext.Items[ActorIdentityEndpointFilter.ActorContextKey]?.ToString();
-            if (string.IsNullOrWhiteSpace(actorId))
-            {
-                return Results.BadRequest(new { error = "actor-id-required" });
-            }
-
+            var actorId = httpContext.Items[ActorIdentityEndpointFilter.ActorContextKey]?.ToString() ?? string.Empty;
             var reviewed = await reviewService.ReviewAsync(
                 id,
                 DuplicateCandidateStatus.Dismissed,

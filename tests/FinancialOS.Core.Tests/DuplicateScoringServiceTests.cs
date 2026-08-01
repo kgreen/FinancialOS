@@ -66,6 +66,27 @@ public sealed class DuplicateScoringServiceTests
     }
 
     [Fact]
+    public void Score_DifferentCurrencies_DoesNotTreatAmountsAsComparable()
+    {
+        var service = new DuplicateScoringService();
+        var accountId = Guid.NewGuid();
+        var first = MakeRecord(accountId, 89.99m, new DateTimeOffset(2026, 1, 10, 0, 0, 0, TimeSpan.Zero), "Vendor A");
+        var second = new FinancialRecord
+        {
+            Id = Guid.NewGuid(),
+            AccountId = accountId,
+            Amount = new Money(89.99m, "EUR"),
+            OccurredOn = first.OccurredOn,
+            Description = first.Description
+        };
+
+        var result = service.Score(first, second);
+
+        Assert.DoesNotContain("amount-match", result.ReasonCodes);
+        Assert.Contains("\"amountCurrencyMatch\":false", result.SignalSnapshotJson);
+    }
+
+    [Fact]
     public void Score_AlwaysClampsConfidenceToRange()
     {
         var service = new DuplicateScoringService();

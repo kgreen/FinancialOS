@@ -20,14 +20,17 @@ public sealed class DuplicateReviewService : IDuplicateReviewService
         _provenanceWriter = provenanceWriter;
     }
 
-    public async Task<DuplicateCandidate> EvaluateAsync(FinancialRecord record, CancellationToken cancellationToken = default)
+    public async Task<DuplicateCandidate?> EvaluateAsync(FinancialRecord record, CancellationToken cancellationToken = default)
     {
         var allRecords = await _repository.ListRecordsAsync(cancellationToken);
-        var candidates = allRecords.Where(item => item.Id != record.Id).ToList();
-        if (candidates.Count == 0)
+        var otherRecords = allRecords.Where(item => item.Id != record.Id).ToList();
+        if (otherRecords.Count == 0)
         {
-            throw new InvalidOperationException("A duplicate candidate requires at least one other record.");
+            return null;
         }
+
+        var scopedCandidates = ScopeCandidates(record, otherRecords);
+        var candidates = scopedCandidates.Count > 0 ? scopedCandidates : otherRecords;
 
         var best = candidates
             .Select(item => new { Record = item, Score = _scoringService.Score(record, item) })
@@ -63,6 +66,11 @@ public sealed class DuplicateReviewService : IDuplicateReviewService
         string reviewedByUserId,
         CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(reviewedByUserId))
+        {
+            throw new ArgumentException("ReviewedByUserId is required.", nameof(reviewedByUserId));
+        }
+
         if (status is DuplicateCandidateStatus.PendingReview)
         {
             throw new ArgumentException("Review status must be ConfirmedDuplicate or Dismissed.", nameof(status));
@@ -121,5 +129,21 @@ public sealed class DuplicateReviewService : IDuplicateReviewService
         var left = first.CompareTo(second) <= 0 ? first : second;
         var right = first.CompareTo(second) <= 0 ? second : first;
         return $"{left:N}:{right:N}";
+    }
+
+    private static List<FinancialRecord> ScopeCandidates(FinancialRecord record, List<FinancialRecord> candidates)
+    {
+        var scoped = candidates.AsEnumerable();
+
+        if (record.AccountId.HasValue)
+        {
+            scoped = scoped.Where(item => item.AccountId == record.AccountId);
+        }
+
+        var windowStart = record.OccurredOn.AddDays(-30);
+        var windowEnd = record.OccurredOn.AddDays(30);
+        scoped = scoped.Where(item => item.OccurredOn >= windowStart && item.OccurredOn <= windowEnd);
+
+        return scoped.ToList();
     }
 }

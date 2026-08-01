@@ -22,8 +22,15 @@ public sealed class DuplicateScoringService
             reasonCodes.Add("same-account");
         }
 
-        var amountDelta = Math.Abs(source.Amount.Amount - candidate.Amount.Amount);
-        var amountMatch = amountDelta <= 0.01m;
+        decimal? amountDelta = null;
+        var amountMatch = false;
+        var amountCurrencyMatch = string.Equals(source.Amount.Currency, candidate.Amount.Currency, StringComparison.OrdinalIgnoreCase);
+        if (amountCurrencyMatch)
+        {
+            amountDelta = Math.Abs(source.Amount.Amount - candidate.Amount.Amount);
+            amountMatch = amountDelta <= 0.01m;
+        }
+
         if (amountMatch)
         {
             score += 0.35m;
@@ -49,6 +56,7 @@ public sealed class DuplicateScoringService
         var signalSnapshot = JsonSerializer.Serialize(new
         {
             sameAccount,
+            amountCurrencyMatch,
             amountDelta,
             amountMatch,
             dayDelta,

@@ -1,4 +1,10 @@
+using FinancialOS.Api.Endpoints;
+using FinancialOS.Api.Validation;
 using FinancialOS.Core.Contracts;
+using Microsoft.AspNetCore.Mvc;
+using FinancialOS.Core.Knowledge.Normalization;
+using FinancialOS.Core.Knowledge.Provenance;
+using FinancialOS.Core.Knowledge.Rules;
 using FinancialOS.Core.Models;
 using FinancialOS.Data;
 using FinancialOS.Infrastructure.Import;
@@ -8,10 +14,28 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<IFinancialRepository, InMemoryFinancialRepository>();
+builder.Services.AddProblemDetails();
+
+builder.Services.AddConfiguredDatabase(builder.Configuration);
+builder.Services.AddScoped<IFinancialRepository, EfFinancialRepository>();
 builder.Services.AddSingleton<EvidenceImportService>();
+builder.Services.AddScoped<IRuleEvaluationService, RuleEvaluationService>();
+builder.Services.AddScoped<IRuleManagementService, RuleManagementService>();
+builder.Services.AddScoped<ProvenanceWriter>();
+builder.Services.AddScoped<MerchantAliasService>();
+builder.Services.AddScoped<INormalizationPipelineService, NormalizationPipelineService>();
 
 var app = builder.Build();
+
+var applyMigrationsOnStartup = app.Environment.IsDevelopment()
+    || builder.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup");
+var seedOnStartup = builder.Configuration.GetValue("Database:SeedOnStartup", true);
+
+if (applyMigrationsOnStartup)
+{
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.InitializeAsync(seed: seedOnStartup);
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -19,7 +43,36 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseExceptionHandler(exceptionHandlerApp =>
+{
+    exceptionHandlerApp.Run(async context =>
+    {
+        var exception = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/problem+json";
+
+        if (exception is null)
+        {
+            app.Logger.LogError("Unhandled exception while processing {Path}", context.Request.Path);
+        }
+        else
+        {
+            app.Logger.LogError(exception, "Unhandled exception while processing {Path}", context.Request.Path);
+        }
+        await context.Response.WriteAsJsonAsync(new ProblemDetails
+        {
+            Status = StatusCodes.Status500InternalServerError,
+            Title = "An unexpected error occurred.",
+            Detail = "The request could not be processed due to an internal error.",
+            Instance = context.Request.Path
+        });
+    });
+});
+
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+
+app.MapRulesEndpoints();
+app.MapNormalizationEndpoints();
 
 app.MapPost("/api/v1/evidence", async (IFormFile file, EvidenceImportService importService, IFinancialRepository repository, CancellationToken cancellationToken) =>
 {
@@ -153,4 +206,61 @@ app.MapGet("/api/v1/rules", async (IFinancialRepository repository, Cancellation
     return Results.Ok(rules.Select(item => new ReferenceItemResponse(item.Id, item.Name, "rule")));
 });
 
+app.MapPost("/api/v1/planning-scenarios", async (PlanningScenarioCreateRequest request, IFinancialRepository repository, CancellationToken cancellationToken) =>
+{
+    var scenario = new PlanningScenario
+    {
+        Name = request.Name,
+        Description = request.Description,
+        TargetAmount = request.TargetAmount,
+        Currency = string.IsNullOrWhiteSpace(request.Currency) ? "USD" : request.Currency,
+        RelatedRecordIds = request.RecordIds?.ToList() ?? new List<Guid>()
+    };
+
+    var created = await repository.AddPlanningScenarioAsync(scenario, cancellationToken);
+    return Results.Created($"/api/v1/planning-scenarios/{created.Id}", new PlanningScenarioResponse(
+        created.Id,
+        created.Name,
+        created.Description,
+        created.TargetAmount,
+        created.Currency,
+        created.RelatedRecordIds,
+        created.CreatedAt));
+}).AddEndpointFilter<ValidationEndpointFilter<PlanningScenarioCreateRequest>>();
+
+app.MapGet("/api/v1/planning-scenarios", async (IFinancialRepository repository, CancellationToken cancellationToken) =>
+{
+    var scenarios = await repository.ListPlanningScenariosAsync(cancellationToken);
+    var items = scenarios.Select(scenario => new PlanningScenarioResponse(
+        scenario.Id,
+        scenario.Name,
+        scenario.Description,
+        scenario.TargetAmount,
+        scenario.Currency,
+        scenario.RelatedRecordIds,
+        scenario.CreatedAt)).ToList();
+
+    return Results.Ok(new PlanningScenarioListResponse(items, 1, 50));
+});
+
+app.MapGet("/api/v1/planning-scenarios/{id:guid}", async (Guid id, IFinancialRepository repository, CancellationToken cancellationToken) =>
+{
+    var scenario = await repository.GetPlanningScenarioAsync(id, cancellationToken);
+    if (scenario is null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(new PlanningScenarioResponse(
+        scenario.Id,
+        scenario.Name,
+        scenario.Description,
+        scenario.TargetAmount,
+        scenario.Currency,
+        scenario.RelatedRecordIds,
+        scenario.CreatedAt));
+});
+
 app.Run();
+
+public partial class Program;

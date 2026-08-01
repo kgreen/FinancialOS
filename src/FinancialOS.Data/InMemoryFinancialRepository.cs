@@ -11,6 +11,13 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
     private readonly List<Category> _categories = new();
     private readonly List<Merchant> _merchants = new();
     private readonly List<Rule> _rules = new();
+    private readonly Dictionary<Guid, PlanningScenario> _planningScenarios = new();
+    private readonly Dictionary<Guid, ClassificationRule> _classificationRules = new();
+    private readonly Dictionary<Guid, CanonicalMerchant> _canonicalMerchants = new();
+    private readonly Dictionary<Guid, MerchantAliasMap> _merchantAliases = new();
+    private readonly Dictionary<Guid, NormalizationDecision> _normalizationDecisions = new();
+    private readonly Dictionary<Guid, DuplicateCandidate> _duplicateCandidates = new();
+    private readonly List<ProvenanceEntry> _provenanceEntries = new();
 
     public InMemoryFinancialRepository()
     {
@@ -22,6 +29,12 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
 
     public Task<FinancialEvidence> AddEvidenceAsync(FinancialEvidence evidence, CancellationToken cancellationToken = default)
     {
+        var existing = _evidence.Values.FirstOrDefault(item => item.Sha256Hash == evidence.Sha256Hash);
+        if (existing is not null)
+        {
+            return Task.FromResult(existing);
+        }
+
         evidence.Id = evidence.Id == Guid.Empty ? Guid.NewGuid() : evidence.Id;
         _evidence[evidence.Id] = evidence;
         return Task.FromResult(evidence);
@@ -81,5 +94,150 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
     public Task<IReadOnlyList<Rule>> ListRulesAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<Rule>>(_rules.ToList());
+    }
+
+    public Task<PlanningScenario> AddPlanningScenarioAsync(PlanningScenario scenario, CancellationToken cancellationToken = default)
+    {
+        scenario.Id = scenario.Id == Guid.Empty ? Guid.NewGuid() : scenario.Id;
+        scenario.CreatedAt = scenario.CreatedAt == default ? DateTimeOffset.UtcNow : scenario.CreatedAt;
+        _planningScenarios[scenario.Id] = scenario;
+        return Task.FromResult(scenario);
+    }
+
+    public Task<PlanningScenario?> GetPlanningScenarioAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        _planningScenarios.TryGetValue(id, out var scenario);
+        return Task.FromResult(scenario);
+    }
+
+    public Task<IReadOnlyList<PlanningScenario>> ListPlanningScenariosAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<PlanningScenario>>(_planningScenarios.Values.OrderByDescending(item => item.CreatedAt).ToList());
+    }
+
+    public Task<ClassificationRule> AddClassificationRuleAsync(ClassificationRule rule, CancellationToken cancellationToken = default)
+    {
+        rule.Id = rule.Id == Guid.Empty ? Guid.NewGuid() : rule.Id;
+        _classificationRules[rule.Id] = rule;
+        return Task.FromResult(rule);
+    }
+
+    public Task<ClassificationRule?> GetClassificationRuleAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        _classificationRules.TryGetValue(id, out var rule);
+        return Task.FromResult(rule);
+    }
+
+    public Task<IReadOnlyList<ClassificationRule>> ListClassificationRulesAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<ClassificationRule>>(_classificationRules.Values
+            .OrderByDescending(item => item.Priority)
+            .ThenBy(item => item.CreatedAtUtc)
+            .ThenBy(item => item.Id)
+            .ToList());
+    }
+
+    public Task<ClassificationRule?> UpdateClassificationRuleAsync(ClassificationRule rule, CancellationToken cancellationToken = default)
+    {
+        rule.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        _classificationRules[rule.Id] = rule;
+        return Task.FromResult<ClassificationRule?>(rule);
+    }
+
+    public Task<CanonicalMerchant> AddCanonicalMerchantAsync(CanonicalMerchant merchant, CancellationToken cancellationToken = default)
+    {
+        merchant.Id = merchant.Id == Guid.Empty ? Guid.NewGuid() : merchant.Id;
+        _canonicalMerchants[merchant.Id] = merchant;
+        return Task.FromResult(merchant);
+    }
+
+    public Task<CanonicalMerchant?> GetCanonicalMerchantAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        _canonicalMerchants.TryGetValue(id, out var merchant);
+        return Task.FromResult(merchant);
+    }
+
+    public Task<IReadOnlyList<CanonicalMerchant>> ListCanonicalMerchantsAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<CanonicalMerchant>>(_canonicalMerchants.Values.OrderBy(item => item.DisplayName).ToList());
+    }
+
+    public Task<MerchantAliasMap> AddMerchantAliasAsync(MerchantAliasMap alias, CancellationToken cancellationToken = default)
+    {
+        alias.Id = alias.Id == Guid.Empty ? Guid.NewGuid() : alias.Id;
+        _merchantAliases[alias.Id] = alias;
+        return Task.FromResult(alias);
+    }
+
+    public Task<IReadOnlyList<MerchantAliasMap>> ListMerchantAliasesAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<MerchantAliasMap>>(_merchantAliases.Values.ToList());
+    }
+
+    public Task<NormalizationDecision> AddNormalizationDecisionAsync(NormalizationDecision decision, CancellationToken cancellationToken = default)
+    {
+        decision.Id = decision.Id == Guid.Empty ? Guid.NewGuid() : decision.Id;
+        _normalizationDecisions[decision.Id] = decision;
+        return Task.FromResult(decision);
+    }
+
+    public Task<IReadOnlyList<NormalizationDecision>> ListNormalizationDecisionsAsync(Guid financialRecordId, CancellationToken cancellationToken = default)
+    {
+        var decisions = _normalizationDecisions.Values
+            .Where(item => item.FinancialRecordId == financialRecordId)
+            .OrderByDescending(item => item.CreatedAtUtc)
+            .ToList();
+        return Task.FromResult<IReadOnlyList<NormalizationDecision>>(decisions);
+    }
+
+    public Task<NormalizationDecision?> MarkNormalizationDecisionSupersededAsync(Guid decisionId, Guid supersededByDecisionId, CancellationToken cancellationToken = default)
+    {
+        if (!_normalizationDecisions.TryGetValue(decisionId, out var existing))
+        {
+            return Task.FromResult<NormalizationDecision?>(null);
+        }
+
+        existing.SupersededByDecisionId = supersededByDecisionId;
+        return Task.FromResult<NormalizationDecision?>(existing);
+    }
+
+    public Task<DuplicateCandidate> AddDuplicateCandidateAsync(DuplicateCandidate candidate, CancellationToken cancellationToken = default)
+    {
+        candidate.Id = candidate.Id == Guid.Empty ? Guid.NewGuid() : candidate.Id;
+        _duplicateCandidates[candidate.Id] = candidate;
+        return Task.FromResult(candidate);
+    }
+
+    public Task<DuplicateCandidate?> GetDuplicateCandidateAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        _duplicateCandidates.TryGetValue(id, out var candidate);
+        return Task.FromResult(candidate);
+    }
+
+    public Task<IReadOnlyList<DuplicateCandidate>> ListDuplicateCandidatesAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<DuplicateCandidate>>(_duplicateCandidates.Values.OrderByDescending(item => item.EvaluatedAtUtc).ToList());
+    }
+
+    public Task<DuplicateCandidate?> UpdateDuplicateCandidateAsync(DuplicateCandidate candidate, CancellationToken cancellationToken = default)
+    {
+        _duplicateCandidates[candidate.Id] = candidate;
+        return Task.FromResult<DuplicateCandidate?>(candidate);
+    }
+
+    public Task<ProvenanceEntry> AppendProvenanceEntryAsync(ProvenanceEntry entry, CancellationToken cancellationToken = default)
+    {
+        _provenanceEntries.Add(entry);
+        return Task.FromResult(entry);
+    }
+
+    public Task<IReadOnlyList<ProvenanceEntry>> ListProvenanceEntriesAsync(Guid financialRecordId, CancellationToken cancellationToken = default)
+    {
+        var entries = _provenanceEntries
+            .Where(item => item.FinancialRecordId == financialRecordId)
+            .OrderBy(item => item.StepSequence)
+            .ThenBy(item => item.CreatedAtUtc)
+            .ToList();
+        return Task.FromResult<IReadOnlyList<ProvenanceEntry>>(entries);
     }
 }

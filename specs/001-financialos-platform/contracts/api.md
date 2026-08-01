@@ -62,3 +62,36 @@ Applies or updates classification metadata for a record.
 ### GET /api/v1/rules
 
 All reference endpoints return stable JSON objects that can be consumed by desktop and future web/mobile clients.
+
+## Planning scenario endpoints
+
+### POST /api/v1/planning-scenarios
+
+Creates a planning scenario linked to the financial context captured by evidence and records.
+
+**Request**
+```json
+{
+  "name": "Emergency Fund",
+  "description": "Build a buffer for six months",
+  "targetAmount": 6000,
+  "currency": "USD",
+  "recordIds": ["00000000-0000-0000-0000-000000000000"]
+}
+```
+
+**Response**
+```json
+{
+  "id": "guid",
+  "name": "Emergency Fund",
+  "description": "Build a buffer for six months",
+  "targetAmount": 6000,
+  "currency": "USD",
+  "recordIds": ["00000000-0000-0000-0000-000000000000"],
+  "createdAt": "2026-07-31T00:00:00Z"
+}
+```
+
+### GET /api/v1/planning-scenarios
+### GET /api/v1/planning-scenarios/{id}

@@ -24,7 +24,7 @@ public sealed class OfxTransactionParser : ITransactionParser
         var content = await new StreamReader(stream, leaveOpen: true).ReadToEndAsync(cancellationToken);
 
         if (string.IsNullOrWhiteSpace(content))
-            throw new FileFormatException("Not a recognizable OFX/QFX file");
+            throw new OfxFormatException("Not a recognizable OFX/QFX file");
 
         var trimmed = content.TrimStart();
 
@@ -41,7 +41,7 @@ public sealed class OfxTransactionParser : ITransactionParser
             return ParseXml(content);
         }
 
-        throw new FileFormatException("Not a recognizable OFX/QFX file");
+        throw new OfxFormatException("Not a recognizable OFX/QFX file");
     }
 
     private static TransactionParseResult ParseSgml(string content)
@@ -88,7 +88,7 @@ public sealed class OfxTransactionParser : ITransactionParser
 
         XDocument doc;
         try { doc = XDocument.Parse(content); }
-        catch (Exception ex) { throw new FileFormatException($"OFX XML is not well-formed: {ex.Message}"); }
+        catch (Exception ex) { throw new OfxFormatException($"OFX XML is not well-formed: {ex.Message}"); }
 
         var stmtTrns = doc.Descendants("STMTTRN").ToList();
         var rowIndex = 0;
@@ -187,7 +187,7 @@ public sealed class OfxTransactionParser : ITransactionParser
 }
 
 /// <summary>Thrown when an OFX/QFX file is not in a recognizable format.</summary>
-public sealed class FileFormatException : Exception
+public sealed class OfxFormatException : Exception
 {
-    public FileFormatException(string message) : base(message) { }
+    public OfxFormatException(string message) : base(message) { }
 }

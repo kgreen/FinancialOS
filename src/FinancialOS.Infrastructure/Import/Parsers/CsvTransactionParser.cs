@@ -41,7 +41,12 @@ public sealed class CsvTransactionParser : ITransactionParser
         using var csv = new CsvReader(reader, config);
 
         await csv.ReadAsync();
-        csv.ReadHeader();
+        var hasHeader = csv.ReadHeader();
+        if (!hasHeader)
+        {
+            return new TransactionParseResult(
+                Array.Empty<ParsedTransaction>(), Array.Empty<FailedRowEntry>(), 0);
+        }
         var headers = csv.HeaderRecord ?? Array.Empty<string>();
 
         // Resolve column mapping
@@ -173,7 +178,7 @@ public sealed class CsvTransactionParser : ITransactionParser
             var rawRow = csv.Parser.RawRecord?.TrimEnd() ?? string.Empty;
 
             // Within-file duplicate detection (FR-019)
-            var fingerprint = $"{transDate:yyyy-MM-dd}|{amount}|{description}";
+            var fingerprint = $"{transDate:yyyy-MM-dd}|{amount.ToString(CultureInfo.InvariantCulture)}|{description}";
             if (!seenFingerprints.Add(fingerprint))
             {
                 failedRows.Add(new FailedRowEntry(currentRow, "Duplicate row within file"));

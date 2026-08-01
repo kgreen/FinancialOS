@@ -32,12 +32,12 @@ public sealed class ImportOrchestrationService : IImportOrchestrationService
         {
             ".ofx" or ".qfx" => EvidenceSourceType.Ofx,
             ".csv" => EvidenceSourceType.Csv,
-            _ => throw new FileFormatException($"File format '{ext}' is not supported. Supported formats: .csv, .ofx, .qfx")
+            _ => throw new OfxFormatException($"File format '{ext}' is not supported. Supported formats: .csv, .ofx, .qfx")
         };
 
         // 2. Reject unsupported extensions
         var parser = _parsers.FirstOrDefault(p => p.CanParse(fileName, sourceType))
-            ?? throw new FileFormatException($"File format '{ext}' is not supported. Supported formats: .csv, .ofx, .qfx");
+            ?? throw new OfxFormatException($"File format '{ext}' is not supported. Supported formats: .csv, .ofx, .qfx");
 
         // 3. SHA256 duplicate check — compute hash and look up
         fileStream.Position = 0;
@@ -58,27 +58,35 @@ public sealed class ImportOrchestrationService : IImportOrchestrationService
             }
         }
 
-        // 4. Persist evidence
-        var evidenceId = Guid.NewGuid();
-        var uploadsDirectory = Path.Combine(Path.GetTempPath(), "financialos", "uploads");
-        Directory.CreateDirectory(uploadsDirectory);
-        var destinationPath = Path.Combine(uploadsDirectory, $"{evidenceId:N}{ext}");
-
-        fileStream.Position = 0;
-        await using (var outputStream = File.Create(destinationPath))
-            await fileStream.CopyToAsync(outputStream, cancellationToken);
-
-        var evidence = new FinancialEvidence
+        // 4. Persist evidence (skip file write if evidence already exists for this SHA256)
+        FinancialEvidence evidence;
+        if (existingEvidence is not null)
         {
-            Id = evidenceId,
-            SourceType = sourceType,
-            OriginalFileName = fileName,
-            StoragePath = destinationPath,
-            Sha256Hash = sha256,
-            SourceMetadata = $"Imported {sizeBytes} bytes",
-            UploadedAt = DateTimeOffset.UtcNow
-        };
-        evidence = await _repository.AddEvidenceAsync(evidence, cancellationToken);
+            evidence = existingEvidence;
+        }
+        else
+        {
+            var evidenceId = Guid.NewGuid();
+            var uploadsDirectory = Path.Combine(Path.GetTempPath(), "financialos", "uploads");
+            Directory.CreateDirectory(uploadsDirectory);
+            var destinationPath = Path.Combine(uploadsDirectory, $"{evidenceId:N}{ext}");
+
+            fileStream.Position = 0;
+            await using (var outputStream = File.Create(destinationPath))
+                await fileStream.CopyToAsync(outputStream, cancellationToken);
+
+            var newEvidence = new FinancialEvidence
+            {
+                Id = evidenceId,
+                SourceType = sourceType,
+                OriginalFileName = fileName,
+                StoragePath = destinationPath,
+                Sha256Hash = sha256,
+                SourceMetadata = $"Imported {sizeBytes} bytes",
+                UploadedAt = DateTimeOffset.UtcNow
+            };
+            evidence = await _repository.AddEvidenceAsync(newEvidence, cancellationToken);
+        }
 
         // 5. Resolve institution profile
         InstitutionProfile? profile = null;
@@ -92,6 +100,7 @@ public sealed class ImportOrchestrationService : IImportOrchestrationService
         {
             EvidenceId = evidence.Id,
             InstitutionProfileId = profile?.Id,
+            ParserType = parser.ParserType,
             Status = ImportJobStatus.Processing,
             StartedAt = DateTimeOffset.UtcNow,
         };
@@ -104,7 +113,7 @@ public sealed class ImportOrchestrationService : IImportOrchestrationService
         {
             parseResult = await parser.ParseAsync(fileStream, profile, cancellationToken);
         }
-        catch (FileFormatException ex)
+        catch (OfxFormatException ex)
         {
             job.Status = ImportJobStatus.Failed;
             job.CompletedAt = DateTimeOffset.UtcNow;
@@ -113,15 +122,16 @@ public sealed class ImportOrchestrationService : IImportOrchestrationService
             await _repository.UpdateImportJobAsync(job, cancellationToken);
             throw;
         }
-        catch (CsvLayoutUndetectableException)
+        catch (CsvLayoutUndetectableException ex)
         {
             job.Status = ImportJobStatus.Failed;
             job.CompletedAt = DateTimeOffset.UtcNow;
+            job.FailedRows.Add(new FailedRowEntry(0, ex.Message));
+            job.FailedRowCount = 1;
             await _repository.UpdateImportJobAsync(job, cancellationToken);
             throw;
         }
 
-        job.ParserType = parser.ParserType;
         job.TotalRows = parseResult.TotalRowsScanned;
         job.FailedRows.AddRange(parseResult.FailedRows);
         job.FailedRowCount = parseResult.FailedRows.Count;
@@ -148,7 +158,7 @@ public sealed class ImportOrchestrationService : IImportOrchestrationService
                 ImportJobId = job.Id,
                 Description = tx.Description,
                 Amount = new Money(tx.Amount, "USD"),
-                OccurredOn = tx.TransactionDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified),
+                OccurredOn = new DateTime(tx.TransactionDate.Year, tx.TransactionDate.Month, tx.TransactionDate.Day, 0, 0, 0, DateTimeKind.Utc),
                 Status = RecordStatus.Pending,
                 ExternalReferenceId = tx.ExternalReferenceId,
                 RowIndex = tx.RowIndex,

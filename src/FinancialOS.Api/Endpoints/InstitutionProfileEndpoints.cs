@@ -158,6 +158,8 @@ public static class InstitutionProfileEndpoints
             return "Name must be 200 characters or fewer.";
         if (columnMappings is null || !columnMappings.ContainsKey("date"))
             return "columnMappings must contain the 'date' key.";
+        if (!columnMappings.ContainsKey("description"))
+            return "columnMappings must contain the 'description' key.";
 
         if (!Enum.TryParse<AmountLayout>(amountLayoutStr, ignoreCase: true, out var layout))
             return $"Invalid amountLayout '{amountLayoutStr}'. Valid values: singleSigned, splitDebitCredit.";
@@ -175,17 +177,9 @@ public static class InstitutionProfileEndpoints
 
         if (dateFormatPattern is not null)
         {
-            try
-            {
-                var testDate = DateTime.TryParseExact("01/01/2024", dateFormatPattern,
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    System.Globalization.DateTimeStyles.None, out _);
-                // If it failed, just try parsing any date — pattern may still be valid
-            }
-            catch
-            {
-                return $"dateFormatPattern '{dateFormatPattern}' is not a valid .NET date format string.";
-            }
+            _ = DateTime.TryParseExact("01/01/2024", dateFormatPattern,
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out _);
         }
 
         return null;

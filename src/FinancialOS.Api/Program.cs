@@ -154,8 +154,8 @@ app.MapPost("/api/v1/evidence", async (
             ImportJobId: result.Job.Id,
             Status: status,
             ParserType: parserTypeStr,
-            ParsedTransactionCount: result.CreatedRecords.Count,
-            FailedRowCount: result.Job.FailedRowCount,
+            ParsedTransactionCount: result.WasDuplicate ? 0 : result.CreatedRecords.Count,
+            FailedRowCount: result.WasDuplicate ? 0 : result.Job.FailedRowCount,
             Records: records
         ));
     }
@@ -167,7 +167,7 @@ app.MapPost("/api/v1/evidence", async (
             title: "Unprocessable Entity",
             type: "https://tools.ietf.org/html/rfc9110#section-15.5.21");
     }
-    catch (FileFormatException ex)
+    catch (OfxFormatException ex)
     {
         return Results.Problem(
             detail: ex.Message,

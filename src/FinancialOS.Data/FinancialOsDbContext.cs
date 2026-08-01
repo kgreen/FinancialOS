@@ -126,6 +126,10 @@ public sealed class FinancialOsDbContext : DbContext
 
             entity.HasIndex(item => item.ExternalReferenceId)
                 .HasDatabaseName("IX_FinancialRecord_ExternalReferenceId");
+
+            entity.HasOne<ImportJob>().WithMany()
+                .HasForeignKey(item => item.ImportJobId)
+                .IsRequired(false);
         });
     }
 
@@ -326,7 +330,7 @@ public sealed class FinancialOsDbContext : DbContext
 
     private static readonly ValueComparer<Dictionary<string, string>> DictionaryComparer = new(
         (left, right) => left != null && right != null && left.Count == right.Count && left.All(kv => right.ContainsKey(kv.Key) && right[kv.Key] == kv.Value),
-        dict => dict == null ? 0 : dict.Aggregate(0, (hash, kv) => HashCode.Combine(hash, kv.Key.GetHashCode(), kv.Value.GetHashCode())),
+        dict => dict == null ? 0 : dict.Aggregate(0, (hash, kv) => HashCode.Combine(hash, kv.Key.GetHashCode(), kv.Value == null ? 0 : kv.Value.GetHashCode())),
         dict => dict == null ? new Dictionary<string, string>() : new Dictionary<string, string>(dict));
 
     private static readonly ValueComparer<List<FailedRowEntry>> FailedRowListComparer = new(
@@ -375,6 +379,13 @@ public sealed class FinancialOsDbContext : DbContext
 
             entity.HasIndex(e => e.Status)
                 .HasDatabaseName("IX_ImportJob_Status");
+
+            entity.HasOne<FinancialEvidence>().WithMany()
+                .HasForeignKey(e => e.EvidenceId);
+
+            entity.HasOne<InstitutionProfile>().WithMany()
+                .HasForeignKey(e => e.InstitutionProfileId)
+                .IsRequired(false);
         });
     }
 

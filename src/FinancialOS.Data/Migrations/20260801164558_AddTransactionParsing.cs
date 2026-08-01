@@ -42,6 +42,26 @@ namespace FinancialOS.Data.Migrations
                 nullable: true);
 
             migrationBuilder.CreateTable(
+                name: "InstitutionProfiles",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    ColumnMappings = table.Column<string>(type: "TEXT", nullable: false),
+                    AmountLayout = table.Column<string>(type: "TEXT", nullable: false),
+                    DebitColumnName = table.Column<string>(type: "TEXT", nullable: true),
+                    CreditColumnName = table.Column<string>(type: "TEXT", nullable: true),
+                    DateFormatPattern = table.Column<string>(type: "TEXT", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InstitutionProfiles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ImportJobs",
                 columns: table => new
                 {
@@ -61,26 +81,18 @@ namespace FinancialOS.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ImportJobs", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "InstitutionProfiles",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    ColumnMappings = table.Column<string>(type: "TEXT", nullable: false),
-                    AmountLayout = table.Column<string>(type: "TEXT", nullable: false),
-                    DebitColumnName = table.Column<string>(type: "TEXT", nullable: true),
-                    CreditColumnName = table.Column<string>(type: "TEXT", nullable: true),
-                    DateFormatPattern = table.Column<string>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_InstitutionProfiles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ImportJobs_Evidence_EvidenceId",
+                        column: x => x.EvidenceId,
+                        principalTable: "Evidence",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ImportJobs_InstitutionProfiles_InstitutionProfileId",
+                        column: x => x.InstitutionProfileId,
+                        principalTable: "InstitutionProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(

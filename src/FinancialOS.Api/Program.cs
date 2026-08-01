@@ -64,6 +64,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapRulesEndpoints();
 app.MapNormalizationEndpoints();
 app.MapDuplicateEndpoints();
+app.MapProvenanceEndpoints();
 
 app.MapPost("/api/v1/evidence", async (IFormFile file, EvidenceImportService importService, IFinancialRepository repository, CancellationToken cancellationToken) =>
 {

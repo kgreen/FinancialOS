@@ -275,6 +275,14 @@ public sealed class FinancialOsDbContext : DbContext
                 .HasDatabaseName("IX_DuplicateCandidate_GroupKey");
             entity.HasIndex(item => item.Status)
                 .HasDatabaseName("IX_DuplicateCandidate_Status");
+            entity.HasIndex(item => item.RecordId)
+                .HasDatabaseName("IX_DuplicateCandidate_RecordId");
+            entity.HasIndex(item => item.MatchedRecordId)
+                .HasDatabaseName("IX_DuplicateCandidate_MatchedRecordId");
+            entity.HasIndex(item => item.Confidence)
+                .HasDatabaseName("IX_DuplicateCandidate_Confidence");
+            entity.HasIndex(item => item.EvaluatedAtUtc)
+                .HasDatabaseName("IX_DuplicateCandidate_EvaluatedAtUtc");
         });
     }
 

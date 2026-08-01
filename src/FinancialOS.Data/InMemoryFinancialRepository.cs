@@ -69,6 +69,27 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
         return Task.FromResult<IReadOnlyList<FinancialRecord>>(_records.Values.OrderByDescending(item => item.OccurredOn).ToList());
     }
 
+    public Task<IReadOnlyList<FinancialRecord>> ListPotentialDuplicateRecordsAsync(
+        Guid recordId,
+        Guid? accountId,
+        DateTimeOffset occurredOn,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _records.Values
+            .Where(item => item.Id != recordId);
+
+        if (accountId.HasValue)
+        {
+            var accountValue = accountId.Value;
+            query = query.Where(item => item.AccountId == accountValue);
+        }
+
+        return Task.FromResult<IReadOnlyList<FinancialRecord>>(query
+            .OrderBy(item => item.OccurredOn)
+            .ThenBy(item => item.Id)
+            .ToList());
+    }
+
     public Task<FinancialRecord?> UpdateRecordAsync(FinancialRecord record, CancellationToken cancellationToken = default)
     {
         record.Id = record.Id == Guid.Empty ? Guid.NewGuid() : record.Id;
@@ -219,10 +240,38 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
         return Task.FromResult<IReadOnlyList<DuplicateCandidate>>(_duplicateCandidates.Values.OrderByDescending(item => item.EvaluatedAtUtc).ToList());
     }
 
+    public Task<IReadOnlyList<DuplicateCandidate>> ListDuplicateCandidatesAsync(
+        DuplicateCandidateStatus? status,
+        decimal? minConfidence,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _duplicateCandidates.Values.AsEnumerable();
+        if (status.HasValue)
+        {
+            query = query.Where(item => item.Status == status.Value);
+        }
+
+        if (minConfidence.HasValue)
+        {
+            query = query.Where(item => item.Confidence >= minConfidence.Value);
+        }
+
+        return Task.FromResult<IReadOnlyList<DuplicateCandidate>>(query.OrderByDescending(item => item.EvaluatedAtUtc).ThenBy(item => item.Id).ToList());
+    }
+
     public Task<DuplicateCandidate?> UpdateDuplicateCandidateAsync(DuplicateCandidate candidate, CancellationToken cancellationToken = default)
     {
         _duplicateCandidates[candidate.Id] = candidate;
         return Task.FromResult<DuplicateCandidate?>(candidate);
+    }
+
+    public Task<long?> GetMaxProvenanceStepSequenceAsync(Guid financialRecordId, CancellationToken cancellationToken = default)
+    {
+        var maxStepSequence = _provenanceEntries
+            .Where(item => item.FinancialRecordId == financialRecordId)
+            .Select(item => (long?)item.StepSequence)
+            .Max();
+        return Task.FromResult(maxStepSequence);
     }
 
     public Task<ProvenanceEntry> AppendProvenanceEntryAsync(ProvenanceEntry entry, CancellationToken cancellationToken = default)

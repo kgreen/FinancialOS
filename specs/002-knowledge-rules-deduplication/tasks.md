@@ -95,18 +95,18 @@
 
 ### Tests for User Story 3
 
-- [ ] T032 [P] [US3] Add duplicate evaluate/list/review contract tests in tests/FinancialOS.Api.Tests/DuplicateWorkflowContractTests.cs
-- [ ] T033 [P] [US3] Add duplicate lifecycle integration tests (PendingReview→Confirmed/Dismissed) in tests/FinancialOS.Api.Tests/DuplicateReviewIntegrationTests.cs
-- [ ] T034 [P] [US3] Add duplicate scoring unit tests for signal weighting in tests/FinancialOS.Core.Tests/DuplicateScoringServiceTests.cs
+- [x] T032 [P] [US3] Add duplicate evaluate/list/review contract tests in tests/FinancialOS.Api.Tests/DuplicateWorkflowContractTests.cs
+- [x] T033 [P] [US3] Add duplicate lifecycle integration tests (PendingReview→Confirmed/Dismissed) in tests/FinancialOS.Api.Tests/DuplicateReviewIntegrationTests.cs
+- [x] T034 [P] [US3] Add duplicate scoring unit tests for signal weighting in tests/FinancialOS.Core.Tests/DuplicateScoringServiceTests.cs
 
 ### Implementation for User Story 3
 
-- [ ] T035 [P] [US3] Implement duplicate heuristic scoring service in src/FinancialOS.Core/Knowledge/Deduplication/DuplicateScoringService.cs
-- [ ] T036 [P] [US3] Implement duplicate candidate evaluation and review service in src/FinancialOS.Core/Knowledge/Deduplication/DuplicateReviewService.cs
-- [ ] T037 [US3] Implement duplicate evaluate/list/confirm/dismiss endpoints in src/FinancialOS.Api/Endpoints/DuplicateEndpoints.cs
-- [ ] T038 [US3] Implement actor identity requirement for confirm/dismiss actions in src/FinancialOS.Api/Validation/ActorIdentityEndpointFilter.cs
-- [ ] T039 [US3] Wire duplicate endpoints/services in src/FinancialOS.Api/Program.cs
-- [ ] T040 [US3] Persist duplicate candidates and review provenance events in src/FinancialOS.Data/EfFinancialRepository.cs
+- [x] T035 [P] [US3] Implement duplicate heuristic scoring service in src/FinancialOS.Core/Knowledge/Deduplication/DuplicateScoringService.cs
+- [x] T036 [P] [US3] Implement duplicate candidate evaluation and review service in src/FinancialOS.Core/Knowledge/Deduplication/DuplicateReviewService.cs
+- [x] T037 [US3] Implement duplicate evaluate/list/confirm/dismiss endpoints in src/FinancialOS.Api/Endpoints/DuplicateEndpoints.cs
+- [x] T038 [US3] Implement actor identity requirement for confirm/dismiss actions in src/FinancialOS.Api/Validation/ActorIdentityEndpointFilter.cs
+- [x] T039 [US3] Wire duplicate endpoints/services in src/FinancialOS.Api/Program.cs
+- [x] T040 [US3] Persist duplicate candidates and review provenance events in src/FinancialOS.Data/EfFinancialRepository.cs
 
 **Checkpoint**: US3 is independently functional with human authority and immutable audit trail.
 

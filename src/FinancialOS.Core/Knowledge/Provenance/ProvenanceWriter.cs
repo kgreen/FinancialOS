@@ -82,4 +82,89 @@ public sealed class ProvenanceWriter
     {
         return await _repository.ListProvenanceEntriesAsync(financialRecordId, cancellationToken);
     }
+
+    public async Task<ProvenanceEntry> WriteDuplicateDetectionAsync(
+        Guid financialRecordId,
+        DuplicateCandidate candidate,
+        CancellationToken cancellationToken = default)
+    {
+        return await AppendWithRetryAsync(financialRecordId, stepSequence =>
+        {
+            var correlationId = Guid.NewGuid();
+            return ProvenanceEntry.CreateSystemEntry(
+                financialRecordId: financialRecordId,
+                stepType: ProvenanceStepType.DuplicateDetection,
+                stepSequence: stepSequence,
+                sourceReference: $"duplicate:{candidate.Id}",
+                confidence: candidate.Confidence,
+                decisionSummary: $"Duplicate candidate generated for {candidate.MatchedRecordId}",
+                reasonCodes: candidate.ReasonCodes,
+                correlationId: correlationId);
+        }, cancellationToken);
+    }
+
+    public async Task<ProvenanceEntry> WriteDuplicateReviewAsync(
+        Guid financialRecordId,
+        DuplicateCandidate candidate,
+        string actorId,
+        CancellationToken cancellationToken = default)
+    {
+        return await AppendWithRetryAsync(financialRecordId, stepSequence =>
+        {
+            var correlationId = Guid.NewGuid();
+            return ProvenanceEntry.CreateUserEntry(
+                financialRecordId: financialRecordId,
+                stepType: ProvenanceStepType.DuplicateReview,
+                stepSequence: stepSequence,
+                sourceReference: $"duplicate:{candidate.Id}:{candidate.Status}",
+                confidence: candidate.Confidence,
+                decisionSummary: $"Duplicate candidate marked as {candidate.Status}",
+                reasonCodes: new[] { "human-review", ToReasonCode(candidate.Status) },
+                actorId: actorId,
+                correlationId: correlationId);
+        }, cancellationToken);
+    }
+
+    private async Task<ProvenanceEntry> AppendWithRetryAsync(
+        Guid financialRecordId,
+        Func<long, ProvenanceEntry> createEntry,
+        CancellationToken cancellationToken)
+    {
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            var stepSequence = await GetNextStepSequenceAsync(financialRecordId, cancellationToken);
+            var entry = createEntry(stepSequence);
+            try
+            {
+                return await _repository.AppendProvenanceEntryAsync(entry, cancellationToken);
+            }
+            catch (Exception ex) when (attempt < 2 && IsStepSequenceConflict(ex))
+            {
+            }
+        }
+
+        throw new InvalidOperationException("Unable to append provenance entry after retrying step sequence allocation.");
+    }
+
+    private async Task<long> GetNextStepSequenceAsync(Guid financialRecordId, CancellationToken cancellationToken)
+    {
+        var timeline = await _repository.ListProvenanceEntriesAsync(financialRecordId, cancellationToken);
+        return (timeline.Count == 0 ? 0 : timeline.Max(item => item.StepSequence)) + 1;
+    }
+
+    private static bool IsStepSequenceConflict(Exception exception)
+    {
+        var message = exception.InnerException?.Message ?? exception.Message;
+        return message.Contains("IX_ProvenanceEntry_Record_StepSequence_Unique", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("UNIQUE constraint failed", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("duplicate key value violates unique constraint", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ToReasonCode(DuplicateCandidateStatus status) =>
+        status switch
+        {
+            DuplicateCandidateStatus.ConfirmedDuplicate => "confirmed-duplicate",
+            DuplicateCandidateStatus.Dismissed => "dismissed",
+            _ => status.ToString().ToLowerInvariant()
+        };
 }

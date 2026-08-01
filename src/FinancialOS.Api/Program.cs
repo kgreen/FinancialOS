@@ -2,6 +2,7 @@ using FinancialOS.Api.Endpoints;
 using FinancialOS.Api.Validation;
 using FinancialOS.Core.Contracts;
 using Microsoft.AspNetCore.Mvc;
+using FinancialOS.Core.Knowledge.Deduplication;
 using FinancialOS.Core.Knowledge.Normalization;
 using FinancialOS.Core.Knowledge.Provenance;
 using FinancialOS.Core.Knowledge.Rules;
@@ -24,6 +25,8 @@ builder.Services.AddScoped<IRuleManagementService, RuleManagementService>();
 builder.Services.AddScoped<ProvenanceWriter>();
 builder.Services.AddScoped<MerchantAliasService>();
 builder.Services.AddScoped<INormalizationPipelineService, NormalizationPipelineService>();
+builder.Services.AddScoped<DuplicateScoringService>();
+builder.Services.AddScoped<IDuplicateReviewService, DuplicateReviewService>();
 
 var app = builder.Build();
 
@@ -73,6 +76,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.MapRulesEndpoints();
 app.MapNormalizationEndpoints();
+app.MapDuplicateEndpoints();
 
 app.MapPost("/api/v1/evidence", async (IFormFile file, EvidenceImportService importService, IFinancialRepository repository, CancellationToken cancellationToken) =>
 {

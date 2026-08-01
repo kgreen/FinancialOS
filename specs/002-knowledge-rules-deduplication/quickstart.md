@@ -53,10 +53,12 @@ This guide validates Phase 2 behavior end-to-end against the contracts in `contr
 1. Query `/api/v1/records/{id}/provenance` before and after each action.
 2. Verify event count only increases (append-only behavior).
 3. Verify user override events include actor identity and timestamp.
+4. Verify the response includes `recordId` and an `events` array with lower-case `source` values.
 
 ## Automated Test Runs
 
 - `dotnet test FinancialOS.sln --filter "FullyQualifiedName~FinancialOS.Api.Tests"`
+- `dotnet test tests/FinancialOS.Api.Tests/FinancialOS.Api.Tests.csproj --filter "FullyQualifiedName~Provenance || FullyQualifiedName~Explainability"`
 
 Expected coverage from this feature:
 - Deterministic rule evaluation replay

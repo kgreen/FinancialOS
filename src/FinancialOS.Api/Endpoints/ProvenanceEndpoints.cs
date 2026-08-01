@@ -1,4 +1,5 @@
 using FinancialOS.Core.Contracts;
+using FinancialOS.Core.Models;
 using FinancialOS.Shared.Contracts;
 
 namespace FinancialOS.Api.Endpoints;
@@ -19,29 +20,31 @@ public static class ProvenanceEndpoints
             }
 
             var entries = await repository.ListProvenanceEntriesAsync(id, cancellationToken);
-            var response = new ProvenanceTimelineResponse(
+            return Results.Ok(new ProvenanceTimelineResponse(
                 id,
                 entries
                     .OrderBy(item => item.StepSequence)
                     .ThenBy(item => item.CreatedAtUtc)
-                    .Select(item => new ProvenanceEntryResponse(
-                        item.Id,
-                        item.FinancialRecordId,
-                        item.StepType.ToString(),
-                        item.StepSequence,
-                        item.Source.ToString().ToLowerInvariant(),
-                        item.SourceReference,
-                        item.Confidence,
-                        item.DecisionSummary,
-                        item.ReasonCodes,
-                        item.ActorId,
-                        item.CorrelationId,
-                        item.CreatedAtUtc))
-                    .ToList());
-
-            return Results.Ok(response);
+                    .Select(ToResponse)
+                    .ToList()));
         });
 
         return app;
     }
+
+    private static ProvenanceEntryResponse ToResponse(ProvenanceEntry entry) =>
+        new(
+            entry.Id,
+            entry.FinancialRecordId,
+            entry.StepType.ToString(),
+            entry.StepSequence,
+            entry.Source.ToString().ToLowerInvariant(),
+            entry.SourceReference,
+            entry.Confidence,
+            entry.DecisionSummary,
+            entry.ReasonCodes,
+            entry.ActorId,
+            entry.CorrelationId,
+            entry.CreatedAtUtc);
 }
+

@@ -55,4 +55,25 @@ public interface IFinancialRepository
     Task<long?> GetMaxProvenanceStepSequenceAsync(Guid financialRecordId, CancellationToken cancellationToken = default);
     Task<ProvenanceEntry> AppendProvenanceEntryAsync(ProvenanceEntry entry, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ProvenanceEntry>> ListProvenanceEntriesAsync(Guid financialRecordId, CancellationToken cancellationToken = default);
+
+    // spec 003 — evidence duplicate detection
+    Task<FinancialEvidence?> GetEvidenceBySha256Async(string sha256, CancellationToken cancellationToken = default);
+
+    // spec 003 — ImportJob CRUD
+    Task<ImportJob> AddImportJobAsync(ImportJob job, CancellationToken cancellationToken = default);
+    Task<ImportJob?> GetImportJobAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<ImportJob?> UpdateImportJobAsync(ImportJob job, CancellationToken cancellationToken = default);
+    Task<ImportJob?> GetImportJobByEvidenceIdAsync(Guid evidenceId, CancellationToken cancellationToken = default);
+
+    // spec 003 — InstitutionProfile CRUD
+    Task<InstitutionProfile> AddInstitutionProfileAsync(InstitutionProfile profile, CancellationToken cancellationToken = default);
+    Task<InstitutionProfile?> GetInstitutionProfileAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<InstitutionProfile>> ListInstitutionProfilesAsync(CancellationToken cancellationToken = default);
+    Task<InstitutionProfile?> UpdateInstitutionProfileAsync(InstitutionProfile profile, CancellationToken cancellationToken = default);
+    /// <summary>Soft-deletes the profile. Returns false if referenced by any ImportJob.</summary>
+    Task<bool> DeleteInstitutionProfileAsync(Guid id, CancellationToken cancellationToken = default);
+
+    // spec 003 — duplicate detection & job record listing
+    Task<bool> ExternalReferenceIdExistsAsync(string externalReferenceId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<FinancialRecord>> ListRecordsByImportJobAsync(Guid importJobId, CancellationToken cancellationToken = default);
 }

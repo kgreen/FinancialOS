@@ -3,6 +3,7 @@ using System;
 using FinancialOS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinancialOS.Data.Migrations
 {
     [DbContext(typeof(FinancialOsDbContext))]
-    partial class FinancialOsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260801164558_AddTransactionParsing")]
+    partial class AddTransactionParsing
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -188,12 +191,6 @@ namespace FinancialOS.Data.Migrations
 
                     b.HasIndex("Status")
                         .HasDatabaseName("IX_DuplicateCandidate_Status");
-
-                    b.HasIndex("RecordId", "MatchedRecordId")
-                        .HasDatabaseName("IX_DuplicateCandidate_Record_MatchedRecord");
-
-                    b.HasIndex("Status", "Confidence", "EvaluatedAtUtc")
-                        .HasDatabaseName("IX_DuplicateCandidate_Status_Confidence_EvaluatedAtUtc");
 
                     b.ToTable("DuplicateCandidates");
                 });

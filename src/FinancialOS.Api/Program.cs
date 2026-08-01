@@ -9,7 +9,9 @@ using FinancialOS.Core.Knowledge.Rules;
 using FinancialOS.Core.Models;
 using FinancialOS.Data;
 using FinancialOS.Infrastructure.Import;
+using FinancialOS.Infrastructure.Import.Parsers;
 using FinancialOS.Shared.Contracts;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,9 +19,15 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddProblemDetails();
 
+// Configure JSON serialisation: enums as camelCase strings
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase));
+});
+
 builder.Services.AddConfiguredDatabase(builder.Configuration);
 builder.Services.AddScoped<IFinancialRepository, EfFinancialRepository>();
-builder.Services.AddSingleton<EvidenceImportService>();
+builder.Services.AddScoped<EvidenceImportService>();  // kept for legacy use
 builder.Services.AddScoped<IRuleEvaluationService, RuleEvaluationService>();
 builder.Services.AddScoped<IRuleManagementService, RuleManagementService>();
 builder.Services.AddScoped<ProvenanceWriter>();
@@ -27,6 +35,12 @@ builder.Services.AddScoped<MerchantAliasService>();
 builder.Services.AddScoped<INormalizationPipelineService, NormalizationPipelineService>();
 builder.Services.AddScoped<DuplicateScoringService>();
 builder.Services.AddScoped<IDuplicateReviewService, DuplicateReviewService>();
+
+// spec 003 — parsing pipeline
+builder.Services.AddScoped<CsvAutoDetector>();
+builder.Services.AddScoped<ITransactionParser, CsvTransactionParser>();
+builder.Services.AddScoped<ITransactionParser, OfxTransactionParser>();
+builder.Services.AddScoped<IImportOrchestrationService, ImportOrchestrationService>();
 
 var app = builder.Build();
 
@@ -78,40 +92,102 @@ app.MapRulesEndpoints();
 app.MapNormalizationEndpoints();
 app.MapDuplicateEndpoints();
 app.MapProvenanceEndpoints();
+app.MapImportJobEndpoints();
+app.MapInstitutionProfileEndpoints();
 
-app.MapPost("/api/v1/evidence", async (IFormFile file, EvidenceImportService importService, IFinancialRepository repository, CancellationToken cancellationToken) =>
+app.MapPost("/api/v1/evidence", async (
+    IFormFile file,
+    IFormCollection form,
+    IImportOrchestrationService orchestrationService,
+    CancellationToken cancellationToken) =>
 {
     if (file is null || file.Length == 0)
     {
-        return Results.BadRequest("A file is required.");
+        return Results.Problem(
+            detail: "A non-empty file is required.",
+            statusCode: StatusCodes.Status400BadRequest,
+            title: "Bad Request",
+            type: "https://tools.ietf.org/html/rfc9110#section-15.5.1");
     }
 
-    await using var stream = file.OpenReadStream();
-    var result = await importService.ImportAsync(file.FileName, stream, cancellationToken);
-    var evidence = await repository.AddEvidenceAsync(result.Evidence, cancellationToken);
-
-    var record = new FinancialRecord
+    Guid? institutionProfileId = null;
+    if (form.TryGetValue("institutionProfileId", out var profileIdStr) &&
+        Guid.TryParse(profileIdStr, out var parsedProfileId))
     {
-        EvidenceId = evidence.Id,
-        AccountId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-        Description = $"Imported {evidence.OriginalFileName}",
-        Amount = new Money(0m, "USD"),
-        OccurredOn = evidence.UploadedAt,
-        Status = RecordStatus.Pending,
-        ClassificationConfidence = new Confidence(0.2m),
-        Provenance = new Provenance("import", "initial")
-    };
+        institutionProfileId = parsedProfileId;
+    }
 
-    await repository.AddRecordAsync(record, cancellationToken);
+    var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+    if (ext != ".csv" && ext != ".ofx" && ext != ".qfx")
+    {
+        return Results.Problem(
+            detail: $"File format '{ext}' is not supported. Supported formats: .csv, .ofx, .qfx",
+            statusCode: StatusCodes.Status422UnprocessableEntity,
+            title: "Unprocessable Entity",
+            type: "https://tools.ietf.org/html/rfc9110#section-15.5.21");
+    }
 
-    return Results.Ok(new EvidenceUploadResponse(
-        evidence.Id,
-        "accepted",
-        evidence.SourceType.ToString().ToLowerInvariant(),
-        evidence.OriginalFileName,
-        evidence.StoragePath,
-        evidence.Sha256Hash,
-        result.SizeBytes));
+    try
+    {
+        await using var stream = file.OpenReadStream();
+        var result = await orchestrationService.ImportAsync(file.FileName, stream, institutionProfileId, cancellationToken);
+
+        var records = result.CreatedRecords.Select(r => new ImportRecordSummary(
+            Id: r.Id,
+            Date: r.OccurredOn.ToString("yyyy-MM-dd"),
+            Amount: r.Amount.Amount,
+            Currency: r.Amount.Currency,
+            Description: r.Description,
+            ClassificationStatus: (r.ClassificationStatus ?? FinancialOS.Core.Models.ClassificationStatus.Pending) == FinancialOS.Core.Models.ClassificationStatus.Classified ? "classified" : "pending",
+            ClassificationConfidence: r.ClassificationConfidence?.Score,
+            ClassificationReasonCode: r.ClassificationReasonCode
+        )).ToList();
+
+        var status = result.WasDuplicate
+            ? "duplicate"
+            : result.Job.Status switch
+            {
+                ImportJobStatus.PartialSuccess => "partialSuccess",
+                ImportJobStatus.Completed => "completed",
+                ImportJobStatus.Failed => "failed",
+                ImportJobStatus.Processing => "processing",
+                _ => "pending"
+            };
+
+        var parserTypeStr = result.Job.ParserType switch
+        {
+            ParserType.CsvConfigured => "csvConfigured",
+            ParserType.CsvAutoDetected => "csvAutoDetected",
+            ParserType.Ofx => "ofx",
+            _ => result.Job.ParserType.ToString()
+        };
+
+        return Results.Ok(new EvidenceImportResponse(
+            EvidenceId: result.Evidence.Id,
+            ImportJobId: result.Job.Id,
+            Status: status,
+            ParserType: parserTypeStr,
+            ParsedTransactionCount: result.WasDuplicate ? 0 : result.CreatedRecords.Count,
+            FailedRowCount: result.WasDuplicate ? 0 : result.Job.FailedRowCount,
+            Records: records
+        ));
+    }
+    catch (CsvLayoutUndetectableException ex)
+    {
+        return Results.Problem(
+            detail: ex.Message,
+            statusCode: StatusCodes.Status422UnprocessableEntity,
+            title: "Unprocessable Entity",
+            type: "https://tools.ietf.org/html/rfc9110#section-15.5.21");
+    }
+    catch (OfxFormatException ex)
+    {
+        return Results.Problem(
+            detail: ex.Message,
+            statusCode: StatusCodes.Status422UnprocessableEntity,
+            title: "Unprocessable Entity",
+            type: "https://tools.ietf.org/html/rfc9110#section-15.5.21");
+    }
 }).DisableAntiforgery();
 
 app.MapGet("/api/v1/evidence/{id:guid}", async (Guid id, IFinancialRepository repository, CancellationToken cancellationToken) =>

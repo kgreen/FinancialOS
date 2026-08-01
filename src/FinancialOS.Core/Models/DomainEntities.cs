@@ -52,6 +52,18 @@ public sealed class FinancialRecord
     public RecordStatus Status { get; set; } = RecordStatus.Pending;
     public Confidence? ClassificationConfidence { get; set; }
     public Provenance? Provenance { get; set; }
+
+    // spec 003 fields — all nullable for backward-compatibility with spec 001/002 rows
+    /// <summary>FK to ImportJob; null for manually created records.</summary>
+    public Guid? ImportJobId { get; set; }
+    /// <summary>OFX FITID or CSV reference column value; used for cross-import duplicate detection.</summary>
+    public string? ExternalReferenceId { get; set; }
+    /// <summary>0-based source row number for traceability in error reports.</summary>
+    public int? RowIndex { get; set; }
+    /// <summary>Pending or Classified; null for legacy records created before spec 003 (serialized as "pending").</summary>
+    public ClassificationStatus? ClassificationStatus { get; set; }
+    /// <summary>First reason code from RuleEvaluationResult.ReasonCodes.</summary>
+    public string? ClassificationReasonCode { get; set; }
 }
 
 public sealed class FinancialAccount

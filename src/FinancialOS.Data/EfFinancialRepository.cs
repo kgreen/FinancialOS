@@ -286,4 +286,97 @@ public sealed class EfFinancialRepository : IFinancialRepository
             .ToListAsync(cancellationToken);
         return entries.OrderBy(item => item.StepSequence).ThenBy(item => item.CreatedAtUtc).ToList();
     }
+
+    // spec 003 — evidence duplicate detection
+    public async Task<FinancialEvidence?> GetEvidenceBySha256Async(string sha256, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Evidence.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Sha256Hash == sha256, cancellationToken);
+    }
+
+    // spec 003 — ImportJob CRUD
+    public async Task<ImportJob> AddImportJobAsync(ImportJob job, CancellationToken cancellationToken = default)
+    {
+        job.Id = job.Id == Guid.Empty ? Guid.NewGuid() : job.Id;
+        _dbContext.ImportJobs.Add(job);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return job;
+    }
+
+    public async Task<ImportJob?> GetImportJobAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.ImportJobs.AsNoTracking()
+            .FirstOrDefaultAsync(j => j.Id == id, cancellationToken);
+    }
+
+    public async Task<ImportJob?> UpdateImportJobAsync(ImportJob job, CancellationToken cancellationToken = default)
+    {
+        _dbContext.ImportJobs.Update(job);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return job;
+    }
+
+    public async Task<ImportJob?> GetImportJobByEvidenceIdAsync(Guid evidenceId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.ImportJobs.AsNoTracking()
+            .FirstOrDefaultAsync(j => j.EvidenceId == evidenceId, cancellationToken);
+    }
+
+    // spec 003 — InstitutionProfile CRUD
+    public async Task<InstitutionProfile> AddInstitutionProfileAsync(InstitutionProfile profile, CancellationToken cancellationToken = default)
+    {
+        profile.Id = profile.Id == Guid.Empty ? Guid.NewGuid() : profile.Id;
+        _dbContext.InstitutionProfiles.Add(profile);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return profile;
+    }
+
+    public async Task<InstitutionProfile?> GetInstitutionProfileAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.InstitutionProfiles.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<InstitutionProfile>> ListInstitutionProfilesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.InstitutionProfiles.AsNoTracking()
+            .OrderBy(p => p.Name)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<InstitutionProfile?> UpdateInstitutionProfileAsync(InstitutionProfile profile, CancellationToken cancellationToken = default)
+    {
+        _dbContext.InstitutionProfiles.Update(profile);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return profile;
+    }
+
+    public async Task<bool> DeleteInstitutionProfileAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var profile = await _dbContext.InstitutionProfiles
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        if (profile is null) return false;
+
+        var hasJobs = await _dbContext.ImportJobs
+            .AnyAsync(j => j.InstitutionProfileId == id, cancellationToken);
+        if (hasJobs) return false;
+
+        profile.IsDeleted = true;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    // spec 003 — duplicate detection & job record listing
+    public async Task<bool> ExternalReferenceIdExistsAsync(string externalReferenceId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Records.AsNoTracking()
+            .AnyAsync(r => r.ExternalReferenceId == externalReferenceId, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<FinancialRecord>> ListRecordsByImportJobAsync(Guid importJobId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Records.AsNoTracking()
+            .Where(r => r.ImportJobId == importJobId)
+            .ToListAsync(cancellationToken);
+    }
 }

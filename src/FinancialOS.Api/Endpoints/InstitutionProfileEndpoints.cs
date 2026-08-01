@@ -2,6 +2,7 @@ using FinancialOS.Core.Contracts;
 using FinancialOS.Core.Models;
 using FinancialOS.Shared.Contracts;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 
 namespace FinancialOS.Api.Endpoints;
 
@@ -177,9 +178,22 @@ public static class InstitutionProfileEndpoints
 
         if (dateFormatPattern is not null)
         {
-            _ = DateTime.TryParseExact("01/01/2024", dateFormatPattern,
-                System.Globalization.CultureInfo.InvariantCulture,
-                System.Globalization.DateTimeStyles.None, out _);
+            var probeDate = new DateOnly(2024, 1, 1);
+            string rendered;
+            try
+            {
+                rendered = probeDate.ToString(dateFormatPattern, CultureInfo.InvariantCulture);
+            }
+            catch (FormatException)
+            {
+                return $"Invalid dateFormatPattern '{dateFormatPattern}'.";
+            }
+
+            if (!DateOnly.TryParseExact(rendered, dateFormatPattern, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed) ||
+                parsed != probeDate)
+            {
+                return $"Invalid dateFormatPattern '{dateFormatPattern}'.";
+            }
         }
 
         return null;

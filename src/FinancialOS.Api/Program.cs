@@ -27,7 +27,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.AddConfiguredDatabase(builder.Configuration);
 builder.Services.AddScoped<IFinancialRepository, EfFinancialRepository>();
-builder.Services.AddScoped<EvidenceImportService>();  // kept for legacy use
+builder.Services.AddScoped<EvidenceImportService>();
 builder.Services.AddScoped<IRuleEvaluationService, RuleEvaluationService>();
 builder.Services.AddScoped<IRuleManagementService, RuleManagementService>();
 builder.Services.AddScoped<ProvenanceWriter>();
@@ -187,6 +187,19 @@ app.MapPost("/api/v1/evidence", async (
             statusCode: StatusCodes.Status422UnprocessableEntity,
             title: "Unprocessable Entity",
             type: "https://tools.ietf.org/html/rfc9110#section-15.5.21");
+    }
+    catch (EvidenceImportValidationException ex)
+    {
+        var title = ex.StatusCode == StatusCodes.Status400BadRequest ? "Bad Request" : "Unprocessable Entity";
+        var type = ex.StatusCode == StatusCodes.Status400BadRequest
+            ? "https://tools.ietf.org/html/rfc9110#section-15.5.1"
+            : "https://tools.ietf.org/html/rfc9110#section-15.5.21";
+
+        return Results.Problem(
+            detail: ex.Message,
+            statusCode: ex.StatusCode,
+            title: title,
+            type: type);
     }
 }).DisableAntiforgery();
 

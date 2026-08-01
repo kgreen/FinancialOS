@@ -317,3 +317,15 @@ With two developers after Phase 2 completes:
 - All new `FinancialRecord` columns are nullable — migration is non-destructive on both SQLite and PostgreSQL (no `NOT NULL` without default)
 - `ClassificationStatus` is a **new, separate enum** from `RecordStatus` — do not conflate them (research.md §R-4 decision B)
 - `ImportJob.FailedRows` is stored as a **JSON column** (not a related table) — no FK or join needed to retrieve failure details
+
+## Phase 8: Convergence
+
+- [X] T069 Add per-record provenance timeline writes during hydration in `src/FinancialOS.Infrastructure/Import/ImportOrchestrationService.cs` (using `ProvenanceWriter` or repository append APIs) so each imported record emits a provenance entry containing `EvidenceId`, `ImportJobId`, parser type, and row index/FITID per FR-017 and SC-002 (missing)
+- [X] T070 Scope cross-import duplicate suppression in `src/FinancialOS.Infrastructure/Import/ImportOrchestrationService.cs` to OFX/QFX `FITID` only (do not suppress CSV rows based solely on `ExternalReferenceId`) per FR-020 (contradicts)
+- [X] T071 Ensure `ImportJob.ParserType` reflects configured CSV imports by setting the final parser type after `ParseAsync` (and before persisting final job state) in `src/FinancialOS.Infrastructure/Import/ImportOrchestrationService.cs` per FR-023 and FR-029 (partial)
+- [X] T072 Enforce `DateFormatPattern` validation failures in `src/FinancialOS.Api/Endpoints/InstitutionProfileEndpoints.cs` so invalid patterns return `400` instead of being silently accepted, per FR-006 and plan validation rules (partial)
+
+## Phase 9: Convergence
+
+- [X] T073 Reject whitespace-only uploads at the evidence boundary before orchestration begins (for both CSV and OFX/QFX), returning `400 Bad Request` and creating no `ImportJob`, per Edge Case: "Completely blank file" and FR-022 response/error contract (missing)
+- [X] T074 Refactor `POST /api/v1/evidence` to route file-level validation/hash/dedup/storage through `EvidenceImportService` (or an equivalent dedicated evidence-layer component) so orchestration remains parse/hydrate-only, per plan §1.4 and tasks T042/T043 (partial)

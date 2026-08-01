@@ -36,6 +36,7 @@ public enum DuplicateCandidateStatus
 
 public enum ProvenanceStepType
 {
+    ImportHydration,
     Normalization,
     RuleEvaluation,
     DuplicateDetection,

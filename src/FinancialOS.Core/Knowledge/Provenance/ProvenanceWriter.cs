@@ -76,6 +76,33 @@ public sealed class ProvenanceWriter
         return await _repository.AppendProvenanceEntryAsync(entry, cancellationToken);
     }
 
+    public async Task<ProvenanceEntry> WriteImportHydrationAsync(
+        Guid financialRecordId,
+        Guid evidenceId,
+        Guid importJobId,
+        ParserType parserType,
+        int? rowIndex,
+        string? externalReferenceId,
+        CancellationToken cancellationToken = default)
+    {
+        return await AppendWithRetryAsync(financialRecordId, stepSequence =>
+        {
+            var sourceReference = $"import-job:{importJobId}";
+            var detail = externalReferenceId is null
+                ? $"row:{rowIndex?.ToString() ?? "n/a"}"
+                : $"fitid:{externalReferenceId}";
+            return ProvenanceEntry.CreateSystemEntry(
+                financialRecordId: financialRecordId,
+                stepType: ProvenanceStepType.ImportHydration,
+                stepSequence: stepSequence,
+                sourceReference: sourceReference,
+                confidence: null,
+                decisionSummary: $"Hydrated from evidence {evidenceId} using parser {parserType} ({detail})",
+                reasonCodes: new[] { "import-hydration" },
+                correlationId: importJobId);
+        }, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<ProvenanceEntry>> GetTimelineAsync(
         Guid financialRecordId,
         CancellationToken cancellationToken = default)

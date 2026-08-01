@@ -60,6 +60,19 @@ public sealed class MerchantNormalizationServiceTests
         public Task<DuplicateCandidate?> UpdateDuplicateCandidateAsync(DuplicateCandidate candidate, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public Task<ProvenanceEntry> AppendProvenanceEntryAsync(ProvenanceEntry entry, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public Task<IReadOnlyList<ProvenanceEntry>> ListProvenanceEntriesAsync(Guid financialRecordId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        // spec 003 stubs
+        public Task<FinancialEvidence?> GetEvidenceBySha256Async(string sha256, CancellationToken cancellationToken = default) => Task.FromResult<FinancialEvidence?>(null);
+        public Task<ImportJob> AddImportJobAsync(ImportJob job, CancellationToken cancellationToken = default) => Task.FromResult(job);
+        public Task<ImportJob?> GetImportJobAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<ImportJob?>(null);
+        public Task<ImportJob?> UpdateImportJobAsync(ImportJob job, CancellationToken cancellationToken = default) => Task.FromResult<ImportJob?>(job);
+        public Task<ImportJob?> GetImportJobByEvidenceIdAsync(Guid evidenceId, CancellationToken cancellationToken = default) => Task.FromResult<ImportJob?>(null);
+        public Task<InstitutionProfile> AddInstitutionProfileAsync(InstitutionProfile profile, CancellationToken cancellationToken = default) => Task.FromResult(profile);
+        public Task<InstitutionProfile?> GetInstitutionProfileAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult<InstitutionProfile?>(null);
+        public Task<IReadOnlyList<InstitutionProfile>> ListInstitutionProfilesAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<InstitutionProfile>>(new List<InstitutionProfile>());
+        public Task<InstitutionProfile?> UpdateInstitutionProfileAsync(InstitutionProfile profile, CancellationToken cancellationToken = default) => Task.FromResult<InstitutionProfile?>(profile);
+        public Task<bool> DeleteInstitutionProfileAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<bool> ExternalReferenceIdExistsAsync(string externalReferenceId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        public Task<IReadOnlyList<FinancialRecord>> ListRecordsByImportJobAsync(Guid importJobId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<FinancialRecord>>(new List<FinancialRecord>());
     }
 
     private static (FakeRepository Repo, MerchantAliasService Service, Guid CanonicalId) CreateServiceWithCanonicalMerchant(Guid? categoryId = null)

@@ -34,6 +34,8 @@ public sealed class FinancialOsDbContext : DbContext
     public DbSet<NormalizationDecision> NormalizationDecisions => Set<NormalizationDecision>();
     public DbSet<DuplicateCandidate> DuplicateCandidates => Set<DuplicateCandidate>();
     public DbSet<ProvenanceEntry> ProvenanceEntries => Set<ProvenanceEntry>();
+    public DbSet<InstitutionProfile> InstitutionProfiles => Set<InstitutionProfile>();
+    public DbSet<ImportJob> ImportJobs => Set<ImportJob>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,6 +52,8 @@ public sealed class FinancialOsDbContext : DbContext
         ConfigureNormalizationDecision(modelBuilder);
         ConfigureDuplicateCandidate(modelBuilder);
         ConfigureProvenanceEntry(modelBuilder);
+        ConfigureInstitutionProfile(modelBuilder);
+        ConfigureImportJob(modelBuilder);
         ConfigureGlobalBehaviors(modelBuilder);
     }
 
@@ -111,6 +115,17 @@ public sealed class FinancialOsDbContext : DbContext
 
             entity.HasIndex(item => new { item.AccountId, item.Status })
                 .HasDatabaseName("IX_FinancialRecord_AccountId_Status");
+
+            // spec 003 new columns
+            entity.Property(item => item.ClassificationStatus)
+                .HasConversion<string>()
+                .HasColumnName("ClassificationStatus");
+
+            entity.HasIndex(item => item.ImportJobId)
+                .HasDatabaseName("IX_FinancialRecord_ImportJobId");
+
+            entity.HasIndex(item => item.ExternalReferenceId)
+                .HasDatabaseName("IX_FinancialRecord_ExternalReferenceId");
         });
     }
 
@@ -306,6 +321,60 @@ public sealed class FinancialOsDbContext : DbContext
                 .HasDatabaseName("IX_ProvenanceEntry_Record_StepSequence_Unique");
             entity.HasIndex(item => item.CorrelationId)
                 .HasDatabaseName("IX_ProvenanceEntry_CorrelationId");
+        });
+    }
+
+    private static readonly ValueComparer<Dictionary<string, string>> DictionaryComparer = new(
+        (left, right) => left != null && right != null && left.Count == right.Count && left.All(kv => right.ContainsKey(kv.Key) && right[kv.Key] == kv.Value),
+        dict => dict == null ? 0 : dict.Aggregate(0, (hash, kv) => HashCode.Combine(hash, kv.Key.GetHashCode(), kv.Value.GetHashCode())),
+        dict => dict == null ? new Dictionary<string, string>() : new Dictionary<string, string>(dict));
+
+    private static readonly ValueComparer<List<FailedRowEntry>> FailedRowListComparer = new(
+        (left, right) => left != null && right != null && left.Count == right.Count && left.Zip(right).All(pair => pair.First.RowIndex == pair.Second.RowIndex && pair.First.Reason == pair.Second.Reason),
+        list => list == null ? 0 : list.Aggregate(0, (hash, item) => HashCode.Combine(hash, item.RowIndex, item.Reason.GetHashCode())),
+        list => list == null ? new List<FailedRowEntry>() : list.ToList());
+
+    private static void ConfigureInstitutionProfile(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<InstitutionProfile>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired();
+            entity.Property(e => e.AmountLayout).HasConversion<string>();
+
+            entity.Property(e => e.ColumnMappings)
+                .HasConversion(
+                    dict => JsonSerializer.Serialize(dict, JsonSerializerOptions.Default),
+                    json => JsonSerializer.Deserialize<Dictionary<string, string>>(json, JsonSerializerOptions.Default) ?? new())
+                .Metadata.SetValueComparer(DictionaryComparer);
+
+            entity.HasIndex(e => e.Name)
+                .IsUnique()
+                .HasDatabaseName("IX_InstitutionProfile_Name_Unique");
+
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
+    }
+
+    private static void ConfigureImportJob(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ImportJob>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ParserType).HasConversion<string>();
+            entity.Property(e => e.Status).HasConversion<string>();
+
+            entity.Property(e => e.FailedRows)
+                .HasConversion(
+                    list => JsonSerializer.Serialize(list, JsonSerializerOptions.Default),
+                    json => JsonSerializer.Deserialize<List<FailedRowEntry>>(json, JsonSerializerOptions.Default) ?? new())
+                .Metadata.SetValueComparer(FailedRowListComparer);
+
+            entity.HasIndex(e => e.EvidenceId)
+                .HasDatabaseName("IX_ImportJob_EvidenceId");
+
+            entity.HasIndex(e => e.Status)
+                .HasDatabaseName("IX_ImportJob_Status");
         });
     }
 

@@ -37,6 +37,7 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
 
         evidence.Id = evidence.Id == Guid.Empty ? Guid.NewGuid() : evidence.Id;
         _evidence[evidence.Id] = evidence;
+        _evidenceBySha256[evidence.Sha256Hash] = evidence;
         return Task.FromResult(evidence);
     }
 
@@ -239,5 +240,87 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
             .ThenBy(item => item.CreatedAtUtc)
             .ToList();
         return Task.FromResult<IReadOnlyList<ProvenanceEntry>>(entries);
+    }
+
+    // spec 003 in-memory implementations
+    private readonly Dictionary<string, FinancialEvidence> _evidenceBySha256 = new();
+    private readonly Dictionary<Guid, ImportJob> _importJobs = new();
+    private readonly Dictionary<Guid, InstitutionProfile> _institutionProfiles = new();
+
+    public Task<FinancialEvidence?> GetEvidenceBySha256Async(string sha256, CancellationToken cancellationToken = default)
+    {
+        _evidenceBySha256.TryGetValue(sha256, out var e);
+        return Task.FromResult(e);
+    }
+
+    public Task<ImportJob> AddImportJobAsync(ImportJob job, CancellationToken cancellationToken = default)
+    {
+        if (job.Id == Guid.Empty) job.Id = Guid.NewGuid();
+        _importJobs[job.Id] = job;
+        return Task.FromResult(job);
+    }
+
+    public Task<ImportJob?> GetImportJobAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        _importJobs.TryGetValue(id, out var j);
+        return Task.FromResult(j);
+    }
+
+    public Task<ImportJob?> UpdateImportJobAsync(ImportJob job, CancellationToken cancellationToken = default)
+    {
+        _importJobs[job.Id] = job;
+        return Task.FromResult<ImportJob?>(job);
+    }
+
+    public Task<ImportJob?> GetImportJobByEvidenceIdAsync(Guid evidenceId, CancellationToken cancellationToken = default)
+    {
+        var job = _importJobs.Values.FirstOrDefault(j => j.EvidenceId == evidenceId);
+        return Task.FromResult(job);
+    }
+
+    public Task<InstitutionProfile> AddInstitutionProfileAsync(InstitutionProfile profile, CancellationToken cancellationToken = default)
+    {
+        if (profile.Id == Guid.Empty) profile.Id = Guid.NewGuid();
+        _institutionProfiles[profile.Id] = profile;
+        return Task.FromResult(profile);
+    }
+
+    public Task<InstitutionProfile?> GetInstitutionProfileAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        _institutionProfiles.TryGetValue(id, out var p);
+        return Task.FromResult(p?.IsDeleted == true ? null : p);
+    }
+
+    public Task<IReadOnlyList<InstitutionProfile>> ListInstitutionProfilesAsync(CancellationToken cancellationToken = default)
+    {
+        var profiles = _institutionProfiles.Values.Where(p => !p.IsDeleted).OrderBy(p => p.Name).ToList();
+        return Task.FromResult<IReadOnlyList<InstitutionProfile>>(profiles);
+    }
+
+    public Task<InstitutionProfile?> UpdateInstitutionProfileAsync(InstitutionProfile profile, CancellationToken cancellationToken = default)
+    {
+        _institutionProfiles[profile.Id] = profile;
+        return Task.FromResult<InstitutionProfile?>(profile);
+    }
+
+    public Task<bool> DeleteInstitutionProfileAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        if (!_institutionProfiles.TryGetValue(id, out var profile)) return Task.FromResult(false);
+        var hasJobs = _importJobs.Values.Any(j => j.InstitutionProfileId == id);
+        if (hasJobs) return Task.FromResult(false);
+        profile.IsDeleted = true;
+        return Task.FromResult(true);
+    }
+
+    public Task<bool> ExternalReferenceIdExistsAsync(string externalReferenceId, CancellationToken cancellationToken = default)
+    {
+        var exists = _records.Values.Any(r => r.ExternalReferenceId == externalReferenceId);
+        return Task.FromResult(exists);
+    }
+
+    public Task<IReadOnlyList<FinancialRecord>> ListRecordsByImportJobAsync(Guid importJobId, CancellationToken cancellationToken = default)
+    {
+        var records = _records.Values.Where(r => r.ImportJobId == importJobId).ToList();
+        return Task.FromResult<IReadOnlyList<FinancialRecord>>(records);
     }
 }

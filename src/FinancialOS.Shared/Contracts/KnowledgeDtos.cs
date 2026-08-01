@@ -106,6 +106,9 @@ public sealed record DuplicateCandidateResponse(
     string? ReviewedByUserId,
     DateTimeOffset? ReviewedAtUtc);
 
+public sealed record DuplicateEvaluateRequest(
+    Guid RecordId);
+
 public sealed record ProvenanceEntryResponse(
     Guid Id,
     Guid FinancialRecordId,

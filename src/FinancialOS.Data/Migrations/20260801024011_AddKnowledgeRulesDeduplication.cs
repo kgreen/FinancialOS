@@ -11,30 +11,55 @@ namespace FinancialOS.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("""
-                DELETE FROM "Rules"
-                WHERE rowid NOT IN (
-                    SELECT MIN(rowid)
-                    FROM "Rules"
-                    GROUP BY "Name"
-                );
-                """);
-            migrationBuilder.Sql("""
-                DELETE FROM "Evidence"
-                WHERE rowid NOT IN (
-                    SELECT MIN(rowid)
-                    FROM "Evidence"
-                    GROUP BY "Sha256Hash"
-                );
-                """);
-            migrationBuilder.Sql("""
-                DELETE FROM "Categories"
-                WHERE rowid NOT IN (
-                    SELECT MIN(rowid)
-                    FROM "Categories"
-                    GROUP BY "Name"
-                );
-                """);
+            if (ActiveProvider.Contains("Sqlite", StringComparison.OrdinalIgnoreCase))
+            {
+                migrationBuilder.Sql("""
+                    DELETE FROM "Rules"
+                    WHERE rowid NOT IN (
+                        SELECT MIN(rowid)
+                        FROM "Rules"
+                        GROUP BY "Name"
+                    );
+                    """);
+                migrationBuilder.Sql("""
+                    DELETE FROM "Evidence"
+                    WHERE rowid NOT IN (
+                        SELECT MIN(rowid)
+                        FROM "Evidence"
+                        GROUP BY "Sha256Hash"
+                    );
+                    """);
+                migrationBuilder.Sql("""
+                    DELETE FROM "Categories"
+                    WHERE rowid NOT IN (
+                        SELECT MIN(rowid)
+                        FROM "Categories"
+                        GROUP BY "Name"
+                    );
+                    """);
+            }
+            else if (ActiveProvider.Contains("Npgsql", StringComparison.OrdinalIgnoreCase)
+                || ActiveProvider.Contains("PostgreSQL", StringComparison.OrdinalIgnoreCase))
+            {
+                migrationBuilder.Sql("""
+                    DELETE FROM "Rules" r
+                    USING "Rules" r2
+                    WHERE r."Name" = r2."Name"
+                      AND r.ctid > r2.ctid;
+                    """);
+                migrationBuilder.Sql("""
+                    DELETE FROM "Evidence" e
+                    USING "Evidence" e2
+                    WHERE e."Sha256Hash" = e2."Sha256Hash"
+                      AND e.ctid > e2.ctid;
+                    """);
+                migrationBuilder.Sql("""
+                    DELETE FROM "Categories" c
+                    USING "Categories" c2
+                    WHERE c."Name" = c2."Name"
+                      AND c.ctid > c2.ctid;
+                    """);
+            }
 
             migrationBuilder.CreateTable(
                 name: "CanonicalMerchants",
@@ -250,6 +275,16 @@ namespace FinancialOS.Data.Migrations
                 name: "IX_DuplicateCandidate_Status",
                 table: "DuplicateCandidates",
                 column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DuplicateCandidate_Record_MatchedRecord",
+                table: "DuplicateCandidates",
+                columns: new[] { "RecordId", "MatchedRecordId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DuplicateCandidate_Status_Confidence_EvaluatedAtUtc",
+                table: "DuplicateCandidates",
+                columns: new[] { "Status", "Confidence", "EvaluatedAtUtc" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_MerchantAlias_Canonical_AliasNormalized",

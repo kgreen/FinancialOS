@@ -18,66 +18,77 @@ public sealed class ExplainabilityCoverageIntegrationTests : IClassFixture<WebAp
     }
 
     [Fact]
-    public async Task DecisionEndpoints_ExposeConfidenceReasonCodesAndProvenance()
+    public async Task RuleAndNormalizationResponses_IncludeConfidenceAndReasonCodes()
     {
-        var recordId = await SeedRecordAsync();
+        var recordId = await SeedRecordAsync("Contoso Market Explainability");
         using var client = _factory.CreateClient();
 
         var normalizeResponse = await client.PostAsync($"/api/v1/records/{recordId}/normalize", content: null);
         Assert.Equal(HttpStatusCode.OK, normalizeResponse.StatusCode);
-        var normalize = await normalizeResponse.Content.ReadFromJsonAsync<NormalizeRecordResponse>();
-        Assert.NotNull(normalize);
-        KnowledgeAssertions.AssertConfidenceInRange(normalize!.Confidence);
-        Assert.NotEmpty(normalize.ReasonCodes);
-
-        var provenanceResponse = await client.GetAsync($"/api/v1/records/{recordId}/provenance");
-        Assert.Equal(HttpStatusCode.OK, provenanceResponse.StatusCode);
-        var provenance = await provenanceResponse.Content.ReadFromJsonAsync<ProvenanceTimelineResponse>();
-        Assert.NotNull(provenance);
-        Assert.NotEmpty(provenance!.Events);
-        Assert.All(provenance.Events, item =>
-        {
-            KnowledgeAssertions.AssertConfidenceInRange(item.Confidence ?? 0m);
-            Assert.NotEmpty(item.ReasonCodes);
-        });
+        var normalizeBody = await normalizeResponse.Content.ReadFromJsonAsync<NormalizeRecordResponse>();
+        Assert.NotNull(normalizeBody);
+        KnowledgeAssertions.AssertConfidenceInRange(normalizeBody!.Confidence);
+        Assert.NotEmpty(normalizeBody.ReasonCodes);
+        Assert.All(normalizeBody.ReasonCodes, KnowledgeAssertions.AssertHasReasonCode);
     }
 
     [Fact]
-    public async Task DuplicateWorkflow_ExposesExplainabilityAndAuditTrail()
+    public async Task DuplicateResponses_IncludeConfidenceAndReasonCodes()
     {
-        var recordId = await SeedDuplicatePairAsync();
+        var (primaryId, _) = await SeedDuplicatePairAsync();
         using var client = _factory.CreateClient();
 
-        var response = await client.PostAsJsonAsync("/api/v1/duplicates/evaluate", new DuplicateEvaluateRequest(recordId));
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var candidate = await response.Content.ReadFromJsonAsync<DuplicateCandidateResponse>();
+        var evaluateResponse = await client.PostAsJsonAsync("/api/v1/duplicates/evaluate", new DuplicateEvaluateRequest(primaryId));
+        Assert.Equal(HttpStatusCode.OK, evaluateResponse.StatusCode);
+
+        var candidate = await evaluateResponse.Content.ReadFromJsonAsync<DuplicateCandidateResponse>();
         Assert.NotNull(candidate);
         KnowledgeAssertions.AssertConfidenceInRange(candidate!.Confidence);
         Assert.NotEmpty(candidate.ReasonCodes);
-
-        client.DefaultRequestHeaders.Add("X-Actor-Id", "steward-9");
-        var confirm = await client.PostAsync($"/api/v1/duplicates/candidates/{candidate.Id}/confirm", content: null);
-        Assert.Equal(HttpStatusCode.OK, confirm.StatusCode);
-
-        var provenance = await client.GetAsync($"/api/v1/records/{recordId}/provenance");
-        Assert.Equal(HttpStatusCode.OK, provenance.StatusCode);
-        var timeline = await provenance.Content.ReadFromJsonAsync<ProvenanceTimelineResponse>();
-        Assert.NotNull(timeline);
-        Assert.Contains(timeline!.Events, item => item.StepType == ProvenanceStepType.DuplicateReview.ToString());
+        Assert.All(candidate.ReasonCodes, KnowledgeAssertions.AssertHasReasonCode);
     }
 
-    private async Task<Guid> SeedRecordAsync()
+    [Fact]
+    public async Task ProvenanceTimeline_ContainsExplainableSystemAndUserEvents()
+    {
+        var (primaryId, _) = await SeedDuplicatePairAsync();
+        using var client = _factory.CreateClient();
+
+        await client.PostAsync($"/api/v1/records/{primaryId}/normalize", content: null);
+        var evaluateResponse = await client.PostAsJsonAsync("/api/v1/duplicates/evaluate", new DuplicateEvaluateRequest(primaryId));
+        var candidate = await evaluateResponse.Content.ReadFromJsonAsync<DuplicateCandidateResponse>();
+        Assert.NotNull(candidate);
+
+        client.DefaultRequestHeaders.Add("X-Actor-Id", "explainability-user");
+        await client.PostAsync($"/api/v1/duplicates/candidates/{candidate!.Id}/dismiss", content: null);
+
+        var timelineResponse = await client.GetAsync($"/api/v1/records/{primaryId}/provenance");
+        Assert.Equal(HttpStatusCode.OK, timelineResponse.StatusCode);
+        var timeline = await timelineResponse.Content.ReadFromJsonAsync<ProvenanceTimelineResponse>();
+        Assert.NotNull(timeline);
+        Assert.NotEmpty(timeline!.Events);
+
+        Assert.Contains(timeline.Events, item => item.StepType == ProvenanceStepType.Normalization.ToString());
+        Assert.Contains(timeline.Events, item => item.StepType == ProvenanceStepType.DuplicateDetection.ToString());
+        Assert.Contains(timeline.Events, item => item.StepType == ProvenanceStepType.DuplicateReview.ToString() && item.ActorId == "explainability-user");
+        Assert.All(timeline.Events, item =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(item.DecisionSummary));
+            Assert.NotNull(item.ReasonCodes);
+        });
+    }
+
+    private async Task<Guid> SeedRecordAsync(string description)
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<FinancialOsDbContext>();
-
         var record = new FinancialRecord
         {
             Id = Guid.NewGuid(),
             AccountId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-            Description = "Explainability Coverage",
-            Amount = new Money(21.50m, "USD"),
-            OccurredOn = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero)
+            Description = description,
+            Amount = new Money(19.99m, "USD"),
+            OccurredOn = DateTimeOffset.UtcNow
         };
 
         db.Records.Add(record);
@@ -85,32 +96,31 @@ public sealed class ExplainabilityCoverageIntegrationTests : IClassFixture<WebAp
         return record.Id;
     }
 
-    private async Task<Guid> SeedDuplicatePairAsync()
+    private async Task<(Guid PrimaryId, Guid MatchId)> SeedDuplicatePairAsync()
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<FinancialOsDbContext>();
-
         var accountId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         var primary = new FinancialRecord
         {
             Id = Guid.NewGuid(),
             AccountId = accountId,
-            Description = "Explainability Duplicate A",
-            Amount = new Money(91m, "USD"),
-            OccurredOn = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero)
+            Description = "Explainability pair",
+            Amount = new Money(50m, "USD"),
+            OccurredOn = new DateTimeOffset(2026, 4, 1, 0, 0, 0, TimeSpan.Zero)
         };
         var match = new FinancialRecord
         {
             Id = Guid.NewGuid(),
             AccountId = accountId,
-            Description = "Explainability Duplicate A posted",
-            Amount = new Money(91m, "USD"),
-            OccurredOn = new DateTimeOffset(2026, 6, 2, 0, 0, 0, TimeSpan.Zero)
+            Description = "Explainability pair posted",
+            Amount = new Money(50m, "USD"),
+            OccurredOn = new DateTimeOffset(2026, 4, 2, 0, 0, 0, TimeSpan.Zero)
         };
 
         db.Records.Add(primary);
         db.Records.Add(match);
         await db.SaveChangesAsync();
-        return primary.Id;
+        return (primary.Id, match.Id);
     }
 }

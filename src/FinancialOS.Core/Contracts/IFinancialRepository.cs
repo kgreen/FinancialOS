@@ -11,6 +11,11 @@ public interface IFinancialRepository
     Task<FinancialRecord> AddRecordAsync(FinancialRecord record, CancellationToken cancellationToken = default);
     Task<FinancialRecord?> GetRecordAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<FinancialRecord>> ListRecordsAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<FinancialRecord>> ListPotentialDuplicateRecordsAsync(
+        Guid recordId,
+        Guid? accountId,
+        DateTimeOffset occurredOn,
+        CancellationToken cancellationToken = default);
     Task<FinancialRecord?> UpdateRecordAsync(FinancialRecord record, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<FinancialAccount>> ListAccountsAsync(CancellationToken cancellationToken = default);
@@ -41,8 +46,13 @@ public interface IFinancialRepository
     Task<DuplicateCandidate> AddDuplicateCandidateAsync(DuplicateCandidate candidate, CancellationToken cancellationToken = default);
     Task<DuplicateCandidate?> GetDuplicateCandidateAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<DuplicateCandidate>> ListDuplicateCandidatesAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<DuplicateCandidate>> ListDuplicateCandidatesAsync(
+        DuplicateCandidateStatus? status,
+        decimal? minConfidence,
+        CancellationToken cancellationToken = default);
     Task<DuplicateCandidate?> UpdateDuplicateCandidateAsync(DuplicateCandidate candidate, CancellationToken cancellationToken = default);
 
+    Task<long?> GetMaxProvenanceStepSequenceAsync(Guid financialRecordId, CancellationToken cancellationToken = default);
     Task<ProvenanceEntry> AppendProvenanceEntryAsync(ProvenanceEntry entry, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ProvenanceEntry>> ListProvenanceEntriesAsync(Guid financialRecordId, CancellationToken cancellationToken = default);
 

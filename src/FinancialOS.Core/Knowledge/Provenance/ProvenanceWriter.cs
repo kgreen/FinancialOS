@@ -148,8 +148,8 @@ public sealed class ProvenanceWriter
 
     private async Task<long> GetNextStepSequenceAsync(Guid financialRecordId, CancellationToken cancellationToken)
     {
-        var timeline = await _repository.ListProvenanceEntriesAsync(financialRecordId, cancellationToken);
-        return (timeline.Count == 0 ? 0 : timeline.Max(item => item.StepSequence)) + 1;
+        var maxStepSequence = await _repository.GetMaxProvenanceStepSequenceAsync(financialRecordId, cancellationToken);
+        return (maxStepSequence ?? 0) + 1;
     }
 
     private static bool IsStepSequenceConflict(Exception exception)

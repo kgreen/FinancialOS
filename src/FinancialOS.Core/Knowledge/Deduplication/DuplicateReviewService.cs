@@ -22,15 +22,15 @@ public sealed class DuplicateReviewService : IDuplicateReviewService
 
     public async Task<DuplicateCandidate?> EvaluateAsync(FinancialRecord record, CancellationToken cancellationToken = default)
     {
-        var allRecords = await _repository.ListRecordsAsync(cancellationToken);
-        var otherRecords = allRecords.Where(item => item.Id != record.Id).ToList();
-        if (otherRecords.Count == 0)
+        var candidates = await _repository.ListPotentialDuplicateRecordsAsync(
+            recordId: record.Id,
+            accountId: record.AccountId,
+            occurredOn: record.OccurredOn,
+            cancellationToken);
+        if (candidates.Count == 0)
         {
             return null;
         }
-
-        var scopedCandidates = ScopeCandidates(record, otherRecords);
-        var candidates = scopedCandidates.Count > 0 ? scopedCandidates : otherRecords;
 
         var best = candidates
             .Select(item => new { Record = item, Score = _scoringService.Score(record, item) })
@@ -106,19 +106,8 @@ public sealed class DuplicateReviewService : IDuplicateReviewService
         decimal? minConfidence,
         CancellationToken cancellationToken = default)
     {
-        var items = await _repository.ListDuplicateCandidatesAsync(cancellationToken);
-        var filtered = items.AsEnumerable();
-        if (status.HasValue)
-        {
-            filtered = filtered.Where(item => item.Status == status.Value);
-        }
-
-        if (minConfidence.HasValue)
-        {
-            filtered = filtered.Where(item => item.Confidence >= minConfidence.Value);
-        }
-
-        return filtered
+        var items = await _repository.ListDuplicateCandidatesAsync(status, minConfidence, cancellationToken);
+        return items
             .OrderByDescending(item => item.EvaluatedAtUtc)
             .ThenBy(item => item.Id)
             .ToList();

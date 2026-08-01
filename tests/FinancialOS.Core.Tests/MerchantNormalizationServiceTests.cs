@@ -39,6 +39,7 @@ public sealed class MerchantNormalizationServiceTests
         public Task<FinancialRecord> AddRecordAsync(FinancialRecord record, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public Task<FinancialRecord?> GetRecordAsync(Guid id, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public Task<IReadOnlyList<FinancialRecord>> ListRecordsAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<IReadOnlyList<FinancialRecord>> ListPotentialDuplicateRecordsAsync(Guid recordId, Guid? accountId, DateTimeOffset occurredOn, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public Task<FinancialRecord?> UpdateRecordAsync(FinancialRecord record, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public Task<IReadOnlyList<FinancialAccount>> ListAccountsAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public Task<IReadOnlyList<Category>> ListCategoriesAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
@@ -57,7 +58,9 @@ public sealed class MerchantNormalizationServiceTests
         public Task<DuplicateCandidate> AddDuplicateCandidateAsync(DuplicateCandidate candidate, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public Task<DuplicateCandidate?> GetDuplicateCandidateAsync(Guid id, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public Task<IReadOnlyList<DuplicateCandidate>> ListDuplicateCandidatesAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<IReadOnlyList<DuplicateCandidate>> ListDuplicateCandidatesAsync(DuplicateCandidateStatus? status, decimal? minConfidence, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public Task<DuplicateCandidate?> UpdateDuplicateCandidateAsync(DuplicateCandidate candidate, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<long?> GetMaxProvenanceStepSequenceAsync(Guid financialRecordId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public Task<ProvenanceEntry> AppendProvenanceEntryAsync(ProvenanceEntry entry, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public Task<IReadOnlyList<ProvenanceEntry>> ListProvenanceEntriesAsync(Guid financialRecordId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         // spec 003 stubs

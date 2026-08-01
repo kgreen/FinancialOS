@@ -55,7 +55,7 @@ public sealed class RuleEvaluationService : IRuleEvaluationService
     private static (bool Matched, IReadOnlyList<string> ReasonCodes) EvaluateCondition(
         ClassificationRule rule, FinancialRecord record)
     {
-        if (string.IsNullOrWhiteSpace(rule.ConditionJson) || rule.ConditionJson == "{}")
+        if (string.IsNullOrWhiteSpace(rule.ConditionJson))
         {
             // An empty condition matches anything — caller is responsible for ensuring this is intentional.
             return (true, new[] { "condition-match", "open-condition" });
@@ -73,11 +73,17 @@ public sealed class RuleEvaluationService : IRuleEvaluationService
 
         var reasonCodes = new List<string>();
         var allPass = true;
+        var hasEvaluatedCondition = false;
 
         if (condition.TryGetProperty("merchantContains", out var merchantContains))
         {
+            hasEvaluatedCondition = true;
             var pattern = merchantContains.GetString();
-            if (!string.IsNullOrWhiteSpace(pattern))
+            if (string.IsNullOrWhiteSpace(pattern))
+            {
+                allPass = false;
+            }
+            else
             {
                 var match = record.Description.Contains(pattern, StringComparison.OrdinalIgnoreCase);
                 if (match)
@@ -93,7 +99,8 @@ public sealed class RuleEvaluationService : IRuleEvaluationService
 
         if (condition.TryGetProperty("amountMin", out var amountMin))
         {
-            if (record.Amount.Amount >= amountMin.GetDecimal())
+            hasEvaluatedCondition = true;
+            if (amountMin.TryGetDecimal(out var amountMinValue) && record.Amount.Amount >= amountMinValue)
             {
                 reasonCodes.Add("amount-min-pass");
             }
@@ -105,7 +112,8 @@ public sealed class RuleEvaluationService : IRuleEvaluationService
 
         if (condition.TryGetProperty("amountMax", out var amountMax))
         {
-            if (record.Amount.Amount <= amountMax.GetDecimal())
+            hasEvaluatedCondition = true;
+            if (amountMax.TryGetDecimal(out var amountMaxValue) && record.Amount.Amount <= amountMaxValue)
             {
                 reasonCodes.Add("amount-max-pass");
             }
@@ -117,6 +125,7 @@ public sealed class RuleEvaluationService : IRuleEvaluationService
 
         if (condition.TryGetProperty("accountId", out var accountId))
         {
+            hasEvaluatedCondition = true;
             var targetAccount = accountId.GetString();
             if (!string.IsNullOrWhiteSpace(targetAccount)
                 && Guid.TryParse(targetAccount, out var targetAccountId)
@@ -128,6 +137,11 @@ public sealed class RuleEvaluationService : IRuleEvaluationService
             {
                 allPass = false;
             }
+        }
+
+        if (!hasEvaluatedCondition)
+        {
+            return (true, new[] { "condition-match", "open-condition" });
         }
 
         if (allPass && reasonCodes.Count > 0)

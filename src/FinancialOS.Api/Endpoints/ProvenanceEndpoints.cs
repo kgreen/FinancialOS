@@ -22,7 +22,11 @@ public static class ProvenanceEndpoints
             var entries = await repository.ListProvenanceEntriesAsync(id, cancellationToken);
             return Results.Ok(new ProvenanceTimelineResponse(
                 id,
-                entries.Select(ToResponse).ToList()));
+                entries
+                    .OrderBy(item => item.StepSequence)
+                    .ThenBy(item => item.CreatedAtUtc)
+                    .Select(ToResponse)
+                    .ToList()));
         });
 
         return app;
@@ -43,3 +47,4 @@ public static class ProvenanceEndpoints
             entry.CorrelationId,
             entry.CreatedAtUtc);
 }
+

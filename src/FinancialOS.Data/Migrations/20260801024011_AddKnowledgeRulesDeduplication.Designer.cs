@@ -180,6 +180,12 @@ namespace FinancialOS.Data.Migrations
                     b.HasIndex("Status")
                         .HasDatabaseName("IX_DuplicateCandidate_Status");
 
+                    b.HasIndex("RecordId", "MatchedRecordId")
+                        .HasDatabaseName("IX_DuplicateCandidate_Record_MatchedRecord");
+
+                    b.HasIndex("Status", "Confidence", "EvaluatedAtUtc")
+                        .HasDatabaseName("IX_DuplicateCandidate_Status_Confidence_EvaluatedAtUtc");
+
                     b.ToTable("DuplicateCandidates");
                 });
 

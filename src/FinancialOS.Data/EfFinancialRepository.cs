@@ -59,6 +59,25 @@ public sealed class EfFinancialRepository : IFinancialRepository
         return records.OrderByDescending(item => item.OccurredOn).ToList();
     }
 
+    public async Task<IReadOnlyList<FinancialRecord>> ListPotentialDuplicateRecordsAsync(
+        Guid recordId,
+        Guid? accountId,
+        DateTimeOffset occurredOn,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.Records.AsNoTracking()
+            .Where(item => item.Id != recordId);
+
+        if (accountId.HasValue)
+        {
+            var accountValue = accountId.Value;
+            query = query.Where(item => item.AccountId == accountValue);
+        }
+
+        var records = await query.ToListAsync(cancellationToken);
+        return records.OrderBy(item => item.OccurredOn).ThenBy(item => item.Id).ToList();
+    }
+
     public async Task<FinancialRecord?> UpdateRecordAsync(FinancialRecord record, CancellationToken cancellationToken = default)
     {
         _dbContext.Records.Update(record);
@@ -217,6 +236,26 @@ public sealed class EfFinancialRepository : IFinancialRepository
     {
         var candidates = await _dbContext.DuplicateCandidates.AsNoTracking().ToListAsync(cancellationToken);
         return candidates.OrderByDescending(item => item.EvaluatedAtUtc).ToList();
+    }
+
+    public async Task<IReadOnlyList<DuplicateCandidate>> ListDuplicateCandidatesAsync(
+        DuplicateCandidateStatus? status,
+        decimal? minConfidence,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.DuplicateCandidates.AsNoTracking().AsQueryable();
+        if (status.HasValue)
+        {
+            query = query.Where(item => item.Status == status.Value);
+        }
+
+        if (minConfidence.HasValue)
+        {
+            query = query.Where(item => item.Confidence >= minConfidence.Value);
+        }
+
+        var candidates = await query.ToListAsync(cancellationToken);
+        return candidates.OrderByDescending(item => item.EvaluatedAtUtc).ThenBy(item => item.Id).ToList();
     }
 
     public async Task<DuplicateCandidate?> UpdateDuplicateCandidateAsync(DuplicateCandidate candidate, CancellationToken cancellationToken = default)

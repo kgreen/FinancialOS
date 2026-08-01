@@ -22,8 +22,11 @@ public sealed class DuplicateReviewService : IDuplicateReviewService
 
     public async Task<DuplicateCandidate> EvaluateAsync(FinancialRecord record, CancellationToken cancellationToken = default)
     {
-        var allRecords = await _repository.ListRecordsAsync(cancellationToken);
-        var candidates = allRecords.Where(item => item.Id != record.Id).ToList();
+        var candidates = await _repository.ListPotentialDuplicateRecordsAsync(
+            recordId: record.Id,
+            accountId: record.AccountId,
+            occurredOn: record.OccurredOn,
+            cancellationToken);
         if (candidates.Count == 0)
         {
             throw new InvalidOperationException("A duplicate candidate requires at least one other record.");
@@ -98,19 +101,8 @@ public sealed class DuplicateReviewService : IDuplicateReviewService
         decimal? minConfidence,
         CancellationToken cancellationToken = default)
     {
-        var items = await _repository.ListDuplicateCandidatesAsync(cancellationToken);
-        var filtered = items.AsEnumerable();
-        if (status.HasValue)
-        {
-            filtered = filtered.Where(item => item.Status == status.Value);
-        }
-
-        if (minConfidence.HasValue)
-        {
-            filtered = filtered.Where(item => item.Confidence >= minConfidence.Value);
-        }
-
-        return filtered
+        var items = await _repository.ListDuplicateCandidatesAsync(status, minConfidence, cancellationToken);
+        return items
             .OrderByDescending(item => item.EvaluatedAtUtc)
             .ThenBy(item => item.Id)
             .ToList();

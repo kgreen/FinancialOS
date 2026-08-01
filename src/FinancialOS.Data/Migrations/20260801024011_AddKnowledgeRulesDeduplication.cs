@@ -277,6 +277,16 @@ namespace FinancialOS.Data.Migrations
                 column: "Status");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DuplicateCandidate_Record_MatchedRecord",
+                table: "DuplicateCandidates",
+                columns: new[] { "RecordId", "MatchedRecordId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DuplicateCandidate_Status_Confidence_EvaluatedAtUtc",
+                table: "DuplicateCandidates",
+                columns: new[] { "Status", "Confidence", "EvaluatedAtUtc" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_MerchantAlias_Canonical_AliasNormalized",
                 table: "MerchantAliases",
                 columns: new[] { "CanonicalMerchantId", "AliasNormalizedText" });

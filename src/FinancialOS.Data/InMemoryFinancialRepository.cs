@@ -225,6 +225,15 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
         return Task.FromResult<DuplicateCandidate?>(candidate);
     }
 
+    public Task<long?> GetMaxProvenanceStepSequenceAsync(Guid financialRecordId, CancellationToken cancellationToken = default)
+    {
+        var maxStepSequence = _provenanceEntries
+            .Where(item => item.FinancialRecordId == financialRecordId)
+            .Select(item => (long?)item.StepSequence)
+            .Max();
+        return Task.FromResult(maxStepSequence);
+    }
+
     public Task<ProvenanceEntry> AppendProvenanceEntryAsync(ProvenanceEntry entry, CancellationToken cancellationToken = default)
     {
         _provenanceEntries.Add(entry);

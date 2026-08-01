@@ -226,6 +226,13 @@ public sealed class EfFinancialRepository : IFinancialRepository
         return candidate;
     }
 
+    public async Task<long?> GetMaxProvenanceStepSequenceAsync(Guid financialRecordId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.ProvenanceEntries.AsNoTracking()
+            .Where(item => item.FinancialRecordId == financialRecordId)
+            .MaxAsync(item => (long?)item.StepSequence, cancellationToken);
+    }
+
     public async Task<ProvenanceEntry> AppendProvenanceEntryAsync(ProvenanceEntry entry, CancellationToken cancellationToken = default)
     {
         _dbContext.ProvenanceEntries.Add(entry);

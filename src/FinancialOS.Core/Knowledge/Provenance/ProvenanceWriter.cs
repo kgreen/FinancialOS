@@ -10,6 +10,7 @@ namespace FinancialOS.Core.Knowledge.Provenance;
 public sealed class ProvenanceWriter
 {
     private readonly IFinancialRepository _repository;
+    private static readonly SemaphoreSlim StepSequenceLock = new(1, 1);
 
     public ProvenanceWriter(IFinancialRepository repository)
     {
@@ -88,19 +89,27 @@ public sealed class ProvenanceWriter
         DuplicateCandidate candidate,
         CancellationToken cancellationToken = default)
     {
-        var stepSequence = await GetNextStepSequenceAsync(financialRecordId, cancellationToken);
-        var correlationId = Guid.NewGuid();
-        var entry = ProvenanceEntry.CreateSystemEntry(
-            financialRecordId: financialRecordId,
-            stepType: ProvenanceStepType.DuplicateDetection,
-            stepSequence: stepSequence,
-            sourceReference: $"duplicate:{candidate.Id}",
-            confidence: candidate.Confidence,
-            decisionSummary: $"Duplicate candidate generated for {candidate.MatchedRecordId}",
-            reasonCodes: candidate.ReasonCodes,
-            correlationId: correlationId);
+        await StepSequenceLock.WaitAsync(cancellationToken);
+        try
+        {
+            var stepSequence = await GetNextStepSequenceAsync(financialRecordId, cancellationToken);
+            var correlationId = Guid.NewGuid();
+            var entry = ProvenanceEntry.CreateSystemEntry(
+                financialRecordId: financialRecordId,
+                stepType: ProvenanceStepType.DuplicateDetection,
+                stepSequence: stepSequence,
+                sourceReference: $"duplicate:{candidate.Id}",
+                confidence: candidate.Confidence,
+                decisionSummary: $"Duplicate candidate generated for {candidate.MatchedRecordId}",
+                reasonCodes: candidate.ReasonCodes,
+                correlationId: correlationId);
 
-        return await _repository.AppendProvenanceEntryAsync(entry, cancellationToken);
+            return await _repository.AppendProvenanceEntryAsync(entry, cancellationToken);
+        }
+        finally
+        {
+            StepSequenceLock.Release();
+        }
     }
 
     public async Task<ProvenanceEntry> WriteDuplicateReviewAsync(
@@ -109,25 +118,33 @@ public sealed class ProvenanceWriter
         string actorId,
         CancellationToken cancellationToken = default)
     {
-        var stepSequence = await GetNextStepSequenceAsync(financialRecordId, cancellationToken);
-        var correlationId = Guid.NewGuid();
-        var entry = ProvenanceEntry.CreateUserEntry(
-            financialRecordId: financialRecordId,
-            stepType: ProvenanceStepType.DuplicateReview,
-            stepSequence: stepSequence,
-            sourceReference: $"duplicate:{candidate.Id}:{candidate.Status}",
-            confidence: candidate.Confidence,
-            decisionSummary: $"Duplicate candidate marked as {candidate.Status}",
-            reasonCodes: new[] { "human-review", candidate.Status.ToString() },
-            actorId: actorId,
-            correlationId: correlationId);
+        await StepSequenceLock.WaitAsync(cancellationToken);
+        try
+        {
+            var stepSequence = await GetNextStepSequenceAsync(financialRecordId, cancellationToken);
+            var correlationId = Guid.NewGuid();
+            var entry = ProvenanceEntry.CreateUserEntry(
+                financialRecordId: financialRecordId,
+                stepType: ProvenanceStepType.DuplicateReview,
+                stepSequence: stepSequence,
+                sourceReference: $"duplicate:{candidate.Id}:{candidate.Status}",
+                confidence: candidate.Confidence,
+                decisionSummary: $"Duplicate candidate marked as {candidate.Status}",
+                reasonCodes: new[] { "human-review", candidate.Status.ToString() },
+                actorId: actorId,
+                correlationId: correlationId);
 
-        return await _repository.AppendProvenanceEntryAsync(entry, cancellationToken);
+            return await _repository.AppendProvenanceEntryAsync(entry, cancellationToken);
+        }
+        finally
+        {
+            StepSequenceLock.Release();
+        }
     }
 
     private async Task<long> GetNextStepSequenceAsync(Guid financialRecordId, CancellationToken cancellationToken)
     {
-        var timeline = await _repository.ListProvenanceEntriesAsync(financialRecordId, cancellationToken);
-        return (timeline.Count == 0 ? 0 : timeline.Max(item => item.StepSequence)) + 1;
+        var maxStepSequence = await _repository.GetMaxProvenanceStepSequenceAsync(financialRecordId, cancellationToken);
+        return (maxStepSequence ?? 0) + 1;
     }
 }

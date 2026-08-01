@@ -186,6 +186,19 @@ public sealed class EfFinancialRepository : IFinancialRepository
         return decisions.OrderBy(item => item.CreatedAtUtc).ToList();
     }
 
+    public async Task<NormalizationDecision?> MarkNormalizationDecisionSupersededAsync(Guid decisionId, Guid supersededByDecisionId, CancellationToken cancellationToken = default)
+    {
+        var existing = await _dbContext.NormalizationDecisions.FirstOrDefaultAsync(item => item.Id == decisionId, cancellationToken);
+        if (existing is null)
+        {
+            return null;
+        }
+
+        existing.SupersededByDecisionId = supersededByDecisionId;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return existing;
+    }
+
     public async Task<DuplicateCandidate> AddDuplicateCandidateAsync(DuplicateCandidate candidate, CancellationToken cancellationToken = default)
     {
         candidate.Id = candidate.Id == Guid.Empty ? Guid.NewGuid() : candidate.Id;

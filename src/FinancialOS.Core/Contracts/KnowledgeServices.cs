@@ -4,7 +4,7 @@ namespace FinancialOS.Core.Contracts;
 
 public interface IRuleEvaluationService
 {
-    Task<RuleEvaluationResult> EvaluateAsync(FinancialRecord record, CancellationToken cancellationToken = default);
+    Task<RuleEvaluationResult?> EvaluateAsync(FinancialRecord record, CancellationToken cancellationToken = default);
 }
 
 public interface IRuleManagementService

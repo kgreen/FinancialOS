@@ -190,6 +190,17 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
         return Task.FromResult<IReadOnlyList<NormalizationDecision>>(decisions);
     }
 
+    public Task<NormalizationDecision?> MarkNormalizationDecisionSupersededAsync(Guid decisionId, Guid supersededByDecisionId, CancellationToken cancellationToken = default)
+    {
+        if (!_normalizationDecisions.TryGetValue(decisionId, out var existing))
+        {
+            return Task.FromResult<NormalizationDecision?>(null);
+        }
+
+        existing.SupersededByDecisionId = supersededByDecisionId;
+        return Task.FromResult<NormalizationDecision?>(existing);
+    }
+
     public Task<DuplicateCandidate> AddDuplicateCandidateAsync(DuplicateCandidate candidate, CancellationToken cancellationToken = default)
     {
         candidate.Id = candidate.Id == Guid.Empty ? Guid.NewGuid() : candidate.Id;

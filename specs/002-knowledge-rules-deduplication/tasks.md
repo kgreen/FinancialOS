@@ -46,17 +46,17 @@
 
 ### Tests for User Story 1
 
-- [ ] T015 [P] [US1] Add rules management contract tests for POST/GET/PATCH in tests/FinancialOS.Api.Tests/RulesContractTests.cs
-- [ ] T016 [P] [US1] Add deterministic replay integration tests for rule ordering in tests/FinancialOS.Api.Tests/RuleDeterminismIntegrationTests.cs
-- [ ] T017 [P] [US1] Add rule tie-breaker unit tests for ordering logic in tests/FinancialOS.Core.Tests/RuleOrderingServiceTests.cs
+- [x] T015 [P] [US1] Add rules management contract tests for POST/GET/PATCH in tests/FinancialOS.Api.Tests/RulesContractTests.cs
+- [x] T016 [P] [US1] Add deterministic replay integration tests for rule ordering in tests/FinancialOS.Api.Tests/RuleDeterminismIntegrationTests.cs
+- [x] T017 [P] [US1] Add rule tie-breaker unit tests for ordering logic in tests/FinancialOS.Core.Tests/RuleOrderingServiceTests.cs
 
 ### Implementation for User Story 1
 
-- [ ] T018 [P] [US1] Implement deterministic rule ordering/evaluation service in src/FinancialOS.Core/Knowledge/Rules/RuleEvaluationService.cs
-- [ ] T019 [P] [US1] Implement rule management service (create/activate/deactivate/reprioritize) in src/FinancialOS.Core/Knowledge/Rules/RuleManagementService.cs
-- [ ] T020 [US1] Implement rules API endpoints in src/FinancialOS.Api/Endpoints/RulesEndpoints.cs
-- [ ] T021 [US1] Wire rules endpoints and services in src/FinancialOS.Api/Program.cs
-- [ ] T022 [US1] Persist rule evaluation provenance entries in src/FinancialOS.Core/Knowledge/Provenance/ProvenanceWriter.cs
+- [x] T018 [P] [US1] Implement deterministic rule ordering/evaluation service in src/FinancialOS.Core/Knowledge/Rules/RuleEvaluationService.cs
+- [x] T019 [P] [US1] Implement rule management service (create/activate/deactivate/reprioritize) in src/FinancialOS.Core/Knowledge/Rules/RuleManagementService.cs
+- [x] T020 [US1] Implement rules API endpoints in src/FinancialOS.Api/Endpoints/RulesEndpoints.cs
+- [x] T021 [US1] Wire rules endpoints and services in src/FinancialOS.Api/Program.cs
+- [x] T022 [US1] Persist rule evaluation provenance entries in src/FinancialOS.Core/Knowledge/Provenance/ProvenanceWriter.cs
 
 **Checkpoint**: US1 is independently functional, deterministic, and explainable.
 
@@ -70,18 +70,18 @@
 
 ### Tests for User Story 2
 
-- [ ] T023 [P] [US2] Add normalization/alias contract tests for POST aliases and POST normalize in tests/FinancialOS.Api.Tests/NormalizationContractTests.cs
-- [ ] T024 [P] [US2] Add alias-resolution integration tests (resolved and unresolved paths) in tests/FinancialOS.Api.Tests/NormalizationIntegrationTests.cs
-- [ ] T025 [P] [US2] Add merchant alias matching unit tests in tests/FinancialOS.Core.Tests/MerchantNormalizationServiceTests.cs
+- [x] T023 [P] [US2] Add normalization/alias contract tests for POST aliases and POST normalize in tests/FinancialOS.Api.Tests/NormalizationContractTests.cs
+- [x] T024 [P] [US2] Add alias-resolution integration tests (resolved and unresolved paths) in tests/FinancialOS.Api.Tests/NormalizationIntegrationTests.cs
+- [x] T025 [P] [US2] Add merchant alias matching unit tests in tests/FinancialOS.Core.Tests/MerchantNormalizationServiceTests.cs
 
 ### Implementation for User Story 2
 
-- [ ] T026 [P] [US2] Implement canonical merchant and alias management service in src/FinancialOS.Core/Knowledge/Normalization/MerchantAliasService.cs
-- [ ] T027 [P] [US2] Implement normalization decision pipeline service in src/FinancialOS.Core/Knowledge/Normalization/NormalizationPipelineService.cs
-- [ ] T028 [US2] Implement normalization and alias API endpoints in src/FinancialOS.Api/Endpoints/NormalizationEndpoints.cs
-- [ ] T029 [US2] Extend normalization response and reason-code mappings in src/FinancialOS.Shared/Contracts/KnowledgeDtos.cs
-- [ ] T030 [US2] Wire normalization endpoints/services in src/FinancialOS.Api/Program.cs
-- [ ] T031 [US2] Persist normalization decisions and provenance lineage in src/FinancialOS.Data/EfFinancialRepository.cs
+- [x] T026 [P] [US2] Implement canonical merchant and alias management service in src/FinancialOS.Core/Knowledge/Normalization/MerchantAliasService.cs
+- [x] T027 [P] [US2] Implement normalization decision pipeline service in src/FinancialOS.Core/Knowledge/Normalization/NormalizationPipelineService.cs
+- [x] T028 [US2] Implement normalization and alias API endpoints in src/FinancialOS.Api/Endpoints/NormalizationEndpoints.cs
+- [x] T029 [US2] Extend normalization response and reason-code mappings in src/FinancialOS.Shared/Contracts/KnowledgeDtos.cs
+- [x] T030 [US2] Wire normalization endpoints/services in src/FinancialOS.Api/Program.cs
+- [x] T031 [US2] Persist normalization decisions and provenance lineage in src/FinancialOS.Data/EfFinancialRepository.cs
 
 **Checkpoint**: US2 is independently functional with deterministic-first normalization and human-review fallback.
 

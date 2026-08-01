@@ -71,6 +71,16 @@ public sealed record MerchantAliasResponse(
     bool IsActive,
     DateTimeOffset CreatedAtUtc);
 
+public sealed record NormalizeRecordResponse(
+    Guid RecordId,
+    string Status,
+    Guid? CanonicalMerchantId,
+    Guid? CategoryId,
+    Guid? RuleId,
+    decimal Confidence,
+    IReadOnlyList<string> ReasonCodes,
+    Guid ProvenanceCorrelationId);
+
 public sealed record NormalizationDecisionResponse(
     Guid Id,
     Guid FinancialRecordId,

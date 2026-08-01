@@ -4,7 +4,12 @@ Base route prefix: `/api/v1`
 
 ## Rules Management
 
-### POST `/rules`
+> **Note**: Implemented at `/api/v1/classification-rules` instead of `/rules` to avoid
+> colliding with the pre-existing legacy `GET /api/v1/rules` reference-data endpoint
+> (`ReferenceEndpointsContractTests`), which returns simple `Rule` reference items and
+> predates this feature.
+
+### POST `/classification-rules`
 Create deterministic classification rule.
 
 ```json
@@ -23,10 +28,10 @@ Create deterministic classification rule.
 }
 ```
 
-### GET `/rules`
+### GET `/classification-rules`
 List rules with deterministic ordering metadata (`priority`, `createdAtUtc`, `id`).
 
-### PATCH `/rules/{id}`
+### PATCH `/classification-rules/{id}`
 Activate/deactivate or reprioritize rule without deleting historical provenance.
 
 ## Normalization & Aliasing

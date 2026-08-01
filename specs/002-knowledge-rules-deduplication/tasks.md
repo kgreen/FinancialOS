@@ -116,11 +116,11 @@
 
 **Purpose**: Final hardening across all stories.
 
-- [ ] T041 [P] Add immutable provenance regression tests (no update/delete paths) in tests/FinancialOS.Api.Tests/ProvenanceImmutabilityTests.cs
-- [ ] T042 Add provenance query endpoint and timeline response shaping in src/FinancialOS.Api/Endpoints/ProvenanceEndpoints.cs
-- [ ] T043 Add cross-story explainability integration test coverage in tests/FinancialOS.Api.Tests/ExplainabilityCoverageIntegrationTests.cs
-- [ ] T044 Add duplicate performance indexes and query tuning adjustments in src/FinancialOS.Data/FinancialOsDbContext.cs
-- [ ] T045 Update quickstart validation steps for implemented endpoints in specs/002-knowledge-rules-deduplication/quickstart.md
+- [x] T041 [P] Add immutable provenance regression tests (no update/delete paths) in tests/FinancialOS.Api.Tests/ProvenanceImmutabilityTests.cs
+- [x] T042 Add provenance query endpoint and timeline response shaping in src/FinancialOS.Api/Endpoints/ProvenanceEndpoints.cs
+- [x] T043 Add cross-story explainability integration test coverage in tests/FinancialOS.Api.Tests/ExplainabilityCoverageIntegrationTests.cs
+- [x] T044 Add duplicate performance indexes and query tuning adjustments in src/FinancialOS.Data/FinancialOsDbContext.cs
+- [x] T045 Update quickstart validation steps for implemented endpoints in specs/002-knowledge-rules-deduplication/quickstart.md
 
 ---
 

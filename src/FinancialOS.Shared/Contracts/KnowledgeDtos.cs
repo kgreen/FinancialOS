@@ -122,3 +122,7 @@ public sealed record ProvenanceEntryResponse(
     string? ActorId,
     Guid CorrelationId,
     DateTimeOffset CreatedAtUtc);
+
+public sealed record ProvenanceTimelineResponse(
+    Guid RecordId,
+    IReadOnlyList<ProvenanceEntryResponse> Events);

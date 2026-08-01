@@ -25,7 +25,7 @@ public sealed class RuleManagementService : IRuleManagementService
     public async Task<IReadOnlyList<ClassificationRule>> ListAsync(CancellationToken cancellationToken = default)
     {
         var all = await _repository.ListClassificationRulesAsync(cancellationToken);
-        // Active rules ordered by evaluation priority first, then inactive rules appended.
+        // Deterministic ordering for list/read API: priority desc, then created time, then id.
         return all
             .OrderByDescending(r => r.Priority)
             .ThenBy(r => r.CreatedAtUtc)

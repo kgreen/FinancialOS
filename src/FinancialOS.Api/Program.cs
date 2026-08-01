@@ -27,9 +27,14 @@ builder.Services.AddScoped<INormalizationPipelineService, NormalizationPipelineS
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+var applyMigrationsOnStartup = app.Environment.IsDevelopment()
+    || builder.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup");
+var seedOnStartup = builder.Configuration.GetValue("Database:SeedOnStartup", true);
+
+if (applyMigrationsOnStartup)
 {
-    await scope.ServiceProvider.InitializeAsync(seed: true);
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.InitializeAsync(seed: seedOnStartup);
 }
 
 if (app.Environment.IsDevelopment())
@@ -42,10 +47,18 @@ app.UseExceptionHandler(exceptionHandlerApp =>
 {
     exceptionHandlerApp.Run(async context =>
     {
+        var exception = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
         context.Response.ContentType = "application/problem+json";
 
-        app.Logger.LogError("Unhandled exception while processing {Path}", context.Request.Path);
+        if (exception is null)
+        {
+            app.Logger.LogError("Unhandled exception while processing {Path}", context.Request.Path);
+        }
+        else
+        {
+            app.Logger.LogError(exception, "Unhandled exception while processing {Path}", context.Request.Path);
+        }
         await context.Response.WriteAsJsonAsync(new ProblemDetails
         {
             Status = StatusCodes.Status500InternalServerError,

@@ -21,7 +21,7 @@ public interface INormalizationPipelineService
 
 public interface IDuplicateReviewService
 {
-    Task<DuplicateCandidate> EvaluateAsync(FinancialRecord record, CancellationToken cancellationToken = default);
+    Task<DuplicateCandidate?> EvaluateAsync(FinancialRecord record, CancellationToken cancellationToken = default);
     Task<DuplicateCandidate?> ReviewAsync(Guid id, DuplicateCandidateStatus status, string reviewedByUserId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<DuplicateCandidate>> ListAsync(DuplicateCandidateStatus? status, decimal? minConfidence, CancellationToken cancellationToken = default);
 }

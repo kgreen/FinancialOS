@@ -10,7 +10,6 @@ namespace FinancialOS.Core.Knowledge.Provenance;
 public sealed class ProvenanceWriter
 {
     private readonly IFinancialRepository _repository;
-    private static readonly SemaphoreSlim StepSequenceLock = new(1, 1);
 
     public ProvenanceWriter(IFinancialRepository repository)
     {
@@ -89,12 +88,10 @@ public sealed class ProvenanceWriter
         DuplicateCandidate candidate,
         CancellationToken cancellationToken = default)
     {
-        await StepSequenceLock.WaitAsync(cancellationToken);
-        try
+        return await AppendWithRetryAsync(financialRecordId, stepSequence =>
         {
-            var stepSequence = await GetNextStepSequenceAsync(financialRecordId, cancellationToken);
             var correlationId = Guid.NewGuid();
-            var entry = ProvenanceEntry.CreateSystemEntry(
+            return ProvenanceEntry.CreateSystemEntry(
                 financialRecordId: financialRecordId,
                 stepType: ProvenanceStepType.DuplicateDetection,
                 stepSequence: stepSequence,
@@ -103,13 +100,7 @@ public sealed class ProvenanceWriter
                 decisionSummary: $"Duplicate candidate generated for {candidate.MatchedRecordId}",
                 reasonCodes: candidate.ReasonCodes,
                 correlationId: correlationId);
-
-            return await _repository.AppendProvenanceEntryAsync(entry, cancellationToken);
-        }
-        finally
-        {
-            StepSequenceLock.Release();
-        }
+        }, cancellationToken);
     }
 
     public async Task<ProvenanceEntry> WriteDuplicateReviewAsync(
@@ -118,28 +109,41 @@ public sealed class ProvenanceWriter
         string actorId,
         CancellationToken cancellationToken = default)
     {
-        await StepSequenceLock.WaitAsync(cancellationToken);
-        try
+        return await AppendWithRetryAsync(financialRecordId, stepSequence =>
         {
-            var stepSequence = await GetNextStepSequenceAsync(financialRecordId, cancellationToken);
             var correlationId = Guid.NewGuid();
-            var entry = ProvenanceEntry.CreateUserEntry(
+            return ProvenanceEntry.CreateUserEntry(
                 financialRecordId: financialRecordId,
                 stepType: ProvenanceStepType.DuplicateReview,
                 stepSequence: stepSequence,
                 sourceReference: $"duplicate:{candidate.Id}:{candidate.Status}",
                 confidence: candidate.Confidence,
                 decisionSummary: $"Duplicate candidate marked as {candidate.Status}",
-                reasonCodes: new[] { "human-review", candidate.Status.ToString() },
+                reasonCodes: new[] { "human-review", ToReasonCode(candidate.Status) },
                 actorId: actorId,
                 correlationId: correlationId);
+        }, cancellationToken);
+    }
 
-            return await _repository.AppendProvenanceEntryAsync(entry, cancellationToken);
-        }
-        finally
+    private async Task<ProvenanceEntry> AppendWithRetryAsync(
+        Guid financialRecordId,
+        Func<long, ProvenanceEntry> createEntry,
+        CancellationToken cancellationToken)
+    {
+        for (var attempt = 0; attempt < 3; attempt++)
         {
-            StepSequenceLock.Release();
+            var stepSequence = await GetNextStepSequenceAsync(financialRecordId, cancellationToken);
+            var entry = createEntry(stepSequence);
+            try
+            {
+                return await _repository.AppendProvenanceEntryAsync(entry, cancellationToken);
+            }
+            catch (Exception ex) when (attempt < 2 && IsStepSequenceConflict(ex))
+            {
+            }
         }
+
+        throw new InvalidOperationException("Unable to append provenance entry after retrying step sequence allocation.");
     }
 
     private async Task<long> GetNextStepSequenceAsync(Guid financialRecordId, CancellationToken cancellationToken)
@@ -147,4 +151,20 @@ public sealed class ProvenanceWriter
         var maxStepSequence = await _repository.GetMaxProvenanceStepSequenceAsync(financialRecordId, cancellationToken);
         return (maxStepSequence ?? 0) + 1;
     }
+
+    private static bool IsStepSequenceConflict(Exception exception)
+    {
+        var message = exception.InnerException?.Message ?? exception.Message;
+        return message.Contains("IX_ProvenanceEntry_Record_StepSequence_Unique", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("UNIQUE constraint failed", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("duplicate key value violates unique constraint", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ToReasonCode(DuplicateCandidateStatus status) =>
+        status switch
+        {
+            DuplicateCandidateStatus.ConfirmedDuplicate => "confirmed-duplicate",
+            DuplicateCandidateStatus.Dismissed => "dismissed",
+            _ => status.ToString().ToLowerInvariant()
+        };
 }

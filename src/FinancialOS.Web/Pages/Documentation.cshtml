@@ -1,0 +1,36 @@
+@page
+@model DocumentationModel
+@{
+    ViewData["Title"] = "Documentation";
+}
+
+<h1 class="h3 mb-3">Documentation</h1>
+<p class="text-muted">Use this built-in web experience as a lightweight companion to the API and to the project’s feature specs.</p>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">What this app is for</h2>
+                <ul>
+                    <li>Manual testing of the live API without leaving the solution.</li>
+                    <li>Quick walkthroughs for records, accounts, rules, and exports.</li>
+                    <li>A simple reference surface for contributors and reviewers.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Suggested flows</h2>
+                <ol>
+                    <li>Open the dashboard to confirm the API is reachable.</li>
+                    <li>Browse records and accounts to inspect seeded or imported data.</li>
+                    <li>Use the manual testing page to upload a CSV or OFX file.</li>
+                    <li>Export a set of records to verify the export pipeline end to end.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>

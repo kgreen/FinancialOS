@@ -1,0 +1,76 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex flex-column gap-4">
+    <div class="p-4 border rounded-3 bg-light">
+        <h1 class="h3 mb-2">FinancialOS web control room</h1>
+        <p class="text-muted mb-0">A built-in web experience for manual testing, documentation, and lightweight exploration of the live API.</p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ApiErrorMessage))
+    {
+        <div class="alert alert-warning">@Model.ApiErrorMessage</div>
+    }
+
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">API status</div>
+                    <div class="display-6">@Model.Summary.HealthStatus</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Accounts</div>
+                    <div class="display-6">@Model.Summary.AccountCount</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Records</div>
+                    <div class="display-6">@Model.Summary.RecordCount</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Rules</div>
+                    <div class="display-6">@Model.Summary.RuleCount</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h5">Start here</h2>
+                    <ul class="mb-0">
+                        <li><a asp-page="/Records">Browse records</a></li>
+                        <li><a asp-page="/Accounts">Inspect accounts</a></li>
+                        <li><a asp-page="/Rules">Review rules</a></li>
+                        <li><a asp-page="/Testing">Try imports and exports</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h5">Why this app exists</h2>
+                    <p class="mb-0">This web app is intentionally lightweight: it lets contributors and reviewers exercise the FinancialOS API without switching to a desktop client or raw HTTP tools.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

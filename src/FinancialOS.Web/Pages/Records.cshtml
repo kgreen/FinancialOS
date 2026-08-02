@@ -1,0 +1,63 @@
+@page
+@model RecordsModel
+@{
+    ViewData["Title"] = "Records";
+}
+
+<h1 class="h3 mb-3">Records</h1>
+<p class="text-muted">View the current record set from the API. This page is useful for manual validation and documentation walkthroughs.</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.ApiErrorMessage))
+{
+    <div class="alert alert-warning">@Model.ApiErrorMessage</div>
+}
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <label class="form-label">Page</label>
+        <input asp-for="PageNumber" class="form-control" type="number" min="1" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label">Page size</label>
+        <input asp-for="PageSize" class="form-control" type="number" min="1" max="50" />
+    </div>
+    <div class="col-auto align-self-end">
+        <button class="btn btn-primary">Refresh</button>
+    </div>
+</form>
+
+@if (Model.Records.Items.Count == 0)
+{
+    <div class="alert alert-secondary">No records were returned.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Occurred on</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var record in Model.Records.Items)
+                {
+                    <tr>
+                        <td>@record.Description</td>
+                        <td>@record.Amount.ToString("0.00") @record.Currency</td>
+                        <td>@record.Status</td>
+                        <td>@record.OccurredOn.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between text-muted small">
+        <span>Page @Model.Records.Page of @Model.Records.TotalPages</span>
+        <span>Total records: @Model.Records.TotalCount</span>
+    </div>
+}

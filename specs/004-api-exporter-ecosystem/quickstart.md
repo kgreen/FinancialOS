@@ -17,10 +17,9 @@ This guide demonstrates how to validate all four capabilities introduced in Feat
 
 ## 1. Start the API
 
-```powershell
-cd C:\Users\User\OneDrive\Documents\Projects\FinancialOS\src\FinancialOS.Api
+# From the repo root
+cd .\src\FinancialOS.Api
 dotnet run
-```
 
 Confirm the API is up:
 ```bash

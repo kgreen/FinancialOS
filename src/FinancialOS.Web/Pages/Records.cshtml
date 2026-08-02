@@ -1,0 +1,104 @@
+@page
+@model RecordsModel
+@{
+    ViewData["Title"] = "Records";
+}
+
+<h1 class="h3 mb-3">Records</h1>
+<p class="text-muted">View the current record set from the API. This page is useful for manual validation and documentation walkthroughs.</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.ApiErrorMessage))
+{
+    <div class="alert alert-warning">@Model.ApiErrorMessage</div>
+}
+
+<form method="get" class="mb-3">
+    <div class="row g-2 mb-2">
+        <div class="col-md-3">
+            <label class="form-label">Start date</label>
+            <input asp-for="StartDate" class="form-control" type="date" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">End date</label>
+            <input asp-for="EndDate" class="form-control" type="date" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Merchant / description</label>
+            <input asp-for="Merchant" class="form-control" type="text" placeholder="partial match" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Min amount</label>
+            <input asp-for="MinAmount" class="form-control" type="number" step="0.01" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Max amount</label>
+            <input asp-for="MaxAmount" class="form-control" type="number" step="0.01" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Sort by</label>
+            <select asp-for="SortBy" class="form-select">
+                <option value="">Date (default)</option>
+                <option value="date">Date</option>
+                <option value="amount">Amount</option>
+                <option value="description">Description</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Sort direction</label>
+            <select asp-for="SortDescending" class="form-select">
+                <option value="true">Descending</option>
+                <option value="false">Ascending</option>
+            </select>
+        </div>
+    </div>
+    <div class="row g-2 align-items-end">
+        <div class="col-auto">
+            <label class="form-label">Page</label>
+            <input asp-for="PageNumber" class="form-control" type="number" min="1" style="width:80px" />
+        </div>
+        <div class="col-auto">
+            <label class="form-label">Page size</label>
+            <input asp-for="PageSize" class="form-control" type="number" min="1" max="50" style="width:80px" />
+        </div>
+        <div class="col-auto align-self-end">
+            <button class="btn btn-primary">Apply</button>
+            <a asp-page="/Records" class="btn btn-outline-secondary ms-1">Clear</a>
+        </div>
+    </div>
+</form>
+
+@if (Model.Records.Items.Count == 0)
+{
+    <div class="alert alert-secondary">No records were returned.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Occurred on</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var record in Model.Records.Items)
+                {
+                    <tr>
+                        <td>@record.Description</td>
+                        <td>@record.Amount.ToString("0.00") @record.Currency</td>
+                        <td>@record.Status</td>
+                        <td>@record.OccurredOn.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between text-muted small">
+        <span>Page @Model.Records.Page of @Model.Records.TotalPages</span>
+        <span>Total records: @Model.Records.TotalCount</span>
+    </div>
+}

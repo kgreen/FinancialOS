@@ -12,6 +12,8 @@ public sealed class RecordFilterQuery
     public string?   Merchant    { get; set; }
     public decimal?  MinAmount   { get; set; }
     public decimal?  MaxAmount   { get; set; }
+    public string?   SortBy      { get; set; }
+    public bool?     SortDescending { get; set; }
     public int?      Page        { get; set; }
     public int?      PageSize    { get; set; }
 
@@ -24,5 +26,7 @@ public sealed class RecordFilterQuery
         MerchantSearch = Merchant,
         MinAmount      = MinAmount,
         MaxAmount      = MaxAmount,
+        SortBy         = SortBy,
+        SortDescending = SortDescending,
     };
 }

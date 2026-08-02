@@ -1,0 +1,65 @@
+@page
+@model TestingModel
+@{
+    ViewData["Title"] = "Manual testing";
+}
+
+<h1 class="h3 mb-3">Manual testing</h1>
+<p class="text-muted">Use this page to exercise the import and export endpoints that power the FinancialOS API.</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.ImportMessage))
+{
+    <div class="alert alert-info">@Model.ImportMessage</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.ExportMessage))
+{
+    <div class="alert alert-info">@Model.ExportMessage</div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Import evidence</h2>
+                <form method="post" enctype="multipart/form-data" asp-page-handler="Import">
+                    <div class="mb-3">
+                        <label class="form-label">Choose a CSV or OFX file</label>
+                        <input asp-for="EvidenceFile" class="form-control" type="file" />
+                    </div>
+                    <button class="btn btn-primary">Upload</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Export records</h2>
+                <form method="post" asp-page-handler="Export">
+                    <div class="mb-3">
+                        <label class="form-label">Format</label>
+                        <select asp-for="ExportFormat" class="form-select">
+                            <option value="Csv">CSV</option>
+                            <option value="Json">JSON</option>
+                            <option value="Ynab4">YNAB 4</option>
+                            <option value="Goodbudget">Goodbudget</option>
+                        </select>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Start date</label>
+                            <input asp-for="StartDate" class="form-control" type="date" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">End date</label>
+                            <input asp-for="EndDate" class="form-control" type="date" />
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-primary mt-3">Export</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,200 @@
+@page
+@model DocumentationModel
+@{
+    ViewData["Title"] = "Documentation";
+}
+
+<h1 class="h3 mb-3">Documentation</h1>
+<p class="text-muted">Use this built-in web experience as a lightweight companion to the API and to the project’s feature specs.</p>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">What this app is for</h2>
+                <ul>
+                    <li>Manual testing of the live API without leaving the solution.</li>
+                    <li>Quick walkthroughs for records, accounts, rules, and exports.</li>
+                    <li>A simple reference surface for contributors and reviewers.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Suggested flows</h2>
+                <ol>
+                    <li>Open the dashboard to confirm the API is reachable.</li>
+                    <li>Browse records and accounts to inspect seeded or imported data.</li>
+                    <li>Use the manual testing page to upload a CSV or OFX file.</li>
+                    <li>Export a set of records to verify the export pipeline end to end.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="h4 mb-3">API endpoint reference</h2>
+
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="h6 text-muted mb-1">GET /health</h3>
+                <p class="mb-2">Returns the API health status. Use this to confirm the service is reachable before running any workflow.</p>
+                <strong>Response example</strong>
+                <pre class="bg-light p-2 rounded small mb-0"><code>{ "status": "ok" }</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h3 class="h6 text-muted mb-1">GET /api/v1/records</h3>
+                <p class="mb-2">Returns a paged, filtered, and sorted list of financial records. Supports date range, merchant search, amount range, and sort controls.</p>
+                <strong>Query parameters</strong>
+                <ul class="small mb-2">
+                    <li><code>startDate</code>, <code>endDate</code> — filter by date (YYYY-MM-DD)</li>
+                    <li><code>merchant</code> — partial, case-insensitive description match</li>
+                    <li><code>minAmount</code>, <code>maxAmount</code> — filter by amount range</li>
+                    <li><code>sortBy</code> — <code>date</code> (default), <code>amount</code>, <code>description</code></li>
+                    <li><code>sortDescending</code> — <code>true</code> / <code>false</code></li>
+                    <li><code>page</code>, <code>pageSize</code> (max 200)</li>
+                </ul>
+                <strong>Response example</strong>
+                <pre class="bg-light p-2 rounded small mb-0"><code>{
+  "items": [
+    {
+      "id": "3fa85f64-...",
+      "description": "Grocery Store",
+      "amount": -42.50,
+      "currency": "USD",
+      "occurredOn": "2026-07-15T00:00:00Z",
+      "status": "Normalized"
+    }
+  ],
+  "page": 1,
+  "pageSize": 10,
+  "totalCount": 42,
+  "totalPages": 5
+}</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h3 class="h6 text-muted mb-1">GET /api/v1/accounts</h3>
+                <p class="mb-2">Returns a paged list of financial accounts.</p>
+                <strong>Response example</strong>
+                <pre class="bg-light p-2 rounded small mb-2"><code>{
+  "items": [
+    { "id": "3fa85f64-...", "name": "Checking", "type": "account" }
+  ],
+  "page": 1, "pageSize": 25, "totalCount": 3, "totalPages": 1
+}</code></pre>
+                <h3 class="h6 text-muted mb-1 mt-3">GET /api/v1/classification-rules</h3>
+                <p class="mb-2">Returns paged classification rules used for auto-categorisation.</p>
+                <strong>Response example</strong>
+                <pre class="bg-light p-2 rounded small mb-0"><code>{
+  "items": [
+    {
+      "id": "3fa85f64-...",
+      "name": "Grocery Rule",
+      "isEnabled": true,
+      "priority": 10
+    }
+  ],
+  "page": 1, "pageSize": 25, "totalCount": 1, "totalPages": 1
+}</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="h4 mb-3">Import flow</h2>
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h3 class="h6 text-muted mb-1">POST /api/v1/evidence</h3>
+                <p class="mb-2">Uploads a CSV or OFX file for parsing. Use <code>multipart/form-data</code> with a <code>file</code> field. On success the API parses transactions, creates an import job, and returns a summary.</p>
+                <strong>Request (multipart/form-data)</strong>
+                <pre class="bg-light p-2 rounded small mb-2"><code>Content-Disposition: form-data; name="file"; filename="bank.csv"
+Content-Type: text/csv
+
+Date,Amount,Description
+2026-07-01,-42.50,Grocery Store
+2026-07-03,-12.00,Coffee Shop</code></pre>
+                <strong>Response example</strong>
+                <pre class="bg-light p-2 rounded small mb-0"><code>{
+  "evidenceId": "3fa85f64-...",
+  "importJobId": "7cb12a11-...",
+  "status": "completed",
+  "parserType": "csvAutoDetected",
+  "parsedTransactionCount": 2,
+  "failedRowCount": 0,
+  "records": [
+    {
+      "id": "abc12345-...",
+      "date": "2026-07-01",
+      "amount": -42.50,
+      "currency": "USD",
+      "description": "Grocery Store",
+      "classificationStatus": "Pending"
+    }
+  ]
+}</code></pre>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h3 class="h6 text-muted mb-1">GET /api/v1/import-jobs/{id}</h3>
+                <p class="mb-2">Retrieves the status and details of a specific import job by its ID. Useful for checking whether rows failed to parse.</p>
+                <strong>Response example</strong>
+                <pre class="bg-light p-2 rounded small mb-0"><code>{
+  "id": "7cb12a11-...",
+  "evidenceId": "3fa85f64-...",
+  "parserType": "csvAutoDetected",
+  "status": "completed",
+  "totalRows": 2,
+  "parsedCount": 2,
+  "failedRowCount": 0,
+  "startedAt": "2026-07-15T10:00:00Z",
+  "completedAt": "2026-07-15T10:00:01Z",
+  "failedRows": []
+}</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="h4 mb-3">Export flow</h2>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h3 class="h6 text-muted mb-1">POST /api/v1/exports</h3>
+                <p class="mb-2">Triggers an export of records for the specified date range and format. The response is a downloadable file (CSV or JSON depending on the requested format).</p>
+                <strong>Request body</strong>
+                <pre class="bg-light p-2 rounded small mb-2"><code>{
+  "format": "Csv",
+  "startDate": "2026-07-01",
+  "endDate": "2026-07-31"
+}</code></pre>
+                <strong>Supported formats</strong>
+                <ul class="small mb-0">
+                    <li><code>Csv</code> — generic CSV</li>
+                    <li><code>Json</code> — JSON array</li>
+                    <li><code>Ynab4</code> — YNAB 4 register format</li>
+                    <li><code>Goodbudget</code> — Goodbudget envelope CSV</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

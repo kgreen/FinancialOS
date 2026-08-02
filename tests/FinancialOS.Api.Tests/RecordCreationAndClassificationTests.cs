@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using FinancialOS.Core.Models;
 using FinancialOS.Shared.Contracts;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -22,7 +23,7 @@ public sealed class RecordCreationAndClassificationTests : IClassFixture<WebAppl
         var response = await client.GetAsync("/api/v1/records");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var result = await response.Content.ReadFromJsonAsync<RecordListResponse>();
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<RecordResponse>>();
         Assert.NotNull(result);
         Assert.NotNull(result!.Items);
     }
@@ -54,7 +55,7 @@ public sealed class RecordCreationAndClassificationTests : IClassFixture<WebAppl
         var response = await client.GetAsync("/api/v1/records");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var result = await response.Content.ReadFromJsonAsync<RecordListResponse>();
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<RecordResponse>>();
         Assert.NotNull(result);
         Assert.NotNull(result!.Items);
         

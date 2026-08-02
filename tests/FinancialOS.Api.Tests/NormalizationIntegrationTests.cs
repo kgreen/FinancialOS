@@ -80,7 +80,7 @@ public sealed class NormalizationIntegrationTests : IClassFixture<WebApplication
         await client.PostAsync($"/api/v1/records/{recordId}/normalize", content: null);
 
         var recordsResponse = await client.GetAsync("/api/v1/records");
-        var records = await recordsResponse.Content.ReadFromJsonAsync<RecordListResponse>();
+        var records = await recordsResponse.Content.ReadFromJsonAsync<PagedResult<RecordResponse>>();
         Assert.NotNull(records);
 
         var record = records!.Items.FirstOrDefault(r => r.Id == recordId);

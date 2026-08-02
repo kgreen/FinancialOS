@@ -39,14 +39,6 @@ public static class RulesEndpoints
             return Results.Created($"/api/v1/classification-rules/{created.Id}", response);
         });
 
-        app.MapGet("/api/v1/classification-rules", async (
-            IRuleManagementService service,
-            CancellationToken cancellationToken) =>
-        {
-            var rules = await service.ListAsync(cancellationToken);
-            return Results.Ok(rules.Select(ToResponse).ToList());
-        });
-
         app.MapMethods("/api/v1/classification-rules/{id:guid}", new[] { "PATCH" }, async (
             Guid id,
             ClassificationRuleUpdateRequest request,

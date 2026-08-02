@@ -379,4 +379,206 @@ public sealed class EfFinancialRepository : IFinancialRepository
             .Where(r => r.ImportJobId == importJobId)
             .ToListAsync(cancellationToken);
     }
+
+    // spec 004 — paged + filtered queries
+    public async Task<PagedResult<FinancialRecord>> GetRecordsPagedAsync(
+        FilterCriteria filter,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.Records.AsNoTracking().AsQueryable();
+
+        if (filter.AccountId.HasValue)
+            query = query.Where(r => r.AccountId == filter.AccountId.Value);
+
+        if (filter.CategoryId.HasValue)
+            query = query.Where(r => r.CategoryId == filter.CategoryId.Value);
+
+        if (filter.StartDate.HasValue)
+        {
+            var start = filter.StartDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            query = query.Where(r => r.OccurredOn >= start);
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            var end = filter.EndDate.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+            query = query.Where(r => r.OccurredOn <= end);
+        }
+
+        if (filter.MinAmount.HasValue)
+            query = query.Where(r => r.Amount.Amount >= filter.MinAmount.Value);
+
+        if (filter.MaxAmount.HasValue)
+            query = query.Where(r => r.Amount.Amount <= filter.MaxAmount.Value);
+
+        if (!string.IsNullOrWhiteSpace(filter.MerchantSearch))
+        {
+            var search = filter.MerchantSearch.ToLower();
+            query = query.Where(r => r.Description.ToLower().Contains(search));
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .ToListAsync(cancellationToken);
+
+        // Sort the results by OccurredOn on the client side (SQLite limitation with DateTimeOffset)
+        items = items
+            .OrderByDescending(r => r.OccurredOn)
+            .ThenBy(r => r.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return new PagedResult<FinancialRecord>(items, page, pageSize, totalCount);
+    }
+
+    public IAsyncEnumerable<FinancialRecord> StreamRecordsAsync(
+        FilterCriteria filter,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.Records.AsNoTracking().AsQueryable();
+
+        if (filter.AccountId.HasValue)
+            query = query.Where(r => r.AccountId == filter.AccountId.Value);
+
+        if (filter.CategoryId.HasValue)
+            query = query.Where(r => r.CategoryId == filter.CategoryId.Value);
+
+        if (filter.StartDate.HasValue)
+        {
+            var start = filter.StartDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            query = query.Where(r => r.OccurredOn >= start);
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            var end = filter.EndDate.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+            query = query.Where(r => r.OccurredOn <= end);
+        }
+
+        if (filter.MinAmount.HasValue)
+            query = query.Where(r => r.Amount.Amount >= filter.MinAmount.Value);
+
+        if (filter.MaxAmount.HasValue)
+            query = query.Where(r => r.Amount.Amount <= filter.MaxAmount.Value);
+
+        if (!string.IsNullOrWhiteSpace(filter.MerchantSearch))
+        {
+            var search = filter.MerchantSearch.ToLower();
+            query = query.Where(r => r.Description.ToLower().Contains(search));
+        }
+
+        return query
+            .OrderByDescending(r => r.OccurredOn)
+            .ThenBy(r => r.Id)
+            .AsAsyncEnumerable();
+    }
+
+    public Task<PagedResult<FinancialAccount>> GetAccountsPagedAsync(
+        string? accountType,
+        bool? isActive,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        // FinancialAccount has no AccountType or IsActive fields in the current model;
+        // filters are accepted but ignored to fulfil the interface contract.
+        return GetAccountsPagedAsync(search: null, currency: null, page, pageSize, cancellationToken);
+    }
+
+    private async Task<PagedResult<FinancialAccount>> GetAccountsPagedAsync(
+        string? search,
+        string? currency,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.Accounts.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var s = search.ToLower();
+            query = query.Where(a => a.Name.ToLower().Contains(s));
+        }
+
+        if (!string.IsNullOrWhiteSpace(currency))
+            query = query.Where(a => a.Currency == currency);
+
+        query = query.OrderBy(a => a.Name).ThenBy(a => a.Id);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<FinancialAccount>(items, page, pageSize, totalCount);
+    }
+
+    public async Task<PagedResult<Category>> GetCategoriesPagedAsync(
+        string? nameSearch,
+        Guid? parentId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.Categories.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(nameSearch))
+        {
+            var s = nameSearch.ToLower();
+            query = query.Where(c => c.Name.ToLower().Contains(s));
+        }
+        // parentId filter: Category has no ParentId in current model — accepted, ignored.
+
+        query = query.OrderBy(c => c.Name).ThenBy(c => c.Id);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<Category>(items, page, pageSize, totalCount);
+    }
+
+    public async Task<PagedResult<ClassificationRule>> GetRulesPagedAsync(
+        string? ruleType,
+        bool? isEnabled,
+        Guid? categoryId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.ClassificationRules.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(ruleType))
+        {
+            var rt = ruleType.ToLower();
+            query = query.Where(r => r.Name.ToLower().Contains(rt));
+        }
+
+        if (isEnabled.HasValue)
+        {
+            // ClassificationRule.Status: Active = enabled, Inactive = disabled
+            var targetStatus = isEnabled.Value ? RuleStatus.Active : RuleStatus.Inactive;
+            query = query.Where(r => r.Status == targetStatus);
+        }
+
+        if (categoryId.HasValue)
+            query = query.Where(r => r.TargetCategoryId == categoryId.Value);
+
+        // Priority descending, then Id ascending (per contracts/rules.md)
+        query = query.OrderByDescending(r => r.Priority).ThenBy(r => r.Id);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<ClassificationRule>(items, page, pageSize, totalCount);
+    }
 }

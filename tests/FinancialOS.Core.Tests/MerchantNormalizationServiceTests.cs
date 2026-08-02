@@ -76,6 +76,12 @@ public sealed class MerchantNormalizationServiceTests
         public Task<bool> DeleteInstitutionProfileAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(true);
         public Task<bool> ExternalReferenceIdExistsAsync(string externalReferenceId, CancellationToken cancellationToken = default) => Task.FromResult(false);
         public Task<IReadOnlyList<FinancialRecord>> ListRecordsByImportJobAsync(Guid importJobId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<FinancialRecord>>(new List<FinancialRecord>());
+        // spec 004 stubs
+        public Task<PagedResult<FinancialRecord>> GetRecordsPagedAsync(FilterCriteria filter, int page, int pageSize, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public IAsyncEnumerable<FinancialRecord> StreamRecordsAsync(FilterCriteria filter, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<PagedResult<FinancialAccount>> GetAccountsPagedAsync(string? accountType, bool? isActive, int page, int pageSize, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<PagedResult<Category>> GetCategoriesPagedAsync(string? nameSearch, Guid? parentId, int page, int pageSize, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<PagedResult<ClassificationRule>> GetRulesPagedAsync(string? ruleType, bool? isEnabled, Guid? categoryId, int page, int pageSize, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }
 
     private static (FakeRepository Repo, MerchantAliasService Service, Guid CanonicalId) CreateServiceWithCanonicalMerchant(Guid? categoryId = null)

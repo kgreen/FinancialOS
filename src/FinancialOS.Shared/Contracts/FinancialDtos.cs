@@ -36,3 +36,11 @@ public sealed record PlanningScenarioResponse(Guid Id, string Name, string? Desc
 public sealed record PlanningScenarioListResponse(IReadOnlyList<PlanningScenarioResponse> Items, int Page, int PageSize);
 
 public sealed record ReferenceItemResponse(Guid Id, string Name, string Type);
+
+public sealed record RuleItemResponse(
+    Guid Id,
+    string Name,
+    bool IsEnabled,
+    int Priority,
+    Guid? TargetCategoryId,
+    string? ConditionJson);

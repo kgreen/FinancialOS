@@ -1,11 +1,15 @@
 # Contract: Rules Endpoint (Feature 004)
 
-**Endpoint group**: `/api/v1/rules`  
+**Endpoint group**: `/api/v1/classification-rules`  
 **Feature**: `004-api-exporter-ecosystem`
+
+> **Note**: This contract uses `/api/v1/classification-rules` (not `/api/v1/rules`) to avoid
+> colliding with the pre-existing legacy `GET /api/v1/rules` reference-data endpoint,
+> consistent with the route chosen in spec 002.
 
 ---
 
-## Updated: GET /api/v1/rules
+## GET /api/v1/classification-rules
 
 Returns a paginated, optionally filtered list of categorization/normalization rules.
 
@@ -86,25 +90,25 @@ Results ordered by priority descending, then by `Id` ascending.
 
 **All enabled rules:**
 ```
-GET /api/v1/rules?isEnabled=true
+GET /api/v1/classification-rules?isEnabled=true
 ```
 
 **Rules targeting a specific category:**
 ```
-GET /api/v1/rules?categoryId=a1b2c3d4-0000-0000-0000-000000000001
+GET /api/v1/classification-rules?categoryId=a1b2c3d4-0000-0000-0000-000000000001
 ```
 
 **Rules by type:**
 ```
-GET /api/v1/rules?ruleType=MerchantMatch
+GET /api/v1/classification-rules?ruleType=MerchantMatch
 ```
 
 **Disabled rules only:**
 ```
-GET /api/v1/rules?isEnabled=false
+GET /api/v1/classification-rules?isEnabled=false
 ```
 
 **Paged:**
 ```
-GET /api/v1/rules?page=1&pageSize=10
+GET /api/v1/classification-rules?page=1&pageSize=10
 ```

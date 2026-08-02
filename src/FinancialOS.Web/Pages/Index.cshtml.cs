@@ -12,7 +12,7 @@ public sealed class IndexModel : PageModel
         _apiClient = apiClient;
     }
 
-    public DashboardSummary Summary { get; private set; } = new("Checking connection…", 0, 0, 0);
+    public DashboardSummary Summary { get; private set; } = new("Checking connection…", 0, 0, 0, 0);
 
     public string? ApiErrorMessage { get; private set; }
 
@@ -24,22 +24,24 @@ public sealed class IndexModel : PageModel
             var accountsTask = _apiClient.GetAccountsAsync(pageSize: 1, cancellationToken: cancellationToken);
             var recordsTask = _apiClient.GetRecordsAsync(pageSize: 1, cancellationToken: cancellationToken);
             var rulesTask = _apiClient.GetRulesAsync(pageSize: 1, cancellationToken: cancellationToken);
+            var importJobsTask = _apiClient.GetImportJobsAsync(cancellationToken);
 
-            await Task.WhenAll(healthTask, accountsTask, recordsTask, rulesTask);
+            await Task.WhenAll(healthTask, accountsTask, recordsTask, rulesTask, importJobsTask);
 
             Summary = new DashboardSummary(
                 healthTask.Result ?? "API unavailable",
                 accountsTask.Result.TotalCount,
                 recordsTask.Result.TotalCount,
-                rulesTask.Result.TotalCount);
+                rulesTask.Result.TotalCount,
+                importJobsTask.Result.TotalCount);
         }
         catch (HttpRequestException)
         {
             ApiErrorMessage = "The FinancialOS API is currently unavailable. Start the API or update the Api:BaseUrl setting to the running service.";
-            Summary = new DashboardSummary("API unavailable", 0, 0, 0);
+            Summary = new DashboardSummary("API unavailable", 0, 0, 0, 0);
         }
     }
 }
 
-public sealed record DashboardSummary(string HealthStatus, int AccountCount, int RecordCount, int RuleCount);
+public sealed record DashboardSummary(string HealthStatus, int AccountCount, int RecordCount, int RuleCount, int ImportJobCount);
 

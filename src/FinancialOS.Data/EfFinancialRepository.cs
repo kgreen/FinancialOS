@@ -322,6 +322,13 @@ public sealed class EfFinancialRepository : IFinancialRepository
             .FirstOrDefaultAsync(j => j.EvidenceId == evidenceId, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<ImportJob>> ListImportJobsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.ImportJobs.AsNoTracking()
+            .OrderByDescending(j => j.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
     // spec 003 — InstitutionProfile CRUD
     public async Task<InstitutionProfile> AddInstitutionProfileAsync(InstitutionProfile profile, CancellationToken cancellationToken = default)
     {
@@ -420,7 +427,7 @@ public sealed class EfFinancialRepository : IFinancialRepository
             if (filter.EndDate.HasValue)
                 filtered = filtered.Where(r => DateOnly.FromDateTime(r.OccurredOn.UtcDateTime) <= filter.EndDate.Value);
 
-            var sorted = filtered.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id).ToList();
+            var sorted = ApplyInMemorySort(filtered, filter);
             var sqliteTotalCount = sorted.Count;
             var sqliteItems = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
@@ -439,11 +446,39 @@ public sealed class EfFinancialRepository : IFinancialRepository
             query = query.Where(r => r.OccurredOn <= endDateTime);
         }
 
-        var orderedQuery = query.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id);
+        var orderedQuery = ApplyQuerySort(query, filter);
         var totalCount = await orderedQuery.CountAsync(cancellationToken);
         var items = await orderedQuery.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
 
         return new PagedResult<FinancialRecord>(items, page, pageSize, totalCount);
+    }
+
+    private static List<FinancialRecord> ApplyInMemorySort(IEnumerable<FinancialRecord> query, FilterCriteria filter)
+    {
+        var descending = filter.SortDescending ?? (filter.SortBy is null or "date");
+        return filter.SortBy switch
+        {
+            "amount"      => descending ? query.OrderByDescending(r => r.Amount.Amount).ThenBy(r => r.Id).ToList()
+                                        : query.OrderBy(r => r.Amount.Amount).ThenBy(r => r.Id).ToList(),
+            "description" => descending ? query.OrderByDescending(r => r.Description).ThenBy(r => r.Id).ToList()
+                                        : query.OrderBy(r => r.Description).ThenBy(r => r.Id).ToList(),
+            _             => descending ? query.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id).ToList()
+                                        : query.OrderBy(r => r.OccurredOn).ThenBy(r => r.Id).ToList()
+        };
+    }
+
+    private static IOrderedQueryable<FinancialRecord> ApplyQuerySort(IQueryable<FinancialRecord> query, FilterCriteria filter)
+    {
+        var descending = filter.SortDescending ?? (filter.SortBy is null or "date");
+        return filter.SortBy switch
+        {
+            "amount"      => descending ? query.OrderByDescending(r => r.Amount.Amount).ThenBy(r => r.Id)
+                                        : query.OrderBy(r => r.Amount.Amount).ThenBy(r => r.Id),
+            "description" => descending ? query.OrderByDescending(r => r.Description).ThenBy(r => r.Id)
+                                        : query.OrderBy(r => r.Description).ThenBy(r => r.Id),
+            _             => descending ? query.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id)
+                                        : query.OrderBy(r => r.OccurredOn).ThenBy(r => r.Id)
+        };
     }
 
     public async IAsyncEnumerable<FinancialRecord> StreamRecordsAsync(

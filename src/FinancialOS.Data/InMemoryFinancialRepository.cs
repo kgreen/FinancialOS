@@ -327,6 +327,12 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
         return Task.FromResult(job);
     }
 
+    public Task<IReadOnlyList<ImportJob>> ListImportJobsAsync(CancellationToken cancellationToken = default)
+    {
+        var jobs = _importJobs.Values.OrderByDescending(j => j.CreatedAt).ToList();
+        return Task.FromResult<IReadOnlyList<ImportJob>>(jobs);
+    }
+
     public Task<InstitutionProfile> AddInstitutionProfileAsync(InstitutionProfile profile, CancellationToken cancellationToken = default)
     {
         if (profile.Id == Guid.Empty) profile.Id = Guid.NewGuid();
@@ -387,7 +393,16 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
         if (!string.IsNullOrWhiteSpace(filter.MerchantSearch))
             query = query.Where(r => r.Description.Contains(filter.MerchantSearch, StringComparison.OrdinalIgnoreCase));
 
-        var ordered = query.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id).ToList();
+        var descending = filter.SortDescending ?? (filter.SortBy is null or "date");
+        var ordered = filter.SortBy switch
+        {
+            "amount"      => descending ? query.OrderByDescending(r => r.Amount.Amount).ThenBy(r => r.Id).ToList()
+                                        : query.OrderBy(r => r.Amount.Amount).ThenBy(r => r.Id).ToList(),
+            "description" => descending ? query.OrderByDescending(r => r.Description).ThenBy(r => r.Id).ToList()
+                                        : query.OrderBy(r => r.Description).ThenBy(r => r.Id).ToList(),
+            _             => descending ? query.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id).ToList()
+                                        : query.OrderBy(r => r.OccurredOn).ThenBy(r => r.Id).ToList()
+        };
         var total   = ordered.Count;
         var items   = ordered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
         return Task.FromResult(new PagedResult<FinancialRecord>(items, page, pageSize, total));

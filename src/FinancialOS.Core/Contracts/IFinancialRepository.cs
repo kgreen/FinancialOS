@@ -64,6 +64,7 @@ public interface IFinancialRepository
     Task<ImportJob?> GetImportJobAsync(Guid id, CancellationToken cancellationToken = default);
     Task<ImportJob?> UpdateImportJobAsync(ImportJob job, CancellationToken cancellationToken = default);
     Task<ImportJob?> GetImportJobByEvidenceIdAsync(Guid evidenceId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ImportJob>> ListImportJobsAsync(CancellationToken cancellationToken = default);
 
     // spec 003 — InstitutionProfile CRUD
     Task<InstitutionProfile> AddInstitutionProfileAsync(InstitutionProfile profile, CancellationToken cancellationToken = default);

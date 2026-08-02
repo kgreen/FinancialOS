@@ -21,6 +21,27 @@ public sealed class RecordsModel : PageModel
     [BindProperty(SupportsGet = true)]
     public int PageSize { get; set; } = 10;
 
+    [BindProperty(SupportsGet = true)]
+    public string? StartDate { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public string? EndDate { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public string? Merchant { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public decimal? MinAmount { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public decimal? MaxAmount { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public string? SortBy { get; set; }
+
+    [BindProperty(SupportsGet = true)]
+    public bool SortDescending { get; set; } = true;
+
     public PagedResult<RecordResponse> Records { get; private set; } = new(Array.Empty<RecordResponse>(), 1, 10, 0);
 
     public string? ApiErrorMessage { get; private set; }
@@ -29,7 +50,20 @@ public sealed class RecordsModel : PageModel
     {
         try
         {
-            Records = await _apiClient.GetRecordsAsync(PageNumber, PageSize, cancellationToken);
+            var startDate = DateOnly.TryParse(StartDate, out var sd) ? sd : (DateOnly?)null;
+            var endDate   = DateOnly.TryParse(EndDate,   out var ed) ? ed : (DateOnly?)null;
+
+            Records = await _apiClient.GetRecordsAsync(
+                page:           PageNumber,
+                pageSize:       PageSize,
+                startDate:      startDate,
+                endDate:        endDate,
+                merchant:       Merchant,
+                minAmount:      MinAmount,
+                maxAmount:      MaxAmount,
+                sortBy:         SortBy,
+                sortDescending: SortDescending,
+                cancellationToken: cancellationToken);
         }
         catch (HttpRequestException)
         {

@@ -30,9 +30,28 @@ public sealed class FinancialApiClient
         }
     }
 
-    public async Task<PagedResult<RecordResponse>> GetRecordsAsync(int page = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<RecordResponse>> GetRecordsAsync(
+        int page = 1,
+        int pageSize = 10,
+        DateOnly? startDate = null,
+        DateOnly? endDate = null,
+        string? merchant = null,
+        decimal? minAmount = null,
+        decimal? maxAmount = null,
+        string? sortBy = null,
+        bool? sortDescending = null,
+        CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.GetAsync($"/api/v1/records?page={page}&pageSize={pageSize}", cancellationToken);
+        var qs = new System.Text.StringBuilder($"/api/v1/records?page={page}&pageSize={pageSize}");
+        if (startDate.HasValue)     qs.Append($"&startDate={startDate.Value:yyyy-MM-dd}");
+        if (endDate.HasValue)       qs.Append($"&endDate={endDate.Value:yyyy-MM-dd}");
+        if (!string.IsNullOrWhiteSpace(merchant)) qs.Append($"&merchant={Uri.EscapeDataString(merchant)}");
+        if (minAmount.HasValue)     qs.Append($"&minAmount={minAmount.Value}");
+        if (maxAmount.HasValue)     qs.Append($"&maxAmount={maxAmount.Value}");
+        if (!string.IsNullOrWhiteSpace(sortBy))   qs.Append($"&sortBy={Uri.EscapeDataString(sortBy)}");
+        if (sortDescending.HasValue) qs.Append($"&sortDescending={sortDescending.Value.ToString().ToLowerInvariant()}");
+
+        var response = await _httpClient.GetAsync(qs.ToString(), cancellationToken);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<PagedResult<RecordResponse>>(cancellationToken: cancellationToken)
             ?? new PagedResult<RecordResponse>(Array.Empty<RecordResponse>(), page, pageSize, 0);
@@ -52,6 +71,14 @@ public sealed class FinancialApiClient
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<PagedResult<RuleItemResponse>>(cancellationToken: cancellationToken)
             ?? new PagedResult<RuleItemResponse>(Array.Empty<RuleItemResponse>(), page, pageSize, 0);
+    }
+
+    public async Task<PagedResult<ImportJobResponse>> GetImportJobsAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync("/api/v1/import-jobs", cancellationToken);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<PagedResult<ImportJobResponse>>(cancellationToken: cancellationToken)
+            ?? new PagedResult<ImportJobResponse>(Array.Empty<ImportJobResponse>(), 1, 0, 0);
     }
 
     public async Task<ImportResult> UploadEvidenceAsync(IFormFile file, CancellationToken cancellationToken = default)

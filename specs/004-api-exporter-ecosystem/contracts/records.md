@@ -18,8 +18,8 @@ Returns a paginated, filtered list of financial records.
 | `accountId`  | `Guid`     | No | — | Filter to a specific account |
 | `categoryId` | `Guid`     | No | — | Filter to category or any of its children |
 | `merchant`   | `string`   | No | — | Partial, case-insensitive match on merchant name (max 200 chars) |
-| `minAmount`  | `decimal`  | No | — | Minimum amount, inclusive (non-negative) |
-| `maxAmount`  | `decimal`  | No | — | Maximum amount, inclusive (≥ minAmount) |
+| `minAmount`  | `decimal`  | No | — | Minimum signed amount, inclusive (`negative = debit/expense`, `positive = credit/income`) |
+| `maxAmount`  | `decimal`  | No | — | Maximum signed amount, inclusive (≥ `minAmount`) |
 | `page`       | `int`      | No | `1`  | 1-based page number |
 | `pageSize`   | `int`      | No | `25` | Records per page (1–200) |
 
@@ -111,7 +111,7 @@ GET /api/v1/records?merchant=amazon&page=1&pageSize=50
 
 **Amount range filter:**
 ```
-GET /api/v1/records?minAmount=10.00&maxAmount=50.00
+GET /api/v1/records?minAmount=-50.00&maxAmount=-10.00
 ```
 
 **Combined filters, page 2:**

@@ -57,10 +57,10 @@ Expected: Records where `merchantName` contains "amazon" (any case).
 ### 2d. Filter by amount range
 
 ```bash
-curl "http://localhost:5000/api/v1/records?minAmount=10.00&maxAmount=50.00"
+curl "http://localhost:5000/api/v1/records?minAmount=-50.00&maxAmount=-10.00"
 ```
 
-Expected: All records with `|amount|` between 10.00 and 50.00 (use signed values; check the spec for your convention).
+Expected: All records with signed `amount` between -50.00 and -10.00 (debits/expenses in that range).
 
 ### 2e. Paginate — request page 2
 

@@ -35,10 +35,6 @@ public sealed record FilterCriteria
             yield return "EndDate must be on or after StartDate.";
         if (MinAmount.HasValue && MaxAmount.HasValue && MaxAmount < MinAmount)
             yield return "MaxAmount must be greater than or equal to MinAmount.";
-        if (MinAmount < 0)
-            yield return "MinAmount must be non-negative.";
-        if (MaxAmount < 0)
-            yield return "MaxAmount must be non-negative.";
         if (MerchantSearch is { Length: > 200 })
             yield return "MerchantSearch must not exceed 200 characters.";
     }
@@ -48,7 +44,7 @@ public sealed record FilterCriteria
 **Validation rules**:
 - `EndDate >= StartDate` when both are provided
 - `MaxAmount >= MinAmount` when both are provided
-- `MinAmount` and `MaxAmount` must be non-negative
+- `MinAmount` and `MaxAmount` are signed amount bounds (`negative = debit/expense`, `positive = credit/income`)
 - `MerchantSearch` max length: 200 characters
 - All fields are optional; an empty `FilterCriteria` matches all records
 

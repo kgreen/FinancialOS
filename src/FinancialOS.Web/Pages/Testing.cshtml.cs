@@ -32,8 +32,6 @@ public sealed class TestingModel : PageModel
 
     public string? ExportMessage { get; private set; }
 
-    public string? ExportFileName { get; private set; }
-
     public async Task<IActionResult> OnPostImportAsync(CancellationToken cancellationToken)
     {
         if (EvidenceFile is null || EvidenceFile.Length == 0)
@@ -78,8 +76,6 @@ public sealed class TestingModel : PageModel
                 return Page();
             }
 
-            ExportFileName = result.FileName;
-            ExportMessage = $"Export ready for download ({result.FileName}).";
             return File(result.Data ?? Array.Empty<byte>(), "application/octet-stream", result.FileName ?? "export.csv");
         }
         catch (HttpRequestException)

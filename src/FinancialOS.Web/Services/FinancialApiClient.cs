@@ -90,7 +90,10 @@ public sealed class FinancialApiClient
         }
 
         var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-        var fileName = response.Content.Headers.ContentDisposition?.FileNameStar ?? response.Content.Headers.ContentDisposition?.FileName ?? $"export-{DateTime.UtcNow:yyyyMMddHHmmss}.{GetExtension(format)}";
+        var rawFileName = response.Content.Headers.ContentDisposition?.FileNameStar
+            ?? response.Content.Headers.ContentDisposition?.FileName
+            ?? $"export-{DateTime.UtcNow:yyyyMMddHHmmss}.{GetExtension(format)}";
+        var fileName = Path.GetFileName(rawFileName.Trim('"'));
         var contentType = response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream";
         return new ExportResult(true, bytes, fileName, contentType, null);
     }

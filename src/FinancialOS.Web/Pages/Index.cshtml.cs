@@ -20,16 +20,18 @@ public sealed class IndexModel : PageModel
     {
         try
         {
-            var health = await _apiClient.GetHealthAsync(cancellationToken);
-            var accounts = await _apiClient.GetAccountsAsync(pageSize: 1, cancellationToken: cancellationToken);
-            var records = await _apiClient.GetRecordsAsync(pageSize: 1, cancellationToken: cancellationToken);
-            var rules = await _apiClient.GetRulesAsync(pageSize: 1, cancellationToken: cancellationToken);
+            var healthTask = _apiClient.GetHealthAsync(cancellationToken);
+            var accountsTask = _apiClient.GetAccountsAsync(pageSize: 1, cancellationToken: cancellationToken);
+            var recordsTask = _apiClient.GetRecordsAsync(pageSize: 1, cancellationToken: cancellationToken);
+            var rulesTask = _apiClient.GetRulesAsync(pageSize: 1, cancellationToken: cancellationToken);
+
+            await Task.WhenAll(healthTask, accountsTask, recordsTask, rulesTask);
 
             Summary = new DashboardSummary(
-                health ?? "API unavailable",
-                accounts.TotalCount,
-                records.TotalCount,
-                rules.TotalCount);
+                healthTask.Result ?? "API unavailable",
+                accountsTask.Result.TotalCount,
+                recordsTask.Result.TotalCount,
+                rulesTask.Result.TotalCount);
         }
         catch (HttpRequestException)
         {

@@ -79,13 +79,14 @@ app.UseExceptionHandler(exceptionHandlerApp =>
         // Preserve the status code for HTTP-specific errors (e.g., 400 for bad JSON body / invalid enum value).
         if (exception is Microsoft.AspNetCore.Http.BadHttpRequestException badReq)
         {
+            app.Logger.LogWarning(badReq, "Bad request while processing {Path}", context.Request.Path);
             context.Response.StatusCode = badReq.StatusCode;
             context.Response.ContentType = "application/problem+json";
             await context.Response.WriteAsJsonAsync(new ProblemDetails
             {
                 Status = badReq.StatusCode,
                 Title  = "Bad Request",
-                Detail = badReq.Message,
+                Detail = "The request payload is invalid.",
                 Instance = context.Request.Path
             });
             return;

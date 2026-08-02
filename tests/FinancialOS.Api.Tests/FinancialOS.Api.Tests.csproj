@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFrameworks>net8.0;net8.0-windows</TargetFrameworks>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
@@ -25,7 +26,16 @@
     <ProjectReference Include="..\..\src\FinancialOS.Api\FinancialOS.Api.csproj" />
     <ProjectReference Include="..\..\src\FinancialOS.Infrastructure\FinancialOS.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\FinancialOS.Core\FinancialOS.Core.csproj" />
-    <ProjectReference Include="..\..\src\FinancialOS.Desktop\FinancialOS.Desktop.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FinancialOS.Desktop\FinancialOS.Desktop.csproj"
+                      Condition="'$(TargetFramework)' == 'net8.0-windows'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="DesktopApiClientTests.cs" Condition="'$(TargetFramework)' != 'net8.0-windows'" />
+    <Compile Remove="DesktopConnectivityTests.cs" Condition="'$(TargetFramework)' != 'net8.0-windows'" />
   </ItemGroup>
 
   <ItemGroup>

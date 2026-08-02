@@ -7,11 +7,11 @@ namespace FinancialOS.Api.Tests;
 /// T049 — YNAB 4 export: column names, Outflow/Inflow sign splitting, empty result.
 /// Seed data: Amazon records (-10.00) and Paycheck records (+200.00).
 /// </summary>
-public sealed class YnabV4ExportTests : IClassFixture<FilterAndExportFixture>
+public sealed class Ynab4ExportTests : IClassFixture<FilterAndExportFixture>
 {
     private readonly HttpClient _client;
 
-    public YnabV4ExportTests(FilterAndExportFixture fixture)
+    public Ynab4ExportTests(FilterAndExportFixture fixture)
     {
         _client = fixture.Client;
     }

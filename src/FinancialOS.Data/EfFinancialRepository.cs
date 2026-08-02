@@ -419,13 +419,17 @@ public sealed class EfFinancialRepository : IFinancialRepository
             query = query.Where(r => r.Description.ToLower().Contains(search));
         }
 
-        query = query.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id);
-
         var totalCount = await query.CountAsync(cancellationToken);
         var items = await query
+            .ToListAsync(cancellationToken);
+
+        // Sort the results by OccurredOn on the client side (SQLite limitation with DateTimeOffset)
+        items = items
+            .OrderByDescending(r => r.OccurredOn)
+            .ThenBy(r => r.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         return new PagedResult<FinancialRecord>(items, page, pageSize, totalCount);
     }

@@ -63,9 +63,9 @@ public sealed class FinancialApiClient
         form.Add(fileContent, "file", file.FileName);
 
         var response = await _httpClient.PostAsync("/api/v1/evidence", form, cancellationToken);
-        var content = await response.Content.ReadAsStringAsync(cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
             return new ImportResult(false, null, content);
         }
 

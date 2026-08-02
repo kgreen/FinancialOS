@@ -31,10 +31,15 @@ public static class DatabaseConfiguration
                 ?? throw new InvalidOperationException("PostgreSQL connection string not found in environment or configuration");
             services.AddPostgresDatabase(connectionString);
         }
-        else
+        else if (provider == "sqlite")
         {
             var dbPath = connectionString ?? configuration?["ConnectionStrings:Sqlite"] ?? "financialos.db";
             services.AddSqliteDatabase(dbPath);
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                $"Unknown DatabaseProvider '{provider}'. Supported values: sqlite, postgres.");
         }
 
         return services;

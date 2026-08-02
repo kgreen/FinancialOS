@@ -20,7 +20,9 @@ public static class DatabaseConfiguration
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddConfiguredDatabase(this IServiceCollection services, IConfiguration? configuration = null)
     {
-        var provider = Environment.GetEnvironmentVariable("EF_CORE_PROVIDER")?.ToLowerInvariant() ?? "sqlite";
+        var provider = Environment.GetEnvironmentVariable("EF_CORE_PROVIDER")?.ToLowerInvariant()
+            ?? configuration?["DatabaseProvider"]?.ToLowerInvariant()
+            ?? "sqlite";
         var connectionString = Environment.GetEnvironmentVariable("EF_CORE_CONNECTION_STRING");
 
         if (provider == "postgres" || provider == "postgresql")

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using FinancialOS.Core.Models;
 using FinancialOS.Shared.Contracts;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -38,13 +39,13 @@ public sealed class RuleDeterminismIntegrationTests : IClassFixture<WebApplicati
         var firstRun = await client.GetAsync("/api/v1/classification-rules");
         var secondRun = await client.GetAsync("/api/v1/classification-rules");
 
-        var firstRules = await firstRun.Content.ReadFromJsonAsync<IReadOnlyList<ClassificationRuleResponse>>();
-        var secondRules = await secondRun.Content.ReadFromJsonAsync<IReadOnlyList<ClassificationRuleResponse>>();
+        var firstRules = await firstRun.Content.ReadFromJsonAsync<PagedResult<RuleItemResponse>>();
+        var secondRules = await secondRun.Content.ReadFromJsonAsync<PagedResult<RuleItemResponse>>();
 
         Assert.NotNull(firstRules);
         Assert.NotNull(secondRules);
 
-        KnowledgeAssertions.AssertDeterministicOrder(firstRules!, secondRules!, r => r.Id);
+        KnowledgeAssertions.AssertDeterministicOrder(firstRules!.Items, secondRules!.Items, r => r.Id);
     }
 
     [Fact]
@@ -80,13 +81,13 @@ public sealed class RuleDeterminismIntegrationTests : IClassFixture<WebApplicati
             EffectiveToUtc: null));
 
         // All three calls should return the same stable order
-        var runs = new List<IReadOnlyList<ClassificationRuleResponse>>();
+        var runs = new List<IReadOnlyList<RuleItemResponse>>();
         for (int i = 0; i < 3; i++)
         {
             var resp = await client.GetAsync("/api/v1/classification-rules");
-            var rules = await resp.Content.ReadFromJsonAsync<IReadOnlyList<ClassificationRuleResponse>>();
-            Assert.NotNull(rules);
-            runs.Add(rules!);
+            var paged = await resp.Content.ReadFromJsonAsync<PagedResult<RuleItemResponse>>();
+            Assert.NotNull(paged);
+            runs.Add(paged!.Items);
         }
 
         KnowledgeAssertions.AssertDeterministicOrder(runs[0], runs[1], r => r.Id);
@@ -128,11 +129,11 @@ public sealed class RuleDeterminismIntegrationTests : IClassFixture<WebApplicati
 
         // Verify the rule list still contains this rule (it is kept), just now inactive
         var listResp = await client.GetAsync("/api/v1/classification-rules");
-        var rules = await listResp.Content.ReadFromJsonAsync<IReadOnlyList<ClassificationRuleResponse>>();
-        Assert.NotNull(rules);
+        var paged = await listResp.Content.ReadFromJsonAsync<PagedResult<RuleItemResponse>>();
+        Assert.NotNull(paged);
 
-        var found = rules!.FirstOrDefault(r => r.Id == created.Id);
+        var found = paged!.Items.FirstOrDefault(r => r.Id == created.Id);
         Assert.NotNull(found);
-        Assert.Equal("Inactive", found!.Status);
+        Assert.False(found!.IsEnabled);
     }
 }

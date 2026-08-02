@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using FinancialOS.Core.Models;
 using FinancialOS.Shared.Contracts;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -75,7 +76,7 @@ public sealed class RulesContractTests : IClassFixture<WebApplicationFactory<Pro
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var body = await response.Content.ReadFromJsonAsync<IReadOnlyList<ClassificationRuleResponse>>();
+        var body = await response.Content.ReadFromJsonAsync<PagedResult<RuleItemResponse>>();
         Assert.NotNull(body);
     }
 
@@ -109,12 +110,12 @@ public sealed class RulesContractTests : IClassFixture<WebApplicationFactory<Pro
             EffectiveToUtc: null));
 
         var response = await client.GetAsync("/api/v1/classification-rules");
-        var rules = await response.Content.ReadFromJsonAsync<IReadOnlyList<ClassificationRuleResponse>>();
+        var rules = await response.Content.ReadFromJsonAsync<PagedResult<RuleItemResponse>>();
 
         Assert.NotNull(rules);
-        for (int i = 1; i < rules!.Count; i++)
+        for (int i = 1; i < rules!.Items.Count; i++)
         {
-            Assert.True(rules[i - 1].Priority >= rules[i].Priority,
+            Assert.True(rules.Items[i - 1].Priority >= rules.Items[i].Priority,
                 $"Rules not ordered by priority desc at index {i}");
         }
     }

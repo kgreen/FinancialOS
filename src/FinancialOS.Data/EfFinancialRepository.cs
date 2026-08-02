@@ -395,18 +395,6 @@ public sealed class EfFinancialRepository : IFinancialRepository
         if (filter.CategoryId.HasValue)
             query = query.Where(r => r.CategoryId == filter.CategoryId.Value);
 
-        if (filter.StartDate.HasValue)
-        {
-            var start = filter.StartDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-            query = query.Where(r => r.OccurredOn >= start);
-        }
-
-        if (filter.EndDate.HasValue)
-        {
-            var end = filter.EndDate.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-            query = query.Where(r => r.OccurredOn <= end);
-        }
-
         if (filter.MinAmount.HasValue)
             query = query.Where(r => r.Amount.Amount >= filter.MinAmount.Value);
 
@@ -419,24 +407,48 @@ public sealed class EfFinancialRepository : IFinancialRepository
             query = query.Where(r => r.Description.ToLower().Contains(search));
         }
 
-        var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
-            .ToListAsync(cancellationToken);
+        if (IsSqliteProvider())
+        {
+            // SQLite cannot translate DateTimeOffset comparisons or ordering server-side.
+            // Fetch the pre-filtered candidate set then apply date filters and sort in-memory.
+            var candidates = await query.ToListAsync(cancellationToken);
+            IEnumerable<FinancialRecord> filtered = candidates;
 
-        // Sort the results by OccurredOn on the client side (SQLite limitation with DateTimeOffset)
-        items = items
-            .OrderByDescending(r => r.OccurredOn)
-            .ThenBy(r => r.Id)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToList();
+            if (filter.StartDate.HasValue)
+                filtered = filtered.Where(r => DateOnly.FromDateTime(r.OccurredOn.UtcDateTime) >= filter.StartDate.Value);
+
+            if (filter.EndDate.HasValue)
+                filtered = filtered.Where(r => DateOnly.FromDateTime(r.OccurredOn.UtcDateTime) <= filter.EndDate.Value);
+
+            var sorted = filtered.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id).ToList();
+            var sqliteTotalCount = sorted.Count;
+            var sqliteItems = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            return new PagedResult<FinancialRecord>(sqliteItems, page, pageSize, sqliteTotalCount);
+        }
+
+        if (filter.StartDate.HasValue)
+        {
+            var startDateTime = new DateTimeOffset(filter.StartDate.Value.Year, filter.StartDate.Value.Month, filter.StartDate.Value.Day, 0, 0, 0, TimeSpan.Zero);
+            query = query.Where(r => r.OccurredOn >= startDateTime);
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            var endDateTime = new DateTimeOffset(filter.EndDate.Value.Year, filter.EndDate.Value.Month, filter.EndDate.Value.Day, 23, 59, 59, TimeSpan.Zero);
+            query = query.Where(r => r.OccurredOn <= endDateTime);
+        }
+
+        var orderedQuery = query.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id);
+        var totalCount = await orderedQuery.CountAsync(cancellationToken);
+        var items = await orderedQuery.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
 
         return new PagedResult<FinancialRecord>(items, page, pageSize, totalCount);
     }
 
-    public IAsyncEnumerable<FinancialRecord> StreamRecordsAsync(
+    public async IAsyncEnumerable<FinancialRecord> StreamRecordsAsync(
         FilterCriteria filter,
-        CancellationToken cancellationToken = default)
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var query = _dbContext.Records.AsNoTracking().AsQueryable();
 
@@ -446,18 +458,6 @@ public sealed class EfFinancialRepository : IFinancialRepository
         if (filter.CategoryId.HasValue)
             query = query.Where(r => r.CategoryId == filter.CategoryId.Value);
 
-        if (filter.StartDate.HasValue)
-        {
-            var start = filter.StartDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-            query = query.Where(r => r.OccurredOn >= start);
-        }
-
-        if (filter.EndDate.HasValue)
-        {
-            var end = filter.EndDate.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-            query = query.Where(r => r.OccurredOn <= end);
-        }
-
         if (filter.MinAmount.HasValue)
             query = query.Where(r => r.Amount.Amount >= filter.MinAmount.Value);
 
@@ -470,10 +470,50 @@ public sealed class EfFinancialRepository : IFinancialRepository
             query = query.Where(r => r.Description.ToLower().Contains(search));
         }
 
-        return query
-            .OrderByDescending(r => r.OccurredOn)
-            .ThenBy(r => r.Id)
-            .AsAsyncEnumerable();
+        if (IsSqliteProvider())
+        {
+            var candidates = await query.ToListAsync(cancellationToken);
+            IEnumerable<FinancialRecord> filtered = candidates;
+
+            if (filter.StartDate.HasValue)
+                filtered = filtered.Where(r => DateOnly.FromDateTime(r.OccurredOn.UtcDateTime) >= filter.StartDate.Value);
+
+            if (filter.EndDate.HasValue)
+                filtered = filtered.Where(r => DateOnly.FromDateTime(r.OccurredOn.UtcDateTime) <= filter.EndDate.Value);
+
+            var sorted = filtered.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id).ToList();
+            foreach (var record in sorted)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                yield return record;
+            }
+
+            yield break;
+        }
+
+        if (filter.StartDate.HasValue)
+        {
+            var startDateTime = new DateTimeOffset(filter.StartDate.Value.Year, filter.StartDate.Value.Month, filter.StartDate.Value.Day, 0, 0, 0, TimeSpan.Zero);
+            query = query.Where(r => r.OccurredOn >= startDateTime);
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            var endDateTime = new DateTimeOffset(filter.EndDate.Value.Year, filter.EndDate.Value.Month, filter.EndDate.Value.Day, 23, 59, 59, TimeSpan.Zero);
+            query = query.Where(r => r.OccurredOn <= endDateTime);
+        }
+
+        var orderedQuery = query.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id);
+        await foreach (var record in orderedQuery.AsAsyncEnumerable().WithCancellation(cancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return record;
+        }
+    }
+
+    private bool IsSqliteProvider()
+    {
+        return _dbContext.Database.ProviderName?.Contains("sqlite", StringComparison.OrdinalIgnoreCase) == true;
     }
 
     public Task<PagedResult<FinancialAccount>> GetAccountsPagedAsync(

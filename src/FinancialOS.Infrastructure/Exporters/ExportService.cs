@@ -50,7 +50,7 @@ public sealed class ExportService : IExportService
         {
             ExportFormat.Csv        => $"financialos-export-{range}.csv",
             ExportFormat.Json       => $"financialos-export-{range}.json",
-            ExportFormat.YnabV4     => $"financialos-export-{range}-ynab4.csv",
+            ExportFormat.Ynab4      => $"financialos-export-{range}-ynab4.csv",
             ExportFormat.Goodbudget => $"financialos-export-{range}-goodbudget.csv",
             _ => $"financialos-export-{range}.bin",
         };

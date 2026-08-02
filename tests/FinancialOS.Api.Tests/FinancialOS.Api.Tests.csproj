@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
@@ -25,6 +25,7 @@
     <ProjectReference Include="..\..\src\FinancialOS.Api\FinancialOS.Api.csproj" />
     <ProjectReference Include="..\..\src\FinancialOS.Infrastructure\FinancialOS.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\FinancialOS.Core\FinancialOS.Core.csproj" />
+    <ProjectReference Include="..\..\src\FinancialOS.Desktop\FinancialOS.Desktop.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,7 +4,7 @@ public enum ExportFormat
 {
     Csv        = 0,
     Json       = 1,
-    YnabV4     = 2,
+    Ynab4      = 2,
     Goodbudget = 3
 }
 

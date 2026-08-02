@@ -14,7 +14,7 @@ namespace FinancialOS.Infrastructure.Exporters;
 /// </summary>
 public sealed class YnabV4RecordExporter : IRecordExporter
 {
-    public ExportFormat Format      => ExportFormat.YnabV4;
+    public ExportFormat Format      => ExportFormat.Ynab4;
     public string       ContentType => "text/csv; charset=utf-8";
     public string       FileExtension => "-ynab4.csv";
 

@@ -35,6 +35,7 @@ public sealed class JsonRecordExporter : IRecordExporter
             if (!first)
             {
                 await writer.WriteAsync(",");
+                await writer.FlushAsync(cancellationToken);
             }
             first = false;
 

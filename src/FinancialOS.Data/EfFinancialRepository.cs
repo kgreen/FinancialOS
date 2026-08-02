@@ -395,18 +395,6 @@ public sealed class EfFinancialRepository : IFinancialRepository
         if (filter.CategoryId.HasValue)
             query = query.Where(r => r.CategoryId == filter.CategoryId.Value);
 
-        if (filter.StartDate.HasValue)
-        {
-            var start = filter.StartDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-            query = query.Where(r => r.OccurredOn >= start);
-        }
-
-        if (filter.EndDate.HasValue)
-        {
-            var end = filter.EndDate.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-            query = query.Where(r => r.OccurredOn <= end);
-        }
-
         if (filter.MinAmount.HasValue)
             query = query.Where(r => r.Amount.Amount >= filter.MinAmount.Value);
 
@@ -419,24 +407,29 @@ public sealed class EfFinancialRepository : IFinancialRepository
             query = query.Where(r => r.Description.ToLower().Contains(search));
         }
 
-        var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
-            .ToListAsync(cancellationToken);
+        // SQLite cannot translate DateTimeOffset comparisons or ordering server-side.
+        // Fetch the pre-filtered candidate set then apply date filters and sort in-memory.
+        var candidates = await query.ToListAsync(cancellationToken);
 
-        // Sort the results by OccurredOn on the client side (SQLite limitation with DateTimeOffset)
-        items = items
-            .OrderByDescending(r => r.OccurredOn)
-            .ThenBy(r => r.Id)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToList();
+        IEnumerable<FinancialRecord> filtered = candidates;
+
+        if (filter.StartDate.HasValue)
+            filtered = filtered.Where(r => DateOnly.FromDateTime(r.OccurredOn.UtcDateTime) >= filter.StartDate.Value);
+
+        if (filter.EndDate.HasValue)
+            filtered = filtered.Where(r => DateOnly.FromDateTime(r.OccurredOn.UtcDateTime) <= filter.EndDate.Value);
+
+        var sorted = filtered.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id).ToList();
+
+        var totalCount = sorted.Count;
+        var items = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
         return new PagedResult<FinancialRecord>(items, page, pageSize, totalCount);
     }
 
-    public IAsyncEnumerable<FinancialRecord> StreamRecordsAsync(
+    public async IAsyncEnumerable<FinancialRecord> StreamRecordsAsync(
         FilterCriteria filter,
-        CancellationToken cancellationToken = default)
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var query = _dbContext.Records.AsNoTracking().AsQueryable();
 
@@ -446,18 +439,6 @@ public sealed class EfFinancialRepository : IFinancialRepository
         if (filter.CategoryId.HasValue)
             query = query.Where(r => r.CategoryId == filter.CategoryId.Value);
 
-        if (filter.StartDate.HasValue)
-        {
-            var start = filter.StartDate.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-            query = query.Where(r => r.OccurredOn >= start);
-        }
-
-        if (filter.EndDate.HasValue)
-        {
-            var end = filter.EndDate.Value.ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-            query = query.Where(r => r.OccurredOn <= end);
-        }
-
         if (filter.MinAmount.HasValue)
             query = query.Where(r => r.Amount.Amount >= filter.MinAmount.Value);
 
@@ -470,10 +451,25 @@ public sealed class EfFinancialRepository : IFinancialRepository
             query = query.Where(r => r.Description.ToLower().Contains(search));
         }
 
-        return query
-            .OrderByDescending(r => r.OccurredOn)
-            .ThenBy(r => r.Id)
-            .AsAsyncEnumerable();
+        // SQLite cannot translate DateTimeOffset comparisons server-side; apply in memory.
+        var candidates = await query.ToListAsync(cancellationToken);
+        IEnumerable<FinancialRecord> filtered = candidates;
+
+        if (filter.StartDate.HasValue)
+            filtered = filtered.Where(r => DateOnly.FromDateTime(r.OccurredOn.UtcDateTime) >= filter.StartDate.Value);
+
+        if (filter.EndDate.HasValue)
+            filtered = filtered.Where(r => DateOnly.FromDateTime(r.OccurredOn.UtcDateTime) <= filter.EndDate.Value);
+
+        var sorted = filtered.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id).ToList();
+
+        // SQLite cannot translate DateTimeOffset ordering server-side; sort in-memory
+        // (same pattern as GetRecordsPagedAsync). For export workloads this is acceptable.
+        foreach (var record in sorted)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return record;
+        }
     }
 
     public Task<PagedResult<FinancialAccount>> GetAccountsPagedAsync(

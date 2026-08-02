@@ -194,7 +194,7 @@ An administrator wants to run FinancialOS in two different modes: as a lightweig
 ## Assumptions
 
 - Users are already authenticated with the system; this spec does not introduce new authentication or authorization mechanisms.
-- The API from specs 001–003 (record creation, account management, import jobs) is stable and will not be redesigned as part of this feature.
+- The core data model and write paths from specs 001–003 (record creation, account management, import jobs) are stable and will not be redesigned as part of this feature. Existing read endpoints (`/api/v1/records`, `/api/v1/accounts`, `/api/v1/categories`) are extended additively in this feature by adding optional pagination and filter query parameters; no existing query parameters or response fields are removed or changed, so the extensions are backward-compatible. The `/api/v1/classification-rules` endpoint (introduced in spec 002) is also extended with pagination; Feature 004 does not touch the legacy `/api/v1/rules` reference-data endpoint.
 - "YNAB 4 format" refers to the classic YNAB 4 desktop import CSV format (Date, Payee, Memo, Outflow, Inflow columns), not the YNAB nYNAB API format.
 - "Goodbudget format" refers to Goodbudget's standard CSV export/import layout as publicly documented on the Goodbudget support site.
 - The desktop application is a Windows WPF application; mobile and web clients are out of scope for this feature.

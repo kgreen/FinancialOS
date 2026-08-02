@@ -29,7 +29,7 @@ No new database tables are introduced. All new types are value objects, generic 
 
 **Storage**: SQLite (default) or PostgreSQL — switched via `"DatabaseProvider"` config key; same EF Core `DbContext`, different `UseSqlite`/`UseNpgsql` call in `Program.cs`.
 
-**Testing**: xUnit + `WebApplicationFactory<Program>` (integration tests); existing test project at `tests/FinancialOS.Tests/`
+**Testing**: xUnit + `WebApplicationFactory<Program>` (integration tests); existing test projects at `tests/FinancialOS.Api.Tests/` and `tests/FinancialOS.Core.Tests/`
 
 **Target Platform**: Windows (API: cross-platform; Desktop: Windows WPF)
 

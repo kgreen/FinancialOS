@@ -324,9 +324,13 @@ public sealed class EfFinancialRepository : IFinancialRepository
 
     public async Task<IReadOnlyList<ImportJob>> ListImportJobsAsync(CancellationToken cancellationToken = default)
     {
-        return await _dbContext.ImportJobs.AsNoTracking()
-            .OrderByDescending(j => j.CreatedAt)
+        var jobs = await _dbContext.ImportJobs.AsNoTracking()
             .ToListAsync(cancellationToken);
+
+        // SQLite provider cannot translate DateTimeOffset ORDER BY.
+        return jobs
+            .OrderByDescending(j => j.CreatedAt)
+            .ToList();
     }
 
     // spec 003 — InstitutionProfile CRUD

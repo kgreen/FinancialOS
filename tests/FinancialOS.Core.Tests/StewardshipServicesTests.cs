@@ -51,6 +51,42 @@ public sealed class StewardshipServicesTests
     }
 
     [Fact]
+    public async Task GenerateAsync_WhenTrendDrops_ReturnsDownTrendDirection()
+    {
+        var repository = new InMemoryFinancialRepository();
+        var startDate = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var endDate = new DateTimeOffset(2025, 1, 31, 0, 0, 0, TimeSpan.Zero);
+
+        await repository.AddRecordAsync(new FinancialRecord
+        {
+            Description = "Big expense",
+            Amount = new Money(-100m, "USD"),
+            OccurredOn = startDate,
+            AccountId = Guid.NewGuid(),
+            CategoryId = Guid.NewGuid()
+        });
+
+        await repository.AddRecordAsync(new FinancialRecord
+        {
+            Description = "Smaller expense",
+            Amount = new Money(-50m, "USD"),
+            OccurredOn = startDate.AddDays(10),
+            AccountId = Guid.NewGuid(),
+            CategoryId = Guid.NewGuid()
+        });
+
+        var service = new StewardshipInsightService(repository);
+        var insight = await service.GenerateAsync(new InsightRequest
+        {
+            StartDate = startDate,
+            EndDate = endDate,
+            Currency = "USD"
+        });
+
+        Assert.Equal("Down", insight.TrendDirection);
+    }
+
+    [Fact]
     public async Task GenerateAsync_WhenAdvisorDisabled_ReturnsFallbackRecommendation()
     {
         var repository = new InMemoryFinancialRepository();

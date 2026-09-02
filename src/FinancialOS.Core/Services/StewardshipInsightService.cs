@@ -57,7 +57,11 @@ public sealed class StewardshipInsightService : IInsightService
 
         var orderedRecords = records.OrderBy(item => item.OccurredOn).ToList();
         var trendDirection = orderedRecords.Count >= 2
-            ? orderedRecords.First().Amount.Amount > orderedRecords.Last().Amount.Amount ? "Up" : "Down"
+            ? orderedRecords.First().Amount.Amount == orderedRecords.Last().Amount.Amount
+                ? "Flat"
+                : NormalizeAmount(orderedRecords.Last().Amount.Amount) > NormalizeAmount(orderedRecords.First().Amount.Amount)
+                    ? "Up"
+                    : "Down"
             : "Flat";
 
         var goalProgress = goals.Select(goal =>

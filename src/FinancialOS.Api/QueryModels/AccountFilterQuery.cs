@@ -5,6 +5,6 @@ public sealed class AccountFilterQuery
 {
     public string? AccountType { get; set; }
     public bool?   IsActive    { get; set; }
-    public int?    Page        { get; set; }
-    public int?    PageSize    { get; set; }
+    public int?    Page        { get; set; } = PaginationConstants.MinPage;
+    public int?    PageSize    { get; set; } = PaginationConstants.DefaultPageSize;
 }

@@ -19,7 +19,7 @@ public sealed class InvalidProviderStartupTests
         var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(host =>
         {
             host.UseSetting("DatabaseProvider", "invalidvalue");
-            host.UseSetting("ConnectionStrings:Sqlite", ":memory:");
+            host.UseSetting("ConnectionStrings:Default", "Data Source=:memory:");
         });
 
         var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -48,7 +48,7 @@ public sealed class InvalidProviderStartupTests
             var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(host =>
             {
                 // Explicitly omit DatabaseProvider key; only supply the connection string.
-                host.UseSetting("ConnectionStrings:Sqlite", dbPath);
+                host.UseSetting("ConnectionStrings:Default", $"Data Source={dbPath}");
             });
 
             // Should not throw.

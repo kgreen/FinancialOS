@@ -22,7 +22,7 @@ public sealed class SqliteProviderStartupTests : IAsyncLifetime
         _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(host =>
         {
             host.UseSetting("DatabaseProvider", "sqlite");
-            host.UseSetting("ConnectionStrings:Sqlite", _dbPath);
+            host.UseSetting("ConnectionStrings:Default", $"Data Source={_dbPath}");
         });
     }
 

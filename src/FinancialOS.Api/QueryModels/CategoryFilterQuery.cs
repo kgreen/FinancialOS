@@ -5,6 +5,6 @@ public sealed class CategoryFilterQuery
 {
     public string? NameSearch { get; set; }
     public Guid?   ParentId   { get; set; }
-    public int?    Page       { get; set; }
-    public int?    PageSize   { get; set; }
+    public int?    Page       { get; set; } = PaginationConstants.MinPage;
+    public int?    PageSize   { get; set; } = PaginationConstants.DefaultPageSize;
 }

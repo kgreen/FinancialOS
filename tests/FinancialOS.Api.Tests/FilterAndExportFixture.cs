@@ -30,7 +30,7 @@ public sealed class FilterAndExportFixture : IAsyncLifetime
         Factory = new WebApplicationFactory<Program>().WithWebHostBuilder(host =>
         {
             host.UseSetting("DatabaseProvider", "sqlite");
-            host.UseSetting("ConnectionStrings:Sqlite", _dbPath);
+            host.UseSetting("ConnectionStrings:Default", $"Data Source={_dbPath}");
             host.UseSetting("Database:SeedOnStartup", "false");
         });
 

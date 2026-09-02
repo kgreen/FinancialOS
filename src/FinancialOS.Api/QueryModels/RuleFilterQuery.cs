@@ -6,6 +6,6 @@ public sealed class RuleFilterQuery
     public string? RuleType   { get; set; }
     public bool?   IsEnabled  { get; set; }
     public Guid?   CategoryId { get; set; }
-    public int?    Page       { get; set; }
-    public int?    PageSize   { get; set; }
+    public int?    Page       { get; set; } = PaginationConstants.MinPage;
+    public int?    PageSize   { get; set; } = PaginationConstants.DefaultPageSize;
 }

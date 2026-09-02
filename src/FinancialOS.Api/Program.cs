@@ -13,7 +13,37 @@ using FinancialOS.Infrastructure.Import;
 using FinancialOS.Infrastructure.Import.Parsers;
 using FinancialOS.Infrastructure.Exporters;
 using FinancialOS.Shared.Contracts;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
+
+static void UseDatabase(WebApplicationBuilder builder)
+{
+    var provider = (builder.Configuration["DatabaseProvider"] ?? "sqlite").Trim();
+    var connectionString = builder.Configuration.GetConnectionString("Default")
+        ?? builder.Configuration.GetConnectionString("Sqlite")
+        ?? builder.Configuration.GetConnectionString("PostgreSQL");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("ConnectionStrings:Default is required.");
+    }
+
+    builder.Services.AddDbContext<FinancialOsDbContext>(options =>
+    {
+        switch (provider.ToLowerInvariant())
+        {
+            case "sqlite":
+                options.UseSqlite(connectionString);
+                break;
+            case "postgres":
+            case "postgresql":
+                options.UseNpgsql(connectionString);
+                break;
+            default:
+                throw new InvalidOperationException($"Unknown DatabaseProvider '{provider}'. Supported values: sqlite, postgres.");
+        }
+    });
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +58,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase));
 });
 
-builder.Services.AddConfiguredDatabase(builder.Configuration);
+UseDatabase(builder);
 builder.Services.AddScoped<IFinancialRepository, EfFinancialRepository>();
 builder.Services.AddScoped<EvidenceImportService>();  // kept for legacy use
 builder.Services.AddScoped<IRuleEvaluationService, RuleEvaluationService>();
@@ -240,12 +270,18 @@ app.MapGet("/api/v1/records", async (
     IFinancialRepository repository,
     CancellationToken cancellationToken) =>
 {
-    var page = Math.Max(1, q.Page ?? 1);
-    var pageSize = q.PageSize ?? 25;
-
-    if (pageSize < 1 || pageSize > 200)
+    if ((q.Page ?? PaginationConstants.MinPage) < PaginationConstants.MinPage)
     {
-        return Results.Problem(detail: "pageSize must be between 1 and 200.",
+        return Results.Problem(detail: "page must be greater than or equal to 1.",
+            statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+    }
+
+    var page = q.Page ?? PaginationConstants.MinPage;
+    var pageSize = q.PageSize ?? PaginationConstants.DefaultPageSize;
+
+    if (pageSize < PaginationConstants.MinPage || pageSize > PaginationConstants.MaxPageSize)
+    {
+        return Results.Problem(detail: $"pageSize must be between {PaginationConstants.MinPage} and {PaginationConstants.MaxPageSize}.",
             statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
     }
 
@@ -319,11 +355,17 @@ app.MapGet("/api/v1/accounts", async (
     IFinancialRepository repository,
     CancellationToken cancellationToken) =>
 {
-    var page = Math.Max(1, q.Page ?? 1);
-    var pageSize = q.PageSize ?? 25;
-    if (pageSize < 1 || pageSize > 200)
+    if ((q.Page ?? PaginationConstants.MinPage) < PaginationConstants.MinPage)
     {
-        return Results.Problem(detail: "pageSize must be between 1 and 200.",
+        return Results.Problem(detail: "page must be greater than or equal to 1.",
+            statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+    }
+
+    var page = q.Page ?? PaginationConstants.MinPage;
+    var pageSize = q.PageSize ?? PaginationConstants.DefaultPageSize;
+    if (pageSize < PaginationConstants.MinPage || pageSize > PaginationConstants.MaxPageSize)
+    {
+        return Results.Problem(detail: $"pageSize must be between {PaginationConstants.MinPage} and {PaginationConstants.MaxPageSize}.",
             statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
     }
 
@@ -337,11 +379,17 @@ app.MapGet("/api/v1/categories", async (
     IFinancialRepository repository,
     CancellationToken cancellationToken) =>
 {
-    var page = Math.Max(1, q.Page ?? 1);
-    var pageSize = q.PageSize ?? 25;
-    if (pageSize < 1 || pageSize > 200)
+    if ((q.Page ?? PaginationConstants.MinPage) < PaginationConstants.MinPage)
     {
-        return Results.Problem(detail: "pageSize must be between 1 and 200.",
+        return Results.Problem(detail: "page must be greater than or equal to 1.",
+            statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+    }
+
+    var page = q.Page ?? PaginationConstants.MinPage;
+    var pageSize = q.PageSize ?? PaginationConstants.DefaultPageSize;
+    if (pageSize < PaginationConstants.MinPage || pageSize > PaginationConstants.MaxPageSize)
+    {
+        return Results.Problem(detail: $"pageSize must be between {PaginationConstants.MinPage} and {PaginationConstants.MaxPageSize}.",
             statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
     }
 
@@ -369,11 +417,17 @@ app.MapGet("/api/v1/classification-rules", async (
     IFinancialRepository repository,
     CancellationToken cancellationToken) =>
 {
-    var page = Math.Max(1, q.Page ?? 1);
-    var pageSize = q.PageSize ?? 25;
-    if (pageSize < 1 || pageSize > 200)
+    if ((q.Page ?? PaginationConstants.MinPage) < PaginationConstants.MinPage)
     {
-        return Results.Problem(detail: "pageSize must be between 1 and 200.",
+        return Results.Problem(detail: "page must be greater than or equal to 1.",
+            statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+    }
+
+    var page = q.Page ?? PaginationConstants.MinPage;
+    var pageSize = q.PageSize ?? PaginationConstants.DefaultPageSize;
+    if (pageSize < PaginationConstants.MinPage || pageSize > PaginationConstants.MaxPageSize)
+    {
+        return Results.Problem(detail: $"pageSize must be between {PaginationConstants.MinPage} and {PaginationConstants.MaxPageSize}.",
             statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
     }
 

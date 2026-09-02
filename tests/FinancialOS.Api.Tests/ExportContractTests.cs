@@ -106,6 +106,7 @@ public sealed class ExportContractTests : IClassFixture<FilterAndExportFixture>
         await snapshot.Content.CopyToAsync(content);
         Assert.True(content.Length > 0);
         Assert.Equal(50_000, exporter.WrittenRecordCount);
+        Assert.Equal(50_000, snapshot.RecordCount);
     }
 
     private sealed class StubFinancialRepository(int recordCount) : IFinancialRepository

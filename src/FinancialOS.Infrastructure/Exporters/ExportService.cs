@@ -30,9 +30,7 @@ public sealed class ExportService : IExportService
         var records = _repository.StreamRecordsAsync(filter, cancellationToken);
 
         var pipe = new Pipe();
-        _ = WriteExportAsync(pipe, exporter, records, cancellationToken);
-
-        return Task.FromResult(new ExportSnapshot
+        var snapshot = new ExportSnapshot
         {
             Content     = pipe.Reader.AsStream(),
             FileName    = BuildFileName(request),
@@ -40,19 +38,23 @@ public sealed class ExportService : IExportService
             Format      = request.Format,
             GeneratedAt = DateTimeOffset.UtcNow,
             RecordCount = 0,
-        });
+        };
+        _ = WriteExportAsync(pipe, exporter, records, snapshot, cancellationToken);
+
+        return Task.FromResult(snapshot);
     }
 
     private static async Task WriteExportAsync(
         Pipe pipe,
         IRecordExporter exporter,
         IAsyncEnumerable<FinancialRecord> records,
+        ExportSnapshot snapshot,
         CancellationToken cancellationToken)
     {
         Exception? error = null;
         try
         {
-            await exporter.WriteAsync(records, pipe.Writer.AsStream(leaveOpen: true), cancellationToken);
+            await exporter.WriteAsync(CountRecordsAsync(records, snapshot), pipe.Writer.AsStream(leaveOpen: true), cancellationToken);
         }
         catch (Exception exception)
         {
@@ -61,6 +63,18 @@ public sealed class ExportService : IExportService
         finally
         {
             await pipe.Writer.CompleteAsync(error);
+        }
+    }
+
+    private static async IAsyncEnumerable<FinancialRecord> CountRecordsAsync(
+        IAsyncEnumerable<FinancialRecord> records,
+        ExportSnapshot snapshot,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var record in records.WithCancellation(cancellationToken))
+        {
+            snapshot.RecordCount++;
+            yield return record;
         }
     }
 

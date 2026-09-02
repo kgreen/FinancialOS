@@ -11,6 +11,7 @@ public sealed record FilterCriteria
     public Guid?     AccountId      { get; init; }
     public Guid?     CategoryId     { get; init; }
     /// <summary>Partial, case-insensitive match against merchant name.</summary>
+    [System.Text.Json.Serialization.JsonPropertyName("merchant")]
     public string?   MerchantSearch { get; init; }
     public decimal?  MinAmount      { get; init; }
     public decimal?  MaxAmount      { get; init; }

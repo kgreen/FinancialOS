@@ -24,21 +24,11 @@ public sealed class JsonRecordExporter : IRecordExporter
         Stream destination,
         CancellationToken cancellationToken = default)
     {
-        await using var writer = new StreamWriter(destination, leaveOpen: true);
+        await using var writer = new Utf8JsonWriter(destination);
+        writer.WriteStartArray();
 
-        await writer.WriteAsync("[");
-        await writer.FlushAsync(cancellationToken);
-
-        bool first = true;
         await foreach (var record in records.WithCancellation(cancellationToken))
         {
-            if (!first)
-            {
-                await writer.WriteAsync(",");
-                await writer.FlushAsync(cancellationToken);
-            }
-            first = false;
-
             var obj = new
             {
                 id = record.Id,
@@ -58,10 +48,11 @@ public sealed class JsonRecordExporter : IRecordExporter
                 }
             };
 
-            await JsonSerializer.SerializeAsync(destination, obj, s_options, cancellationToken);
+            JsonSerializer.Serialize(writer, obj, s_options);
+            await writer.FlushAsync(cancellationToken);
         }
 
-        await writer.WriteAsync("]");
+        writer.WriteEndArray();
         await writer.FlushAsync(cancellationToken);
     }
 }

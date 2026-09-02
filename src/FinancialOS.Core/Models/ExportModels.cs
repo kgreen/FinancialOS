@@ -56,5 +56,5 @@ public sealed record ExportSnapshot
     public required string         ContentType { get; init; }
     public required ExportFormat   Format      { get; init; }
     public required DateTimeOffset GeneratedAt { get; init; }
-    public required int            RecordCount { get; init; }
+    public required int            RecordCount { get; set; }
 }

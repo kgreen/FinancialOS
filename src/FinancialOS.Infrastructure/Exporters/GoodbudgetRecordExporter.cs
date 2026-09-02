@@ -38,7 +38,7 @@ public sealed class GoodbudgetRecordExporter : IRecordExporter
 
         await foreach (var record in records.WithCancellation(cancellationToken))
         {
-            csv.WriteField(record.OccurredOn.ToString("MM/dd/yyyy"));
+            csv.WriteField(record.OccurredOn.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture));
             csv.WriteField(record.CategoryName ?? record.CategoryId?.ToString() ?? "");  // Envelope = category
             csv.WriteField(record.AccountName ?? record.AccountId?.ToString() ?? "");   // Account
             csv.WriteField(record.Description);                    // Name = merchant

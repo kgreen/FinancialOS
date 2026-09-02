@@ -732,6 +732,47 @@ namespace FinancialOS.Data.Migrations
                         .HasForeignKey("InstitutionProfileId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
+
+            modelBuilder.Entity("FinancialOS.Core.Models.Goal", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("TEXT");
+                    b.Property<Guid?>("AccountId").HasColumnType("TEXT");
+                    b.Property<Guid?>("CategoryId").HasColumnType("TEXT");
+                    b.Property<DateTimeOffset>("CreatedAt").HasColumnType("TEXT");
+                    b.Property<string>("Currency").IsRequired().HasColumnType("TEXT");
+                    b.Property<string>("Description").HasColumnType("TEXT");
+                    b.Property<DateTimeOffset>("EndDate").HasColumnType("TEXT");
+                    b.Property<string>("Name").IsRequired().HasColumnType("TEXT");
+                    b.Property<string>("Period").IsRequired().HasColumnType("TEXT");
+                    b.Property<DateTimeOffset>("StartDate").HasColumnType("TEXT");
+                    b.Property<decimal>("TargetAmount").HasColumnType("TEXT");
+                    b.Property<string>("Type").IsRequired().HasColumnType("TEXT");
+                    b.Property<DateTimeOffset>("UpdatedAt").HasColumnType("TEXT");
+                    b.HasKey("Id");
+                    b.HasIndex("StartDate").HasDatabaseName("IX_Goal_StartDate");
+                    b.HasIndex("EndDate").HasDatabaseName("IX_Goal_EndDate");
+                    b.ToTable("Goals");
+                });
+
+            modelBuilder.Entity("FinancialOS.Core.Models.Budget", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("TEXT");
+                    b.Property<Guid?>("AccountId").HasColumnType("TEXT");
+                    b.Property<Guid?>("CategoryId").HasColumnType("TEXT");
+                    b.Property<DateTimeOffset>("CreatedAt").HasColumnType("TEXT");
+                    b.Property<string>("Currency").IsRequired().HasColumnType("TEXT");
+                    b.Property<string>("Description").HasColumnType("TEXT");
+                    b.Property<DateTimeOffset>("EndDate").HasColumnType("TEXT");
+                    b.Property<decimal>("LimitAmount").HasColumnType("TEXT");
+                    b.Property<string>("Name").IsRequired().HasColumnType("TEXT");
+                    b.Property<string>("Period").IsRequired().HasColumnType("TEXT");
+                    b.Property<DateTimeOffset>("StartDate").HasColumnType("TEXT");
+                    b.Property<DateTimeOffset>("UpdatedAt").HasColumnType("TEXT");
+                    b.HasKey("Id");
+                    b.HasIndex("StartDate").HasDatabaseName("IX_Budget_StartDate");
+                    b.HasIndex("EndDate").HasDatabaseName("IX_Budget_EndDate");
+                    b.ToTable("Budgets");
+                });
 #pragma warning restore 612, 618
         }
     }

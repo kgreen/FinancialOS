@@ -46,8 +46,12 @@ public sealed class AdvisorService : IAdvisorService
             .Where(item => request.CategoryId is null || item.CategoryId == request.CategoryId)
             .ToList();
 
-        var goals = (await _repository.ListGoalsAsync(cancellationToken)).ToList();
-        var budgets = (await _repository.ListBudgetsAsync(cancellationToken)).ToList();
+        var goals = (await _repository.ListGoalsAsync(cancellationToken))
+            .Where(item => request.GoalId is null || item.Id == request.GoalId)
+            .ToList();
+        var budgets = (await _repository.ListBudgetsAsync(cancellationToken))
+            .Where(item => request.BudgetId is null || item.Id == request.BudgetId)
+            .ToList();
         if (records.Count == 0)
         {
             return new AdvisorRecommendation

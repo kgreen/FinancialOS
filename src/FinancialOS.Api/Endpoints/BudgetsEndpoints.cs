@@ -59,11 +59,21 @@ public static class BudgetsEndpoints
                 return Results.NotFound();
             }
 
+            var effectiveStartDate = request.StartDate ?? existing.StartDate;
+            var effectiveEndDate = request.EndDate ?? existing.EndDate;
+            if (effectiveStartDate >= effectiveEndDate)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    [nameof(request.EndDate)] = new[] { "End date must be later than the start date." }
+                });
+            }
+
             existing.Name = request.Name?.Trim() ?? existing.Name;
             existing.Description = request.Description?.Trim() ?? existing.Description;
             existing.Period = request.Period ?? existing.Period;
-            existing.StartDate = request.StartDate ?? existing.StartDate;
-            existing.EndDate = request.EndDate ?? existing.EndDate;
+            existing.StartDate = effectiveStartDate;
+            existing.EndDate = effectiveEndDate;
             existing.LimitAmount = request.LimitAmount ?? existing.LimitAmount;
             existing.Currency = string.IsNullOrWhiteSpace(request.Currency) ? existing.Currency : request.Currency.Trim().ToUpperInvariant();
             existing.CategoryId = request.CategoryId ?? existing.CategoryId;

@@ -18,10 +18,15 @@ public sealed class StewardshipInsightService : IInsightService
             .Where(item => item.OccurredOn >= request.StartDate && item.OccurredOn <= request.EndDate)
             .Where(item => request.AccountId is null || item.AccountId == request.AccountId)
             .Where(item => request.CategoryId is null || item.CategoryId == request.CategoryId)
+            .Where(item => string.Equals(item.Amount.Currency, request.Currency, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
-        var goals = (await _repository.ListGoalsAsync(cancellationToken)).ToList();
-        var budgets = (await _repository.ListBudgetsAsync(cancellationToken)).ToList();
+        var goals = (await _repository.ListGoalsAsync(cancellationToken))
+            .Where(item => string.Equals(item.Currency, request.Currency, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        var budgets = (await _repository.ListBudgetsAsync(cancellationToken))
+            .Where(item => string.Equals(item.Currency, request.Currency, StringComparison.OrdinalIgnoreCase))
+            .ToList();
         var categories = (await _repository.ListCategoriesAsync(cancellationToken)).ToDictionary(item => item.Id, item => item.Name);
 
         if (records.Count == 0)

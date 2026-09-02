@@ -15,10 +15,25 @@ public sealed class GoodbudgetExportTests : IClassFixture<FilterAndExportFixture
         _client = fixture.Client;
     }
 
-    private static string[][] ParseCsv(string content) =>
-        content.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-               .Select(l => l.TrimEnd('\r').Split(','))
-               .ToArray();
+    private static string[][] ParseCsv(string content)
+    {
+        using var reader = new StringReader(content);
+        using var csv = new CsvHelper.CsvReader(reader, System.Globalization.CultureInfo.InvariantCulture);
+
+        var rows = new List<string[]>();
+        if (!csv.Read())
+            return Array.Empty<string[]>();
+
+        csv.ReadHeader();
+        rows.Add(csv.HeaderRecord!);
+
+        while (csv.Read())
+        {
+            rows.Add(csv.Context.Parser.Record!);
+        }
+
+        return rows.ToArray();
+    }
 
     [Fact]
     public async Task GoodbudgetExport_HeaderRow_HasExactlySixExpectedColumns()

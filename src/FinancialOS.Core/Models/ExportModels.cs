@@ -33,13 +33,15 @@ public sealed record ExportRequest
     /// <summary>Merges the date range and additional filters into a single FilterCriteria.</summary>
     public FilterCriteria ToFilterCriteria() => new()
     {
-        StartDate      = StartDate,
-        EndDate        = EndDate,
-        AccountId      = AdditionalFilters?.AccountId,
-        CategoryId     = AdditionalFilters?.CategoryId,
-        MerchantSearch = AdditionalFilters?.MerchantSearch,
-        MinAmount      = AdditionalFilters?.MinAmount,
-        MaxAmount      = AdditionalFilters?.MaxAmount,
+        StartDate       = StartDate,
+        EndDate         = EndDate,
+        AccountId       = AdditionalFilters?.AccountId,
+        CategoryId      = AdditionalFilters?.CategoryId,
+        MerchantSearch  = AdditionalFilters?.MerchantSearch,
+        MinAmount       = AdditionalFilters?.MinAmount,
+        MaxAmount       = AdditionalFilters?.MaxAmount,
+        SortBy          = AdditionalFilters?.SortBy,
+        SortDescending  = AdditionalFilters?.SortDescending,
     };
 }
 

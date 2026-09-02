@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,13 +28,21 @@ public static class DatabaseConfiguration
 
         if (provider == "postgres" || provider == "postgresql")
         {
-            connectionString ??= configuration?["ConnectionStrings:PostgreSQL"] 
+            connectionString ??= configuration?["ConnectionStrings:Default"]
+                ?? configuration?["ConnectionStrings:PostgreSQL"]
                 ?? throw new InvalidOperationException("PostgreSQL connection string not found in environment or configuration");
             services.AddPostgresDatabase(connectionString);
         }
         else if (provider == "sqlite")
         {
-            var dbPath = connectionString ?? configuration?["ConnectionStrings:Sqlite"] ?? "financialos.db";
+            var configuredConnectionString = connectionString
+                ?? configuration?["ConnectionStrings:Default"]
+                ?? configuration?["ConnectionStrings:Sqlite"];
+            var dbPath = string.IsNullOrWhiteSpace(configuredConnectionString)
+                ? "financialos.db"
+                : configuredConnectionString.Contains('=', StringComparison.Ordinal)
+                    ? new SqliteConnectionStringBuilder(configuredConnectionString).DataSource
+                    : configuredConnectionString;
             services.AddSqliteDatabase(dbPath);
         }
         else

@@ -265,6 +265,90 @@ public sealed class EfFinancialRepository : IFinancialRepository
         return candidate;
     }
 
+    public async Task<Goal> AddGoalAsync(Goal goal, CancellationToken cancellationToken = default)
+    {
+        goal.Id = goal.Id == Guid.Empty ? Guid.NewGuid() : goal.Id;
+        goal.CreatedAt = goal.CreatedAt == default ? DateTimeOffset.UtcNow : goal.CreatedAt;
+        goal.UpdatedAt = goal.UpdatedAt == default ? goal.CreatedAt : goal.UpdatedAt;
+        _dbContext.Goals.Add(goal);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return goal;
+    }
+
+    public async Task<Goal?> GetGoalAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Goals.AsNoTracking().FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Goal>> ListGoalsAsync(CancellationToken cancellationToken = default)
+    {
+        var goals = await _dbContext.Goals.AsNoTracking().ToListAsync(cancellationToken);
+        return goals.OrderBy(item => item.StartDate).ThenBy(item => item.Name).ToList();
+    }
+
+    public async Task<Goal?> UpdateGoalAsync(Goal goal, CancellationToken cancellationToken = default)
+    {
+        goal.UpdatedAt = DateTimeOffset.UtcNow;
+        _dbContext.Goals.Update(goal);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return goal;
+    }
+
+    public async Task<bool> DeleteGoalAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var goal = await _dbContext.Goals.FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
+        if (goal is null)
+        {
+            return false;
+        }
+
+        _dbContext.Goals.Remove(goal);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
+    public async Task<Budget> AddBudgetAsync(Budget budget, CancellationToken cancellationToken = default)
+    {
+        budget.Id = budget.Id == Guid.Empty ? Guid.NewGuid() : budget.Id;
+        budget.CreatedAt = budget.CreatedAt == default ? DateTimeOffset.UtcNow : budget.CreatedAt;
+        budget.UpdatedAt = budget.UpdatedAt == default ? budget.CreatedAt : budget.UpdatedAt;
+        _dbContext.Budgets.Add(budget);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return budget;
+    }
+
+    public async Task<Budget?> GetBudgetAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Budgets.AsNoTracking().FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Budget>> ListBudgetsAsync(CancellationToken cancellationToken = default)
+    {
+        var budgets = await _dbContext.Budgets.AsNoTracking().ToListAsync(cancellationToken);
+        return budgets.OrderBy(item => item.StartDate).ThenBy(item => item.Name).ToList();
+    }
+
+    public async Task<Budget?> UpdateBudgetAsync(Budget budget, CancellationToken cancellationToken = default)
+    {
+        budget.UpdatedAt = DateTimeOffset.UtcNow;
+        _dbContext.Budgets.Update(budget);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return budget;
+    }
+
+    public async Task<bool> DeleteBudgetAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var budget = await _dbContext.Budgets.FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
+        if (budget is null)
+        {
+            return false;
+        }
+
+        _dbContext.Budgets.Remove(budget);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
     public async Task<long?> GetMaxProvenanceStepSequenceAsync(Guid financialRecordId, CancellationToken cancellationToken = default)
     {
         return await _dbContext.ProvenanceEntries.AsNoTracking()

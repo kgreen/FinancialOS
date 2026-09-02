@@ -17,6 +17,8 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
     private readonly Dictionary<Guid, MerchantAliasMap> _merchantAliases = new();
     private readonly Dictionary<Guid, NormalizationDecision> _normalizationDecisions = new();
     private readonly Dictionary<Guid, DuplicateCandidate> _duplicateCandidates = new();
+    private readonly Dictionary<Guid, Goal> _goals = new();
+    private readonly Dictionary<Guid, Budget> _budgets = new();
     private readonly List<ProvenanceEntry> _provenanceEntries = new();
 
     public InMemoryFinancialRepository()
@@ -68,6 +70,70 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
     public Task<IReadOnlyList<FinancialRecord>> ListRecordsAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult<IReadOnlyList<FinancialRecord>>(_records.Values.OrderByDescending(item => item.OccurredOn).ToList());
+    }
+
+    public Task<Goal> AddGoalAsync(Goal goal, CancellationToken cancellationToken = default)
+    {
+        goal.Id = goal.Id == Guid.Empty ? Guid.NewGuid() : goal.Id;
+        goal.CreatedAt = goal.CreatedAt == default ? DateTimeOffset.UtcNow : goal.CreatedAt;
+        goal.UpdatedAt = goal.UpdatedAt == default ? goal.CreatedAt : goal.UpdatedAt;
+        _goals[goal.Id] = goal;
+        return Task.FromResult(goal);
+    }
+
+    public Task<Goal?> GetGoalAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        _goals.TryGetValue(id, out var goal);
+        return Task.FromResult(goal);
+    }
+
+    public Task<IReadOnlyList<Goal>> ListGoalsAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<Goal>>(_goals.Values.OrderByDescending(item => item.CreatedAt).ToList());
+    }
+
+    public Task<Goal?> UpdateGoalAsync(Goal goal, CancellationToken cancellationToken = default)
+    {
+        goal.UpdatedAt = DateTimeOffset.UtcNow;
+        _goals[goal.Id] = goal;
+        return Task.FromResult<Goal?>(goal);
+    }
+
+    public Task<bool> DeleteGoalAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_goals.Remove(id));
+    }
+
+    public Task<Budget> AddBudgetAsync(Budget budget, CancellationToken cancellationToken = default)
+    {
+        budget.Id = budget.Id == Guid.Empty ? Guid.NewGuid() : budget.Id;
+        budget.CreatedAt = budget.CreatedAt == default ? DateTimeOffset.UtcNow : budget.CreatedAt;
+        budget.UpdatedAt = budget.UpdatedAt == default ? budget.CreatedAt : budget.UpdatedAt;
+        _budgets[budget.Id] = budget;
+        return Task.FromResult(budget);
+    }
+
+    public Task<Budget?> GetBudgetAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        _budgets.TryGetValue(id, out var budget);
+        return Task.FromResult(budget);
+    }
+
+    public Task<IReadOnlyList<Budget>> ListBudgetsAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<Budget>>(_budgets.Values.OrderByDescending(item => item.CreatedAt).ToList());
+    }
+
+    public Task<Budget?> UpdateBudgetAsync(Budget budget, CancellationToken cancellationToken = default)
+    {
+        budget.UpdatedAt = DateTimeOffset.UtcNow;
+        _budgets[budget.Id] = budget;
+        return Task.FromResult<Budget?>(budget);
+    }
+
+    public Task<bool> DeleteBudgetAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_budgets.Remove(id));
     }
 
     public Task<IReadOnlyList<FinancialRecord>> ListPotentialDuplicateRecordsAsync(

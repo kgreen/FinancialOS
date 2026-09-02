@@ -3,6 +3,7 @@ using System;
 using FinancialOS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinancialOS.Data.Migrations
 {
     [DbContext(typeof(FinancialOsDbContext))]
-    partial class FinancialOsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260902154620_AddStewardshipEntities")]
+    partial class AddStewardshipEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -733,47 +736,116 @@ namespace FinancialOS.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("FinancialOS.Core.Models.Goal", b =>
-                {
-                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("TEXT");
-                    b.Property<Guid?>("AccountId").HasColumnType("TEXT");
-                    b.Property<Guid?>("CategoryId").HasColumnType("TEXT");
-                    b.Property<DateTimeOffset>("CreatedAt").HasColumnType("TEXT");
-                    b.Property<string>("Currency").IsRequired().HasColumnType("TEXT");
-                    b.Property<string>("Description").HasColumnType("TEXT");
-                    b.Property<DateTimeOffset>("EndDate").HasColumnType("TEXT");
-                    b.Property<string>("Name").IsRequired().HasColumnType("TEXT");
-                    b.Property<string>("Period").IsRequired().HasColumnType("TEXT");
-                    b.Property<DateTimeOffset>("StartDate").HasColumnType("TEXT");
-                    b.Property<decimal>("TargetAmount").HasColumnType("TEXT");
-                    b.Property<string>("Type").IsRequired().HasColumnType("TEXT");
-                    b.Property<DateTimeOffset>("UpdatedAt").HasColumnType("TEXT");
-                    b.HasKey("Id");
-                    b.HasIndex("StartDate").HasDatabaseName("IX_Goal_StartDate");
-                    b.HasIndex("EndDate").HasDatabaseName("IX_Goal_EndDate");
-                    b.ToTable("Goals");
-                });
+           modelBuilder.Entity("FinancialOS.Core.Models.Goal", b =>
+               {
+                   b.Property<Guid>("Id")
+                       .ValueGeneratedOnAdd()
+                       .HasColumnType("TEXT");
 
-            modelBuilder.Entity("FinancialOS.Core.Models.Budget", b =>
-                {
-                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("TEXT");
-                    b.Property<Guid?>("AccountId").HasColumnType("TEXT");
-                    b.Property<Guid?>("CategoryId").HasColumnType("TEXT");
-                    b.Property<DateTimeOffset>("CreatedAt").HasColumnType("TEXT");
-                    b.Property<string>("Currency").IsRequired().HasColumnType("TEXT");
-                    b.Property<string>("Description").HasColumnType("TEXT");
-                    b.Property<DateTimeOffset>("EndDate").HasColumnType("TEXT");
-                    b.Property<decimal>("LimitAmount").HasColumnType("TEXT");
-                    b.Property<string>("Name").IsRequired().HasColumnType("TEXT");
-                    b.Property<string>("Period").IsRequired().HasColumnType("TEXT");
-                    b.Property<DateTimeOffset>("StartDate").HasColumnType("TEXT");
-                    b.Property<DateTimeOffset>("UpdatedAt").HasColumnType("TEXT");
-                    b.HasKey("Id");
-                    b.HasIndex("StartDate").HasDatabaseName("IX_Budget_StartDate");
-                    b.HasIndex("EndDate").HasDatabaseName("IX_Budget_EndDate");
-                    b.ToTable("Budgets");
-                });
+                   b.Property<Guid?>("AccountId")
+                       .HasColumnType("TEXT");
+
+                   b.Property<Guid?>("CategoryId")
+                       .HasColumnType("TEXT");
+
+                   b.Property<DateTimeOffset>("CreatedAt")
+                       .HasColumnType("TEXT");
+
+                   b.Property<string>("Currency")
+                       .IsRequired()
+                       .HasColumnType("TEXT");
+
+                   b.Property<string>("Description")
+                       .HasColumnType("TEXT");
+
+                   b.Property<DateTimeOffset>("EndDate")
+                       .HasColumnType("TEXT");
+
+                   b.Property<string>("Name")
+                       .IsRequired()
+                       .HasColumnType("TEXT");
+
+                   b.Property<string>("Period")
+                       .IsRequired()
+                       .HasColumnType("TEXT");
+
+                   b.Property<DateTimeOffset>("StartDate")
+                       .HasColumnType("TEXT");
+
+                   b.Property<decimal>("TargetAmount")
+                       .HasColumnType("TEXT");
+
+                   b.Property<string>("Type")
+                       .IsRequired()
+                       .HasColumnType("TEXT");
+
+                   b.Property<DateTimeOffset>("UpdatedAt")
+                       .HasColumnType("TEXT");
+
+                   b.HasKey("Id");
+
+                   b.HasIndex("StartDate")
+                       .HasDatabaseName("IX_Goal_StartDate");
+
+                   b.HasIndex("EndDate")
+                       .HasDatabaseName("IX_Goal_EndDate");
+
+                   b.ToTable("Goals");
+               });
+
+           modelBuilder.Entity("FinancialOS.Core.Models.Budget", b =>
+               {
+                   b.Property<Guid>("Id")
+                       .ValueGeneratedOnAdd()
+                       .HasColumnType("TEXT");
+
+                   b.Property<Guid?>("AccountId")
+                       .HasColumnType("TEXT");
+
+                   b.Property<Guid?>("CategoryId")
+                       .HasColumnType("TEXT");
+
+                   b.Property<DateTimeOffset>("CreatedAt")
+                       .HasColumnType("TEXT");
+
+                   b.Property<string>("Currency")
+                       .IsRequired()
+                       .HasColumnType("TEXT");
+
+                   b.Property<string>("Description")
+                       .HasColumnType("TEXT");
+
+                   b.Property<DateTimeOffset>("EndDate")
+                       .HasColumnType("TEXT");
+
+                   b.Property<decimal>("LimitAmount")
+                       .HasColumnType("TEXT");
+
+                   b.Property<string>("Name")
+                       .IsRequired()
+                       .HasColumnType("TEXT");
+
+                   b.Property<string>("Period")
+                       .IsRequired()
+                       .HasColumnType("TEXT");
+
+                   b.Property<DateTimeOffset>("StartDate")
+                       .HasColumnType("TEXT");
+
+                   b.Property<DateTimeOffset>("UpdatedAt")
+                       .HasColumnType("TEXT");
+
+                   b.HasKey("Id");
+
+                   b.HasIndex("StartDate")
+                       .HasDatabaseName("IX_Budget_StartDate");
+
+                   b.HasIndex("EndDate")
+                       .HasDatabaseName("IX_Budget_EndDate");
+
+                   b.ToTable("Budgets");
+               });
 #pragma warning restore 612, 618
-        }
-    }
+       }
+   }
 }

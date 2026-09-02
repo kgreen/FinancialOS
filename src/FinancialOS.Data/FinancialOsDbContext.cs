@@ -36,6 +36,8 @@ public sealed class FinancialOsDbContext : DbContext
     public DbSet<ProvenanceEntry> ProvenanceEntries => Set<ProvenanceEntry>();
     public DbSet<InstitutionProfile> InstitutionProfiles => Set<InstitutionProfile>();
     public DbSet<ImportJob> ImportJobs => Set<ImportJob>();
+    public DbSet<Goal> Goals => Set<Goal>();
+    public DbSet<Budget> Budgets => Set<Budget>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -54,6 +56,8 @@ public sealed class FinancialOsDbContext : DbContext
         ConfigureProvenanceEntry(modelBuilder);
         ConfigureInstitutionProfile(modelBuilder);
         ConfigureImportJob(modelBuilder);
+        ConfigureGoal(modelBuilder);
+        ConfigureBudget(modelBuilder);
         ConfigureGlobalBehaviors(modelBuilder);
     }
 
@@ -382,6 +386,33 @@ public sealed class FinancialOsDbContext : DbContext
             entity.HasOne<InstitutionProfile>().WithMany()
                 .HasForeignKey(e => e.InstitutionProfileId)
                 .IsRequired(false);
+        });
+    }
+
+    private static void ConfigureGoal(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Goal>(entity =>
+        {
+            entity.HasKey(item => item.Id);
+            entity.Property(item => item.Name).IsRequired();
+            entity.Property(item => item.Type).HasConversion<string>();
+            entity.Property(item => item.Period).HasConversion<string>();
+            entity.Property(item => item.Currency).IsRequired();
+            entity.HasIndex(item => item.StartDate).HasDatabaseName("IX_Goal_StartDate");
+            entity.HasIndex(item => item.EndDate).HasDatabaseName("IX_Goal_EndDate");
+        });
+    }
+
+    private static void ConfigureBudget(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Budget>(entity =>
+        {
+            entity.HasKey(item => item.Id);
+            entity.Property(item => item.Name).IsRequired();
+            entity.Property(item => item.Period).HasConversion<string>();
+            entity.Property(item => item.Currency).IsRequired();
+            entity.HasIndex(item => item.StartDate).HasDatabaseName("IX_Budget_StartDate");
+            entity.HasIndex(item => item.EndDate).HasDatabaseName("IX_Budget_EndDate");
         });
     }
 

@@ -102,7 +102,9 @@ public sealed class ExportContractTests : IClassFixture<FilterAndExportFixture>
         });
 
         Assert.NotNull(snapshot.Content);
-        Assert.True(snapshot.Content.Length > 0);
+        using var content = new MemoryStream();
+        await snapshot.Content.CopyToAsync(content);
+        Assert.True(content.Length > 0);
         Assert.Equal(50_000, exporter.WrittenRecordCount);
     }
 

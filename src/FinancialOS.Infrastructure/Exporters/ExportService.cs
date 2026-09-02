@@ -1,5 +1,6 @@
 using FinancialOS.Core.Contracts;
 using FinancialOS.Core.Models;
+using System.IO.Pipelines;
 
 namespace FinancialOS.Infrastructure.Exporters;
 
@@ -18,7 +19,7 @@ public sealed class ExportService : IExportService
         _exporters  = exporters;
     }
 
-    public async Task<ExportSnapshot> ExportAsync(
+    public Task<ExportSnapshot> ExportAsync(
         ExportRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -28,19 +29,39 @@ public sealed class ExportService : IExportService
         var filter  = request.ToFilterCriteria();
         var records = _repository.StreamRecordsAsync(filter, cancellationToken);
 
-        var output = new MemoryStream();
-        await exporter.WriteAsync(records, output, cancellationToken);
-        output.Position = 0;
+        var pipe = new Pipe();
+        _ = WriteExportAsync(pipe, exporter, records, cancellationToken);
 
-        return new ExportSnapshot
+        return Task.FromResult(new ExportSnapshot
         {
-            Content     = output,
+            Content     = pipe.Reader.AsStream(),
             FileName    = BuildFileName(request),
             ContentType = exporter.ContentType,
             Format      = request.Format,
             GeneratedAt = DateTimeOffset.UtcNow,
             RecordCount = 0,
-        };
+        });
+    }
+
+    private static async Task WriteExportAsync(
+        Pipe pipe,
+        IRecordExporter exporter,
+        IAsyncEnumerable<FinancialRecord> records,
+        CancellationToken cancellationToken)
+    {
+        Exception? error = null;
+        try
+        {
+            await exporter.WriteAsync(records, pipe.Writer.AsStream(leaveOpen: true), cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            error = exception;
+        }
+        finally
+        {
+            await pipe.Writer.CompleteAsync(error);
+        }
     }
 
     private static string BuildFileName(ExportRequest request)

@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using CsvHelper;
+using System.Globalization;
 using FinancialOS.Core.Models;
 
 namespace FinancialOS.Api.Tests;
@@ -19,10 +21,12 @@ public sealed class CsvExportTests : IClassFixture<FilterAndExportFixture>
     private static async Task<string[][]> ParseCsvAsync(HttpResponseMessage response)
     {
         var content = await response.Content.ReadAsStringAsync();
-        return content
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Select(line => line.TrimEnd('\r').Split(','))
-            .ToArray();
+        using var reader = new StringReader(content);
+        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+        var rows = new List<string[]>();
+        while (csv.Read())
+            rows.Add(csv.Parser.Record!);
+        return rows.ToArray();
     }
 
     [Fact]

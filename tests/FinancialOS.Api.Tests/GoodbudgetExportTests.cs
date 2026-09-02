@@ -29,7 +29,7 @@ public sealed class GoodbudgetExportTests : IClassFixture<FilterAndExportFixture
 
         while (csv.Read())
         {
-            rows.Add(csv.Context.Parser.Record!);
+            rows.Add(csv.Parser.Record!);
         }
 
         return rows.ToArray();

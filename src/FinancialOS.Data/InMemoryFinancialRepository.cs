@@ -418,7 +418,20 @@ public sealed class InMemoryFinancialRepository : IFinancialRepository
         if (filter.EndDate.HasValue)     query = query.Where(r => DateOnly.FromDateTime(r.OccurredOn.Date) <= filter.EndDate);
         if (filter.MinAmount.HasValue)   query = query.Where(r => r.Amount.Amount >= filter.MinAmount);
         if (filter.MaxAmount.HasValue)   query = query.Where(r => r.Amount.Amount <= filter.MaxAmount);
-        return ToAsyncEnumerable(query.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id));
+        if (!string.IsNullOrWhiteSpace(filter.MerchantSearch))
+            query = query.Where(r => r.Description.Contains(filter.MerchantSearch, StringComparison.OrdinalIgnoreCase));
+
+        var descending = filter.SortDescending ?? (filter.SortBy is null or "date");
+        query = filter.SortBy switch
+        {
+            "amount" => descending ? query.OrderByDescending(r => r.Amount.Amount).ThenBy(r => r.Id)
+                                   : query.OrderBy(r => r.Amount.Amount).ThenBy(r => r.Id),
+            "description" => descending ? query.OrderByDescending(r => r.Description).ThenBy(r => r.Id)
+                                        : query.OrderBy(r => r.Description).ThenBy(r => r.Id),
+            _ => descending ? query.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id)
+                            : query.OrderBy(r => r.OccurredOn).ThenBy(r => r.Id)
+        };
+        return ToAsyncEnumerable(query);
     }
 
     private static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(IEnumerable<T> source)

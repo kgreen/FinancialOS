@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Globalization;
 using FinancialOS.Core.Models;
 using FinancialOS.Shared.Contracts;
 using Microsoft.Extensions.Options;
@@ -46,8 +47,8 @@ public sealed class FinancialApiClient
         if (startDate.HasValue)     qs.Append($"&startDate={startDate.Value:yyyy-MM-dd}");
         if (endDate.HasValue)       qs.Append($"&endDate={endDate.Value:yyyy-MM-dd}");
         if (!string.IsNullOrWhiteSpace(merchant)) qs.Append($"&merchant={Uri.EscapeDataString(merchant)}");
-        if (minAmount.HasValue)     qs.Append($"&minAmount={minAmount.Value}");
-        if (maxAmount.HasValue)     qs.Append($"&maxAmount={maxAmount.Value}");
+        if (minAmount.HasValue)     qs.Append($"&minAmount={minAmount.Value.ToString(CultureInfo.InvariantCulture)}");
+        if (maxAmount.HasValue)     qs.Append($"&maxAmount={maxAmount.Value.ToString(CultureInfo.InvariantCulture)}");
         if (!string.IsNullOrWhiteSpace(sortBy))   qs.Append($"&sortBy={Uri.EscapeDataString(sortBy)}");
         if (sortDescending.HasValue) qs.Append($"&sortDescending={sortDescending.Value.ToString().ToLowerInvariant()}");
 

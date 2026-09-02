@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using CsvHelper;
+using System.Globalization;
 
 namespace FinancialOS.Api.Tests;
 
@@ -16,10 +18,15 @@ public sealed class Ynab4ExportTests : IClassFixture<FilterAndExportFixture>
         _client = fixture.Client;
     }
 
-    private static string[][] ParseCsv(string content) =>
-        content.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-               .Select(l => l.TrimEnd('\r').Split(','))
-               .ToArray();
+    private static string[][] ParseCsv(string content)
+    {
+        using var reader = new StringReader(content);
+        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+        var rows = new List<string[]>();
+        while (csv.Read())
+            rows.Add(csv.Parser.Record!);
+        return rows.ToArray();
+    }
 
     [Fact]
     public async Task Ynab4Export_HeaderRow_HasExactlyFiveExpectedColumns()

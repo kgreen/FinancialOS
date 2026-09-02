@@ -40,8 +40,8 @@ public sealed class CsvRecordExporter : IRecordExporter
             csv.WriteField(record.OccurredOn.ToString("yyyy-MM-dd"));
             csv.WriteField(record.Description);
             csv.WriteField(record.Amount.Amount);
-            csv.WriteField(record.CategoryId?.ToString() ?? "");
-            csv.WriteField(record.AccountId?.ToString() ?? "");
+            csv.WriteField(record.CategoryName ?? record.CategoryId?.ToString() ?? "");
+            csv.WriteField(record.AccountName ?? record.AccountId?.ToString() ?? "");
             csv.WriteField("");  // Notes — not present on FinancialRecord; placeholder
             await csv.NextRecordAsync();
         }

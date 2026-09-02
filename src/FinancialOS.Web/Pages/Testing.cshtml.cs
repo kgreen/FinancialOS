@@ -76,7 +76,7 @@ public sealed class TestingModel : PageModel
                 return Page();
             }
 
-            return File(result.Data ?? Array.Empty<byte>(), "application/octet-stream", result.FileName ?? "export.csv");
+            return File(result.Data ?? Array.Empty<byte>(), result.ContentType ?? "application/octet-stream", result.FileName ?? "export.csv");
         }
         catch (HttpRequestException)
         {

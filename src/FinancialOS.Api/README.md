@@ -38,3 +38,15 @@ Requests with `page < 1` return `400 Bad Request`. Requests with `pageSize` abov
 ## Exports
 
 Export requests support streaming responses for large result sets. The API accepts the same filters used by the list endpoints and returns the exported content in the requested format.
+
+## Stewardship & AI Engine
+
+The API also exposes a stewardship surface for planning and explainable guidance:
+
+- `GET /api/v1/goals` and `GET /api/v1/goals/{id}` for goal definitions.
+- `POST /api/v1/goals`, `PUT /api/v1/goals/{id}`, and `DELETE /api/v1/goals/{id}` to manage goals.
+- `GET /api/v1/budgets` and `GET /api/v1/budgets/{id}` with create/update/delete variants for budgets.
+- `GET /api/v1/insights` to produce deterministic stewardship insight summaries from recent records.
+- `GET /api/v1/advisor/recommendations` for explainable advisor guidance with a config-driven fallback mode.
+
+The advisor service can be disabled with `Advisor:Enabled=false`, in which case it returns a deterministic fallback recommendation instead of producing planning advice.

@@ -178,6 +178,16 @@ public sealed class ExportContractTests : IClassFixture<FilterAndExportFixture>
         public Task<PagedResult<FinancialAccount>> GetAccountsPagedAsync(string? accountType, bool? isActive, int page, int pageSize, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public Task<PagedResult<Category>> GetCategoriesPagedAsync(string? nameSearch, Guid? parentId, int page, int pageSize, CancellationToken cancellationToken = default) => throw new NotImplementedException();
         public Task<PagedResult<ClassificationRule>> GetRulesPagedAsync(string? ruleType, bool? isEnabled, Guid? categoryId, int page, int pageSize, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<Goal> AddGoalAsync(Goal goal, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<Goal?> GetGoalAsync(Guid id, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<IReadOnlyList<Goal>> ListGoalsAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Goal>>(Array.Empty<Goal>());
+        public Task<Goal?> UpdateGoalAsync(Goal goal, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<bool> DeleteGoalAsync(Guid id, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<Budget> AddBudgetAsync(Budget budget, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<Budget?> GetBudgetAsync(Guid id, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<IReadOnlyList<Budget>> ListBudgetsAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Budget>>(Array.Empty<Budget>());
+        public Task<Budget?> UpdateBudgetAsync(Budget budget, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task<bool> DeleteBudgetAsync(Guid id, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }
 
     private sealed class StubExporter : IRecordExporter

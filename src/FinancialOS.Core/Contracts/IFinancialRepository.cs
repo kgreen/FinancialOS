@@ -84,4 +84,16 @@ public interface IFinancialRepository
     Task<PagedResult<FinancialAccount>> GetAccountsPagedAsync(string? accountType, bool? isActive, int page, int pageSize, CancellationToken cancellationToken = default);
     Task<PagedResult<Category>> GetCategoriesPagedAsync(string? nameSearch, Guid? parentId, int page, int pageSize, CancellationToken cancellationToken = default);
     Task<PagedResult<ClassificationRule>> GetRulesPagedAsync(string? ruleType, bool? isEnabled, Guid? categoryId, int page, int pageSize, CancellationToken cancellationToken = default);
+
+    Task<Goal> AddGoalAsync(Goal goal, CancellationToken cancellationToken = default);
+    Task<Goal?> GetGoalAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Goal>> ListGoalsAsync(CancellationToken cancellationToken = default);
+    Task<Goal?> UpdateGoalAsync(Goal goal, CancellationToken cancellationToken = default);
+    Task<bool> DeleteGoalAsync(Guid id, CancellationToken cancellationToken = default);
+
+    Task<Budget> AddBudgetAsync(Budget budget, CancellationToken cancellationToken = default);
+    Task<Budget?> GetBudgetAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Budget>> ListBudgetsAsync(CancellationToken cancellationToken = default);
+    Task<Budget?> UpdateBudgetAsync(Budget budget, CancellationToken cancellationToken = default);
+    Task<bool> DeleteBudgetAsync(Guid id, CancellationToken cancellationToken = default);
 }

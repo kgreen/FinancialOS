@@ -8,6 +8,7 @@ using FinancialOS.Core.Knowledge.Normalization;
 using FinancialOS.Core.Knowledge.Provenance;
 using FinancialOS.Core.Knowledge.Rules;
 using FinancialOS.Core.Models;
+using FinancialOS.Core.Services;
 using FinancialOS.Data;
 using FinancialOS.Infrastructure.Import;
 using FinancialOS.Infrastructure.Import.Parsers;
@@ -68,6 +69,9 @@ builder.Services.AddScoped<MerchantAliasService>();
 builder.Services.AddScoped<INormalizationPipelineService, NormalizationPipelineService>();
 builder.Services.AddScoped<DuplicateScoringService>();
 builder.Services.AddScoped<IDuplicateReviewService, DuplicateReviewService>();
+builder.Services.AddScoped<IGoalService, GoalService>();
+builder.Services.AddScoped<IInsightService, StewardshipInsightService>();
+builder.Services.AddScoped<IAdvisorService, AdvisorService>();
 
 // spec 003 — parsing pipeline
 builder.Services.AddScoped<CsvAutoDetector>();
@@ -151,6 +155,10 @@ app.MapDuplicateEndpoints();
 app.MapProvenanceEndpoints();
 app.MapImportJobEndpoints();
 app.MapInstitutionProfileEndpoints();
+app.MapGoalsEndpoints();
+app.MapBudgetsEndpoints();
+app.MapInsightsEndpoints();
+app.MapAdvisorEndpoints();
 
 app.MapPost("/api/v1/evidence", async (
     IFormFile file,

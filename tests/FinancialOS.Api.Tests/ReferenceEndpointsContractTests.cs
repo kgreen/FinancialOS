@@ -39,11 +39,11 @@ public sealed class ReferenceEndpointsContractTests : IClassFixture<WebApplicati
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
 
-        var items = await response.Content.ReadFromJsonAsync<IEnumerable<ReferenceItemResponse>>();
+        var items = await response.Content.ReadFromJsonAsync<PagedResult<ReferenceItemResponse>>();
         Assert.NotNull(items);
-        Assert.NotEmpty(items);
+        Assert.NotEmpty(items!.Items);
 
-        var accountItem = items?.FirstOrDefault(x => x.Type == "account");
+        var accountItem = items?.Items.FirstOrDefault(x => x.Type == "account");
         Assert.NotNull(accountItem);
         Assert.NotEqual(Guid.Empty, accountItem!.Id);
         Assert.Equal("account", accountItem.Type);
@@ -70,11 +70,11 @@ public sealed class ReferenceEndpointsContractTests : IClassFixture<WebApplicati
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
 
-        var items = await response.Content.ReadFromJsonAsync<IEnumerable<ReferenceItemResponse>>();
+        var items = await response.Content.ReadFromJsonAsync<PagedResult<ReferenceItemResponse>>();
         Assert.NotNull(items);
-        Assert.NotEmpty(items);
+        Assert.NotEmpty(items!.Items);
 
-        var categoryItem = items?.FirstOrDefault(x => x.Type == "category");
+        var categoryItem = items?.Items.FirstOrDefault(x => x.Type == "category");
         Assert.NotNull(categoryItem);
         Assert.NotEqual(Guid.Empty, categoryItem!.Id);
         Assert.Equal("category", categoryItem.Type);
@@ -147,9 +147,32 @@ public sealed class ReferenceEndpointsContractTests : IClassFixture<WebApplicati
     {
         using var client = _factory.CreateClient();
 
-        var endpoints = new[] { "/api/v1/accounts", "/api/v1/categories", "/api/v1/merchants", "/api/v1/rules" };
+        // accounts and categories return PagedResult<ReferenceItemResponse>
+        var pagedEndpoints = new[] { "/api/v1/accounts", "/api/v1/categories" };
+        foreach (var endpoint in pagedEndpoints)
+        {
+            var response = await client.GetAsync(endpoint);
+            Assert.True(response.IsSuccessStatusCode, $"Endpoint {endpoint} returned {response.StatusCode}");
 
-        foreach (var endpoint in endpoints)
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.NotEmpty(content);
+
+            var paged = await response.Content.ReadFromJsonAsync<PagedResult<ReferenceItemResponse>>();
+            Assert.NotNull(paged);
+
+            foreach (var item in paged!.Items)
+            {
+                Assert.NotEqual(Guid.Empty, item.Id);
+                Assert.NotEmpty(item.Name);
+                Assert.NotEmpty(item.Type);
+                Assert.True(item.Type is "account" or "category" or "merchant" or "rule",
+                    $"Invalid type '{item.Type}' in response from {endpoint}");
+            }
+        }
+
+        // merchants and rules return IEnumerable<ReferenceItemResponse>
+        var listEndpoints = new[] { "/api/v1/merchants", "/api/v1/rules" };
+        foreach (var endpoint in listEndpoints)
         {
             var response = await client.GetAsync(endpoint);
             Assert.True(response.IsSuccessStatusCode, $"Endpoint {endpoint} returned {response.StatusCode}");
@@ -186,9 +209,9 @@ public sealed class ReferenceEndpointsContractTests : IClassFixture<WebApplicati
         var response = await client.GetAsync("/api/v1/accounts");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var items = await response.Content.ReadFromJsonAsync<IEnumerable<ReferenceItemResponse>>();
+        var items = await response.Content.ReadFromJsonAsync<PagedResult<ReferenceItemResponse>>();
         Assert.NotNull(items);
-        Assert.Empty(items);
+        Assert.Empty(items!.Items);
     }
 
     [Fact]
@@ -216,11 +239,11 @@ public sealed class ReferenceEndpointsContractTests : IClassFixture<WebApplicati
         var response = await client.GetAsync("/api/v1/categories");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var items = await response.Content.ReadFromJsonAsync<IEnumerable<ReferenceItemResponse>>();
+        var items = await response.Content.ReadFromJsonAsync<PagedResult<ReferenceItemResponse>>();
         Assert.NotNull(items);
-        Assert.Equal(3, items!.Count());
+        Assert.Equal(3, items!.Items.Count);
 
-        var names = items.Select(x => x.Name).ToList();
+        var names = items.Items.Select(x => x.Name).ToList();
         Assert.Contains("Food", names);
         Assert.Contains("Transport", names);
         Assert.Contains("Entertainment", names);

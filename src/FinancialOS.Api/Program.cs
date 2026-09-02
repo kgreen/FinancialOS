@@ -1,4 +1,5 @@
 using FinancialOS.Api.Endpoints;
+using FinancialOS.Api.QueryModels;
 using FinancialOS.Api.Validation;
 using FinancialOS.Core.Contracts;
 using Microsoft.AspNetCore.Mvc;
@@ -10,8 +11,39 @@ using FinancialOS.Core.Models;
 using FinancialOS.Data;
 using FinancialOS.Infrastructure.Import;
 using FinancialOS.Infrastructure.Import.Parsers;
+using FinancialOS.Infrastructure.Exporters;
 using FinancialOS.Shared.Contracts;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
+
+static void UseDatabase(WebApplicationBuilder builder)
+{
+    var provider = (builder.Configuration["DatabaseProvider"] ?? "sqlite").Trim();
+    var connectionString = builder.Configuration.GetConnectionString("Default")
+        ?? builder.Configuration.GetConnectionString("Sqlite")
+        ?? builder.Configuration.GetConnectionString("PostgreSQL");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("ConnectionStrings:Default is required.");
+    }
+
+    builder.Services.AddDbContext<FinancialOsDbContext>(options =>
+    {
+        switch (provider.ToLowerInvariant())
+        {
+            case "sqlite":
+                options.UseSqlite(connectionString);
+                break;
+            case "postgres":
+            case "postgresql":
+                options.UseNpgsql(connectionString);
+                break;
+            default:
+                throw new InvalidOperationException($"Unknown DatabaseProvider '{provider}'. Supported values: sqlite, postgres.");
+        }
+    });
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,13 +51,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddProblemDetails();
 
-// Configure JSON serialisation: enums as camelCase strings
+// Configure JSON serialisation: enums as camelCase strings, properties as camelCase
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
+    options.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase));
 });
 
-builder.Services.AddConfiguredDatabase(builder.Configuration);
+UseDatabase(builder);
 builder.Services.AddScoped<IFinancialRepository, EfFinancialRepository>();
 builder.Services.AddScoped<EvidenceImportService>();
 builder.Services.AddScoped<IRuleEvaluationService, RuleEvaluationService>();
@@ -41,6 +74,13 @@ builder.Services.AddScoped<CsvAutoDetector>();
 builder.Services.AddScoped<ITransactionParser, CsvTransactionParser>();
 builder.Services.AddScoped<ITransactionParser, OfxTransactionParser>();
 builder.Services.AddScoped<IImportOrchestrationService, ImportOrchestrationService>();
+
+// spec 004 — export framework
+builder.Services.AddScoped<IRecordExporter, CsvRecordExporter>();
+builder.Services.AddScoped<IRecordExporter, JsonRecordExporter>();
+builder.Services.AddScoped<IRecordExporter, YnabV4RecordExporter>();
+builder.Services.AddScoped<IRecordExporter, GoodbudgetRecordExporter>();
+builder.Services.AddScoped<IExportService, ExportService>();
 
 var app = builder.Build();
 
@@ -65,6 +105,23 @@ app.UseExceptionHandler(exceptionHandlerApp =>
     exceptionHandlerApp.Run(async context =>
     {
         var exception = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+
+        // Preserve the status code for HTTP-specific errors (e.g., 400 for bad JSON body / invalid enum value).
+        if (exception is Microsoft.AspNetCore.Http.BadHttpRequestException badReq)
+        {
+            app.Logger.LogWarning(badReq, "Bad request while processing {Path}", context.Request.Path);
+            context.Response.StatusCode = badReq.StatusCode;
+            context.Response.ContentType = "application/problem+json";
+            await context.Response.WriteAsJsonAsync(new ProblemDetails
+            {
+                Status = badReq.StatusCode,
+                Title  = "Bad Request",
+                Detail = "The request payload is invalid.",
+                Instance = context.Request.Path
+            });
+            return;
+        }
+
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
         context.Response.ContentType = "application/problem+json";
 
@@ -221,10 +278,40 @@ app.MapGet("/api/v1/evidence/{id:guid}", async (Guid id, IFinancialRepository re
         evidence.UploadedAt));
 });
 
-app.MapGet("/api/v1/records", async (IFinancialRepository repository, CancellationToken cancellationToken) =>
+app.MapGet("/api/v1/records", async (
+    [AsParameters] RecordFilterQuery q,
+    IFinancialRepository repository,
+    CancellationToken cancellationToken) =>
 {
-    var records = await repository.ListRecordsAsync(cancellationToken);
-    var items = records.Select(record => new RecordResponse(
+    if ((q.Page ?? PaginationConstants.MinPage) < PaginationConstants.MinPage)
+    {
+        return Results.Problem(detail: "page must be greater than or equal to 1.",
+            statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+    }
+
+    var page = q.Page ?? PaginationConstants.MinPage;
+    var pageSize = q.PageSize ?? PaginationConstants.DefaultPageSize;
+
+    if (pageSize < PaginationConstants.MinPage || pageSize > PaginationConstants.MaxPageSize)
+    {
+        return Results.Problem(detail: $"pageSize must be between {PaginationConstants.MinPage} and {PaginationConstants.MaxPageSize}.",
+            statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+    }
+
+    var filter = q.ToFilterCriteria();
+
+    var errors = filter.Validate().ToList();
+    if (errors.Count > 0)
+    {
+        return Results.Problem(
+            detail: string.Join(" ", errors),
+            statusCode: StatusCodes.Status400BadRequest,
+            title: "Bad Request");
+    }
+
+    var paged = await repository.GetRecordsPagedAsync(filter, page, pageSize, cancellationToken);
+
+    var items = paged.Items.Select(record => new RecordResponse(
         record.Id,
         record.EvidenceId,
         record.AccountId,
@@ -238,7 +325,7 @@ app.MapGet("/api/v1/records", async (IFinancialRepository repository, Cancellati
         record.ClassificationConfidence?.Score,
         record.Provenance?.RuleName)).ToList();
 
-    return Results.Ok(new RecordListResponse(items, 1, 50));
+    return Results.Ok(new PagedResult<RecordResponse>(items, paged.Page, paged.PageSize, paged.TotalCount));
 });
 
 app.MapPost("/api/v1/records/{id:guid}/classify", async (Guid id, RecordClassificationRequest request, IFinancialRepository repository, CancellationToken cancellationToken) =>
@@ -276,16 +363,52 @@ app.MapPost("/api/v1/records/{id:guid}/classify", async (Guid id, RecordClassifi
         updated.Provenance?.RuleName));
 }).DisableAntiforgery();
 
-app.MapGet("/api/v1/accounts", async (IFinancialRepository repository, CancellationToken cancellationToken) =>
+app.MapGet("/api/v1/accounts", async (
+    [AsParameters] AccountFilterQuery q,
+    IFinancialRepository repository,
+    CancellationToken cancellationToken) =>
 {
-    var accounts = await repository.ListAccountsAsync(cancellationToken);
-    return Results.Ok(accounts.Select(item => new ReferenceItemResponse(item.Id, item.Name, "account")));
+    if ((q.Page ?? PaginationConstants.MinPage) < PaginationConstants.MinPage)
+    {
+        return Results.Problem(detail: "page must be greater than or equal to 1.",
+            statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+    }
+
+    var page = q.Page ?? PaginationConstants.MinPage;
+    var pageSize = q.PageSize ?? PaginationConstants.DefaultPageSize;
+    if (pageSize < PaginationConstants.MinPage || pageSize > PaginationConstants.MaxPageSize)
+    {
+        return Results.Problem(detail: $"pageSize must be between {PaginationConstants.MinPage} and {PaginationConstants.MaxPageSize}.",
+            statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+    }
+
+    var paged = await repository.GetAccountsPagedAsync(q.AccountType, q.IsActive, page, pageSize, cancellationToken);
+    var items = paged.Items.Select(a => new ReferenceItemResponse(a.Id, a.Name, "account")).ToList();
+    return Results.Ok(new PagedResult<ReferenceItemResponse>(items, paged.Page, paged.PageSize, paged.TotalCount));
 });
 
-app.MapGet("/api/v1/categories", async (IFinancialRepository repository, CancellationToken cancellationToken) =>
+app.MapGet("/api/v1/categories", async (
+    [AsParameters] CategoryFilterQuery q,
+    IFinancialRepository repository,
+    CancellationToken cancellationToken) =>
 {
-    var categories = await repository.ListCategoriesAsync(cancellationToken);
-    return Results.Ok(categories.Select(item => new ReferenceItemResponse(item.Id, item.Name, "category")));
+    if ((q.Page ?? PaginationConstants.MinPage) < PaginationConstants.MinPage)
+    {
+        return Results.Problem(detail: "page must be greater than or equal to 1.",
+            statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+    }
+
+    var page = q.Page ?? PaginationConstants.MinPage;
+    var pageSize = q.PageSize ?? PaginationConstants.DefaultPageSize;
+    if (pageSize < PaginationConstants.MinPage || pageSize > PaginationConstants.MaxPageSize)
+    {
+        return Results.Problem(detail: $"pageSize must be between {PaginationConstants.MinPage} and {PaginationConstants.MaxPageSize}.",
+            statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+    }
+
+    var paged = await repository.GetCategoriesPagedAsync(q.NameSearch, q.ParentId, page, pageSize, cancellationToken);
+    var items = paged.Items.Select(c => new ReferenceItemResponse(c.Id, c.Name, "category")).ToList();
+    return Results.Ok(new PagedResult<ReferenceItemResponse>(items, paged.Page, paged.PageSize, paged.TotalCount));
 });
 
 app.MapGet("/api/v1/merchants", async (IFinancialRepository repository, CancellationToken cancellationToken) =>
@@ -294,10 +417,42 @@ app.MapGet("/api/v1/merchants", async (IFinancialRepository repository, Cancella
     return Results.Ok(merchants.Select(item => new ReferenceItemResponse(item.Id, item.Name, "merchant")));
 });
 
+// Legacy reference-data endpoint retained from spec 001 (not paginated)
 app.MapGet("/api/v1/rules", async (IFinancialRepository repository, CancellationToken cancellationToken) =>
 {
     var rules = await repository.ListRulesAsync(cancellationToken);
     return Results.Ok(rules.Select(item => new ReferenceItemResponse(item.Id, item.Name, "rule")));
+});
+
+// spec 004 — paginated classification rules (uses /api/v1/classification-rules per spec 002 convention)
+app.MapGet("/api/v1/classification-rules", async (
+    [AsParameters] RuleFilterQuery q,
+    IFinancialRepository repository,
+    CancellationToken cancellationToken) =>
+{
+    if ((q.Page ?? PaginationConstants.MinPage) < PaginationConstants.MinPage)
+    {
+        return Results.Problem(detail: "page must be greater than or equal to 1.",
+            statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+    }
+
+    var page = q.Page ?? PaginationConstants.MinPage;
+    var pageSize = q.PageSize ?? PaginationConstants.DefaultPageSize;
+    if (pageSize < PaginationConstants.MinPage || pageSize > PaginationConstants.MaxPageSize)
+    {
+        return Results.Problem(detail: $"pageSize must be between {PaginationConstants.MinPage} and {PaginationConstants.MaxPageSize}.",
+            statusCode: StatusCodes.Status400BadRequest, title: "Bad Request");
+    }
+
+    var paged = await repository.GetRulesPagedAsync(q.RuleType, q.IsEnabled, q.CategoryId, page, pageSize, cancellationToken);
+    var items = paged.Items.Select(r => new RuleItemResponse(
+        r.Id,
+        r.Name,
+        r.Status == RuleStatus.Active,
+        r.Priority,
+        r.TargetCategoryId,
+        r.ConditionJson)).ToList();
+    return Results.Ok(new PagedResult<RuleItemResponse>(items, paged.Page, paged.PageSize, paged.TotalCount));
 });
 
 app.MapPost("/api/v1/planning-scenarios", async (PlanningScenarioCreateRequest request, IFinancialRepository repository, CancellationToken cancellationToken) =>
@@ -354,6 +509,24 @@ app.MapGet("/api/v1/planning-scenarios/{id:guid}", async (Guid id, IFinancialRep
         scenario.RelatedRecordIds,
         scenario.CreatedAt));
 });
+
+app.MapPost("/api/v1/exports", async (
+    ExportRequest request,
+    IExportService exportService,
+    CancellationToken cancellationToken) =>
+{
+    var errors = request.Validate().ToList();
+    if (errors.Count > 0)
+    {
+        return Results.Problem(
+            detail: string.Join(" ", errors),
+            statusCode: StatusCodes.Status400BadRequest,
+            title: "Bad Request");
+    }
+
+    var snapshot = await exportService.ExportAsync(request, cancellationToken);
+    return Results.File(snapshot.Content, snapshot.ContentType, snapshot.FileName);
+}).DisableAntiforgery();
 
 app.Run();
 

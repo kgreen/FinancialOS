@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,19 +21,34 @@ public static class DatabaseConfiguration
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddConfiguredDatabase(this IServiceCollection services, IConfiguration? configuration = null)
     {
-        var provider = Environment.GetEnvironmentVariable("EF_CORE_PROVIDER")?.ToLowerInvariant() ?? "sqlite";
+        var provider = Environment.GetEnvironmentVariable("EF_CORE_PROVIDER")?.ToLowerInvariant()
+            ?? configuration?["DatabaseProvider"]?.ToLowerInvariant()
+            ?? "sqlite";
         var connectionString = Environment.GetEnvironmentVariable("EF_CORE_CONNECTION_STRING");
 
         if (provider == "postgres" || provider == "postgresql")
         {
-            connectionString ??= configuration?["ConnectionStrings:PostgreSQL"] 
+            connectionString ??= configuration?["ConnectionStrings:Default"]
+                ?? configuration?["ConnectionStrings:PostgreSQL"]
                 ?? throw new InvalidOperationException("PostgreSQL connection string not found in environment or configuration");
             services.AddPostgresDatabase(connectionString);
         }
+        else if (provider == "sqlite")
+        {
+            var configuredConnectionString = connectionString
+                ?? configuration?["ConnectionStrings:Default"]
+                ?? configuration?["ConnectionStrings:Sqlite"];
+            var dbPath = string.IsNullOrWhiteSpace(configuredConnectionString)
+                ? "financialos.db"
+                : configuredConnectionString.Contains('=', StringComparison.Ordinal)
+                    ? new SqliteConnectionStringBuilder(configuredConnectionString).DataSource
+                    : configuredConnectionString;
+            services.AddSqliteDatabase(dbPath);
+        }
         else
         {
-            var dbPath = connectionString ?? configuration?["ConnectionStrings:Sqlite"] ?? "financialos.db";
-            services.AddSqliteDatabase(dbPath);
+            throw new InvalidOperationException(
+                $"Unknown DatabaseProvider '{provider}'. Supported values: sqlite, postgres.");
         }
 
         return services;

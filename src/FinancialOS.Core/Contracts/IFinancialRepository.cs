@@ -64,6 +64,7 @@ public interface IFinancialRepository
     Task<ImportJob?> GetImportJobAsync(Guid id, CancellationToken cancellationToken = default);
     Task<ImportJob?> UpdateImportJobAsync(ImportJob job, CancellationToken cancellationToken = default);
     Task<ImportJob?> GetImportJobByEvidenceIdAsync(Guid evidenceId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ImportJob>> ListImportJobsAsync(CancellationToken cancellationToken = default);
 
     // spec 003 — InstitutionProfile CRUD
     Task<InstitutionProfile> AddInstitutionProfileAsync(InstitutionProfile profile, CancellationToken cancellationToken = default);
@@ -76,4 +77,11 @@ public interface IFinancialRepository
     // spec 003 — duplicate detection & job record listing
     Task<bool> ExternalReferenceIdExistsAsync(string externalReferenceId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<FinancialRecord>> ListRecordsByImportJobAsync(Guid importJobId, CancellationToken cancellationToken = default);
+
+    // spec 004 — paged + filtered queries
+    Task<PagedResult<FinancialRecord>> GetRecordsPagedAsync(FilterCriteria filter, int page, int pageSize, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<FinancialRecord> StreamRecordsAsync(FilterCriteria filter, CancellationToken cancellationToken = default);
+    Task<PagedResult<FinancialAccount>> GetAccountsPagedAsync(string? accountType, bool? isActive, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<PagedResult<Category>> GetCategoriesPagedAsync(string? nameSearch, Guid? parentId, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<PagedResult<ClassificationRule>> GetRulesPagedAsync(string? ruleType, bool? isEnabled, Guid? categoryId, int page, int pageSize, CancellationToken cancellationToken = default);
 }

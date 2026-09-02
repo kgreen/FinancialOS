@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using FinancialOS.Core.Models;
 using FinancialOS.Shared.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -68,7 +69,7 @@ public sealed class PlanningScenariosApiTests : IClassFixture<WebApplicationFact
 
         var recordsResponse = await client.GetAsync("/api/v1/records");
         Assert.Equal(HttpStatusCode.OK, recordsResponse.StatusCode);
-        var records = await recordsResponse.Content.ReadFromJsonAsync<RecordListResponse>();
+        var records = await recordsResponse.Content.ReadFromJsonAsync<PagedResult<RecordResponse>>();
         Assert.NotNull(records);
         Assert.NotEmpty(records!.Items);
 
@@ -92,7 +93,7 @@ public sealed class PlanningScenariosApiTests : IClassFixture<WebApplicationFact
         using var client = _factory.CreateClient();
         var recordsResponse = await client.GetAsync("/api/v1/records");
         Assert.Equal(HttpStatusCode.OK, recordsResponse.StatusCode);
-        var records = await recordsResponse.Content.ReadFromJsonAsync<RecordListResponse>();
+        var records = await recordsResponse.Content.ReadFromJsonAsync<PagedResult<RecordResponse>>();
         Assert.NotNull(records);
         Assert.NotEmpty(records!.Items);
 
@@ -117,18 +118,20 @@ public sealed class PlanningScenariosApiTests : IClassFixture<WebApplicationFact
     {
         using var client = _factory.CreateClient();
 
+        // Accounts and categories are paginated per spec 004
         var accountsResponse = await client.GetAsync("/api/v1/accounts");
         Assert.Equal(HttpStatusCode.OK, accountsResponse.StatusCode);
-        var accounts = await accountsResponse.Content.ReadFromJsonAsync<List<ReferenceItemResponse>>();
+        var accounts = await accountsResponse.Content.ReadFromJsonAsync<PagedResult<ReferenceItemResponse>>();
         Assert.NotNull(accounts);
-        Assert.NotEmpty(accounts!);
+        Assert.NotEmpty(accounts!.Items);
 
         var categoriesResponse = await client.GetAsync("/api/v1/categories");
         Assert.Equal(HttpStatusCode.OK, categoriesResponse.StatusCode);
-        var categories = await categoriesResponse.Content.ReadFromJsonAsync<List<ReferenceItemResponse>>();
+        var categories = await categoriesResponse.Content.ReadFromJsonAsync<PagedResult<ReferenceItemResponse>>();
         Assert.NotNull(categories);
-        Assert.NotEmpty(categories!);
+        Assert.NotEmpty(categories!.Items);
 
+        // Merchants and rules (legacy reference data) remain non-paginated
         var merchantsResponse = await client.GetAsync("/api/v1/merchants");
         Assert.Equal(HttpStatusCode.OK, merchantsResponse.StatusCode);
         var merchants = await merchantsResponse.Content.ReadFromJsonAsync<List<ReferenceItemResponse>>();

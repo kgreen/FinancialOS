@@ -1,0 +1,28 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+body {
+  margin-bottom: 60px;
+  background: #f6f8fb;
+}
+
+.card {
+  border: 1px solid #dde4ef;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.navbar-brand {
+  font-weight: 600;
+}
+
+.footer {
+  background: white;
+}

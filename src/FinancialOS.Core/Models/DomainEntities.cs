@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace FinancialOS.Core.Models;
 
 public enum EvidenceSourceType
@@ -51,6 +53,10 @@ public sealed class FinancialRecord
     public Guid? AccountId { get; set; }
     public Guid? MerchantId { get; set; }
     public Guid? CategoryId { get; set; }
+    [NotMapped]
+    public string? AccountName { get; set; }
+    [NotMapped]
+    public string? CategoryName { get; set; }
     public string Description { get; set; } = string.Empty;
     public Money Amount { get; set; } = Money.Zero();
     public DateTimeOffset OccurredOn { get; set; } = DateTimeOffset.UtcNow;

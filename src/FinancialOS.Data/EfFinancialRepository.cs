@@ -322,6 +322,17 @@ public sealed class EfFinancialRepository : IFinancialRepository
             .FirstOrDefaultAsync(j => j.EvidenceId == evidenceId, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<ImportJob>> ListImportJobsAsync(CancellationToken cancellationToken = default)
+    {
+        var jobs = await _dbContext.ImportJobs.AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        // SQLite provider cannot translate DateTimeOffset ORDER BY.
+        return jobs
+            .OrderByDescending(j => j.CreatedAt)
+            .ToList();
+    }
+
     // spec 003 — InstitutionProfile CRUD
     public async Task<InstitutionProfile> AddInstitutionProfileAsync(InstitutionProfile profile, CancellationToken cancellationToken = default)
     {
@@ -378,5 +389,275 @@ public sealed class EfFinancialRepository : IFinancialRepository
         return await _dbContext.Records.AsNoTracking()
             .Where(r => r.ImportJobId == importJobId)
             .ToListAsync(cancellationToken);
+    }
+
+    // spec 004 — paged + filtered queries
+    public async Task<PagedResult<FinancialRecord>> GetRecordsPagedAsync(
+        FilterCriteria filter,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.Records.AsNoTracking().AsQueryable();
+
+        if (filter.AccountId.HasValue)
+            query = query.Where(r => r.AccountId == filter.AccountId.Value);
+
+        if (filter.CategoryId.HasValue)
+            query = query.Where(r => r.CategoryId == filter.CategoryId.Value);
+
+        if (filter.MinAmount.HasValue)
+            query = query.Where(r => r.Amount.Amount >= filter.MinAmount.Value);
+
+        if (filter.MaxAmount.HasValue)
+            query = query.Where(r => r.Amount.Amount <= filter.MaxAmount.Value);
+
+        if (!string.IsNullOrWhiteSpace(filter.MerchantSearch))
+        {
+            var search = filter.MerchantSearch.ToLower();
+            query = query.Where(r => r.Description.ToLower().Contains(search));
+        }
+
+        if (IsSqliteProvider())
+        {
+            // SQLite cannot translate DateTimeOffset comparisons or ordering server-side.
+            // Fetch the pre-filtered candidate set then apply date filters and sort in-memory.
+            var candidates = await query.ToListAsync(cancellationToken);
+            IEnumerable<FinancialRecord> filtered = candidates;
+
+            if (filter.StartDate.HasValue)
+                filtered = filtered.Where(r => DateOnly.FromDateTime(r.OccurredOn.UtcDateTime) >= filter.StartDate.Value);
+
+            if (filter.EndDate.HasValue)
+                filtered = filtered.Where(r => DateOnly.FromDateTime(r.OccurredOn.UtcDateTime) <= filter.EndDate.Value);
+
+            var sorted = ApplyInMemorySort(filtered, filter);
+            var sqliteTotalCount = sorted.Count;
+            var sqliteItems = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            return new PagedResult<FinancialRecord>(sqliteItems, page, pageSize, sqliteTotalCount);
+        }
+
+        if (filter.StartDate.HasValue)
+        {
+            var startDateTime = new DateTimeOffset(filter.StartDate.Value.Year, filter.StartDate.Value.Month, filter.StartDate.Value.Day, 0, 0, 0, TimeSpan.Zero);
+            query = query.Where(r => r.OccurredOn >= startDateTime);
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            var endDateTime = new DateTimeOffset(filter.EndDate.Value.Year, filter.EndDate.Value.Month, filter.EndDate.Value.Day, 23, 59, 59, TimeSpan.Zero);
+            query = query.Where(r => r.OccurredOn <= endDateTime);
+        }
+
+        var orderedQuery = ApplyQuerySort(query, filter);
+        var totalCount = await orderedQuery.CountAsync(cancellationToken);
+        var items = await orderedQuery.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+
+        return new PagedResult<FinancialRecord>(items, page, pageSize, totalCount);
+    }
+
+    private static List<FinancialRecord> ApplyInMemorySort(IEnumerable<FinancialRecord> query, FilterCriteria filter)
+    {
+        var descending = filter.SortDescending ?? (filter.SortBy is null or "date");
+        return filter.SortBy switch
+        {
+            "amount"      => descending ? query.OrderByDescending(r => r.Amount.Amount).ThenBy(r => r.Id).ToList()
+                                        : query.OrderBy(r => r.Amount.Amount).ThenBy(r => r.Id).ToList(),
+            "description" => descending ? query.OrderByDescending(r => r.Description).ThenBy(r => r.Id).ToList()
+                                        : query.OrderBy(r => r.Description).ThenBy(r => r.Id).ToList(),
+            _             => descending ? query.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id).ToList()
+                                        : query.OrderBy(r => r.OccurredOn).ThenBy(r => r.Id).ToList()
+        };
+    }
+
+    private static IOrderedQueryable<FinancialRecord> ApplyQuerySort(IQueryable<FinancialRecord> query, FilterCriteria filter)
+    {
+        var descending = filter.SortDescending ?? (filter.SortBy is null or "date");
+        return filter.SortBy switch
+        {
+            "amount"      => descending ? query.OrderByDescending(r => r.Amount.Amount).ThenBy(r => r.Id)
+                                        : query.OrderBy(r => r.Amount.Amount).ThenBy(r => r.Id),
+            "description" => descending ? query.OrderByDescending(r => r.Description).ThenBy(r => r.Id)
+                                        : query.OrderBy(r => r.Description).ThenBy(r => r.Id),
+            _             => descending ? query.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id)
+                                        : query.OrderBy(r => r.OccurredOn).ThenBy(r => r.Id)
+        };
+    }
+
+    public async IAsyncEnumerable<FinancialRecord> StreamRecordsAsync(
+        FilterCriteria filter,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.Records.AsNoTracking().AsQueryable();
+
+        if (filter.AccountId.HasValue)
+            query = query.Where(r => r.AccountId == filter.AccountId.Value);
+
+        if (filter.CategoryId.HasValue)
+            query = query.Where(r => r.CategoryId == filter.CategoryId.Value);
+
+        if (filter.MinAmount.HasValue)
+            query = query.Where(r => r.Amount.Amount >= filter.MinAmount.Value);
+
+        if (filter.MaxAmount.HasValue)
+            query = query.Where(r => r.Amount.Amount <= filter.MaxAmount.Value);
+
+        if (!string.IsNullOrWhiteSpace(filter.MerchantSearch))
+        {
+            var search = filter.MerchantSearch.ToLower();
+            query = query.Where(r => r.Description.ToLower().Contains(search));
+        }
+
+        if (IsSqliteProvider())
+        {
+            var candidates = await query.ToListAsync(cancellationToken);
+            IEnumerable<FinancialRecord> filtered = candidates;
+
+            if (filter.StartDate.HasValue)
+                filtered = filtered.Where(r => DateOnly.FromDateTime(r.OccurredOn.UtcDateTime) >= filter.StartDate.Value);
+
+            if (filter.EndDate.HasValue)
+                filtered = filtered.Where(r => DateOnly.FromDateTime(r.OccurredOn.UtcDateTime) <= filter.EndDate.Value);
+
+            var sorted = filtered.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id).ToList();
+            foreach (var record in sorted)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                yield return record;
+            }
+
+            yield break;
+        }
+
+        if (filter.StartDate.HasValue)
+        {
+            var startDateTime = new DateTimeOffset(filter.StartDate.Value.Year, filter.StartDate.Value.Month, filter.StartDate.Value.Day, 0, 0, 0, TimeSpan.Zero);
+            query = query.Where(r => r.OccurredOn >= startDateTime);
+        }
+
+        if (filter.EndDate.HasValue)
+        {
+            var endDateTime = new DateTimeOffset(filter.EndDate.Value.Year, filter.EndDate.Value.Month, filter.EndDate.Value.Day, 23, 59, 59, TimeSpan.Zero);
+            query = query.Where(r => r.OccurredOn <= endDateTime);
+        }
+
+        var orderedQuery = query.OrderByDescending(r => r.OccurredOn).ThenBy(r => r.Id);
+        await foreach (var record in orderedQuery.AsAsyncEnumerable().WithCancellation(cancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return record;
+        }
+    }
+
+    private bool IsSqliteProvider()
+    {
+        return _dbContext.Database.ProviderName?.Contains("sqlite", StringComparison.OrdinalIgnoreCase) == true;
+    }
+
+    public Task<PagedResult<FinancialAccount>> GetAccountsPagedAsync(
+        string? accountType,
+        bool? isActive,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        // FinancialAccount has no AccountType or IsActive fields in the current model;
+        // filters are accepted but ignored to fulfil the interface contract.
+        return GetAccountsPagedAsync(search: null, currency: null, page, pageSize, cancellationToken);
+    }
+
+    private async Task<PagedResult<FinancialAccount>> GetAccountsPagedAsync(
+        string? search,
+        string? currency,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.Accounts.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var s = search.ToLower();
+            query = query.Where(a => a.Name.ToLower().Contains(s));
+        }
+
+        if (!string.IsNullOrWhiteSpace(currency))
+            query = query.Where(a => a.Currency == currency);
+
+        query = query.OrderBy(a => a.Name).ThenBy(a => a.Id);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<FinancialAccount>(items, page, pageSize, totalCount);
+    }
+
+    public async Task<PagedResult<Category>> GetCategoriesPagedAsync(
+        string? nameSearch,
+        Guid? parentId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.Categories.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(nameSearch))
+        {
+            var s = nameSearch.ToLower();
+            query = query.Where(c => c.Name.ToLower().Contains(s));
+        }
+        // parentId filter: Category has no ParentId in current model — accepted, ignored.
+
+        query = query.OrderBy(c => c.Name).ThenBy(c => c.Id);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<Category>(items, page, pageSize, totalCount);
+    }
+
+    public async Task<PagedResult<ClassificationRule>> GetRulesPagedAsync(
+        string? ruleType,
+        bool? isEnabled,
+        Guid? categoryId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.ClassificationRules.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(ruleType))
+        {
+            var rt = ruleType.ToLower();
+            query = query.Where(r => r.Name.ToLower().Contains(rt));
+        }
+
+        if (isEnabled.HasValue)
+        {
+            // ClassificationRule.Status: Active = enabled, Inactive = disabled
+            var targetStatus = isEnabled.Value ? RuleStatus.Active : RuleStatus.Inactive;
+            query = query.Where(r => r.Status == targetStatus);
+        }
+
+        if (categoryId.HasValue)
+            query = query.Where(r => r.TargetCategoryId == categoryId.Value);
+
+        // Priority descending, then Id ascending (per contracts/rules.md)
+        query = query.OrderByDescending(r => r.Priority).ThenBy(r => r.Id);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<ClassificationRule>(items, page, pageSize, totalCount);
     }
 }

@@ -1,0 +1,56 @@
+@page
+@model RulesModel
+@{
+    ViewData["Title"] = "Rules";
+}
+
+<h1 class="h3 mb-3">Rules</h1>
+<p class="text-muted">Review the classification rules currently available through the API.</p>
+
+@if (!string.IsNullOrWhiteSpace(Model.ApiErrorMessage))
+{
+    <div class="alert alert-warning">@Model.ApiErrorMessage</div>
+}
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <label class="form-label">Page</label>
+        <input asp-for="PageNumber" class="form-control" type="number" min="1" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label">Page size</label>
+        <input asp-for="PageSize" class="form-control" type="number" min="1" max="50" />
+    </div>
+    <div class="col-auto align-self-end">
+        <button class="btn btn-primary">Refresh</button>
+    </div>
+</form>
+
+@if (Model.Rules.Items.Count == 0)
+{
+    <div class="alert alert-secondary">No rules were returned.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Enabled</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var rule in Model.Rules.Items)
+                {
+                    <tr>
+                        <td>@rule.Name</td>
+                        <td>@(rule.IsEnabled ? "Yes" : "No")</td>
+                        <td>@rule.Priority</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

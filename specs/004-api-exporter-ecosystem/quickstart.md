@@ -78,7 +78,15 @@ curl "http://localhost:5000/api/v1/records?page=9999&pageSize=25"
 
 Expected: `200 OK`, `"items": []`, accurate `totalCount` and `totalPages` in metadata.
 
-### 2g. Invalid filter — expect 400
+### 2g. Invalid page value — expect 400
+
+```bash
+curl "http://localhost:5000/api/v1/records?page=0"
+```
+
+Expected: `400 Bad Request` identifying `page`.
+
+### 2h. Invalid filter — expect 400
 
 ```bash
 curl "http://localhost:5000/api/v1/records?startDate=2026-12-01&endDate=2026-01-01"
@@ -86,7 +94,7 @@ curl "http://localhost:5000/api/v1/records?startDate=2026-12-01&endDate=2026-01-
 
 Expected: `400 Bad Request` with `"errors": { "endDate": [...] }`.
 
-### 2h. PageSize too large — expect 400
+### 2i. PageSize too large — expect 400
 
 ```bash
 curl "http://localhost:5000/api/v1/records?pageSize=999"
